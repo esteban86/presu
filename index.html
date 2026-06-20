@@ -5,6 +5,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
+<!-- ════════════ Analítica: Consent Mode v2 + Google Tag Manager (contenedor compartido) ════════════
+     Consent Mode deny-by-default. Lee la cookie asi-consent en .asimetrica.co, así que el
+     consentimiento dado en asimetrica.co o Prisma vale también aquí. DEBE ir ANTES de GTM. -->
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}var _m=document.cookie.match(/(?:^|; )asi-consent=(granted|denied)/);var _c=_m?_m[1]:null;gtag('consent','default',{'ad_storage':'denied','ad_user_data':'denied','ad_personalization':'denied','analytics_storage':_c==='granted'?'granted':'denied','wait_for_update':500});</script>
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-W9QQPB86');</script>
+<!-- End Google Tag Manager -->
+
 <!-- ════════════ DOMINIO (cambiar en un solo lugar para migrar a dominio propio) ════════════
      Hoy: https://presu.asimetrica.co  ·  Mañana: https://presu.com.co
      Edita las 3 líneas marcadas con [DOMINIO]. Los enlaces internos son anclas (#) → ya son portables. -->
@@ -467,6 +475,17 @@
     .dash-date{display:none}
     .chart-legend{gap:10px;flex-wrap:wrap}
   }
+  /* Banner de consentimiento de cookies — sutil, abajo-izquierda */
+  .cookie-consent{position:fixed;left:18px;bottom:18px;z-index:80;max-width:340px;background:var(--bg-elev);border:1px solid var(--line-2);border-radius:var(--radius-sm);padding:15px 17px;box-shadow:var(--sh-lg);font-size:.86rem;line-height:1.5;color:var(--mut);opacity:0;transform:translateY(10px);transition:opacity .3s var(--ease),transform .3s var(--ease)}
+  .cookie-consent.is-in{opacity:1;transform:none}
+  .cookie-consent p{margin:0 0 11px}
+  .cookie-consent b{color:var(--tx);font-weight:600}
+  .cc-row{display:flex;gap:8px}
+  .cc-accept{background:var(--mint);color:#06231a;border:0;border-radius:9px;padding:7px 15px;font-weight:700;font-size:.82rem;cursor:pointer;transition:background .16s}
+  .cc-accept:hover{background:var(--mint-bright)}
+  .cc-deny{background:transparent;color:var(--mut);border:0;border-radius:9px;padding:7px 12px;font-size:.82rem;cursor:pointer;transition:color .16s}
+  .cc-deny:hover{color:var(--tx)}
+  @media(max-width:480px){.cookie-consent{left:10px;right:10px;bottom:10px;max-width:none}}
 </style>
 
 <!-- ════════════ Datos estructurados (Schema.org / JSON-LD) ════════════
@@ -546,6 +565,9 @@
 </script>
 </head>
 <body>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-W9QQPB86" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
 
 <header>
   <div class="wrap nav">
@@ -978,6 +1000,16 @@
     <div>© 2026 Presu · Hecho en Colombia · <a href="https://asimetrica.co/privacidad/" target="_blank" rel="noopener">Privacidad</a></div>
   </div>
 </footer>
+
+<!-- Consentimiento de cookies. Setea la cookie asi-consent en .asimetrica.co (compartida con asimetrica.co / Prisma). -->
+<div id="cookie-consent" class="cookie-consent" hidden>
+  <p>Usamos cookies de <b>Google Analytics</b> para medir el uso del sitio. Puedes aceptarlas o seguir sin ellas.</p>
+  <div class="cc-row">
+    <button data-consent="granted" type="button" class="cc-accept">Aceptar</button>
+    <button data-consent="denied" type="button" class="cc-deny">Rechazar</button>
+  </div>
+</div>
+<script>(function(){var el=document.getElementById('cookie-consent');if(!el)return;var m=document.cookie.match(/(?:^|; )asi-consent=(granted|denied)/);var s=m?m[1]:null;if(!s){el.hidden=false;requestAnimationFrame(function(){el.classList.add('is-in');});}el.querySelectorAll('[data-consent]').forEach(function(b){b.addEventListener('click',function(){var v=b.getAttribute('data-consent');var dom=location.hostname.indexOf('asimetrica.co')>-1?';domain=.asimetrica.co':'';try{document.cookie='asi-consent='+v+';path=/;max-age=15552000'+dom+';SameSite=Lax';}catch(e){}if(typeof gtag==='function'){gtag('consent','update',{'analytics_storage':v==='granted'?'granted':'denied'});}el.classList.remove('is-in');setTimeout(function(){el.hidden=true;},250);});});})();</script>
 
 <script>
   (function(){
