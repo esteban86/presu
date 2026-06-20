@@ -5,13 +5,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<!-- ════════════ Analítica: Consent Mode v2 + Google Tag Manager (contenedor compartido) ════════════
-     Consent Mode deny-by-default. Lee la cookie asi-consent en .asimetrica.co, así que el
-     consentimiento dado en asimetrica.co o Prisma vale también aquí. DEBE ir ANTES de GTM. -->
+<!-- ════════════ Analítica: Consent Mode v2 + Google Analytics 4 (propiedad propia de Presu) ════════════
+     Propiedad GA4 dedicada G-DZPY2T152N (aislada de asimetrica.co). Consent Mode deny-by-default:
+     lee la cookie asi-consent en .asimetrica.co, así que el consentimiento dado en asimetrica.co o
+     Prisma vale también aquí (y viceversa). El bloque de consentimiento DEBE ir ANTES del config. -->
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}var _m=document.cookie.match(/(?:^|; )asi-consent=(granted|denied)/);var _c=_m?_m[1]:null;gtag('consent','default',{'ad_storage':'denied','ad_user_data':'denied','ad_personalization':'denied','analytics_storage':_c==='granted'?'granted':'denied','wait_for_update':500});</script>
-<!-- Google Tag Manager -->
-<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-W9QQPB86');</script>
-<!-- End Google Tag Manager -->
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-DZPY2T152N"></script>
+<script>gtag('js',new Date());gtag('config','G-DZPY2T152N');</script>
 
 <!-- ════════════ DOMINIO (cambiar en un solo lugar para migrar a dominio propio) ════════════
      Hoy: https://presu.asimetrica.co  ·  Mañana: https://presu.com.co
@@ -565,9 +566,6 @@
 </script>
 </head>
 <body>
-<!-- Google Tag Manager (noscript) -->
-<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-W9QQPB86" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-<!-- End Google Tag Manager (noscript) -->
 
 <header>
   <div class="wrap nav">
