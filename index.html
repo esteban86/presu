@@ -1060,7 +1060,7 @@
       if (!EMAIL_RE.test(email)) { heroErr.style.display='block'; heroEmail.focus(); return; }
       heroErr.style.display='none';
       send({ access_key:WEB3FORMS_KEY, subject:'Nuevo registro en waitlist de Presu (persona · hero)', from_name:'Presu Waitlist', perfil:'persona', correo:email, origen:'hero' },
-        function(){ heroForm.style.display='none'; heroOk.style.display='flex'; bumpCount(); if(window.plausible) window.plausible('Waitlist Signup',{props:{perfil:'persona',origen:'hero'}}); },
+        function(){ heroForm.style.display='none'; heroOk.style.display='flex'; bumpCount(); if(typeof gtag==='function') gtag('event','generate_lead',{perfil:'persona',origen:'hero'}); if(window.plausible) window.plausible('Waitlist Signup',{props:{perfil:'persona',origen:'hero'}}); },
         function(){ alert('Hubo un error, intenta de nuevo.'); });
     });
 
@@ -1096,7 +1096,7 @@
         empresa: perfil === 'empresa' ? form.empresa.value.trim() : '',
         empleados: perfil === 'empresa' ? form.empleados.value.trim() : ''
       },
-      function(){ form.classList.add('hidden'); document.getElementById('waitlist-success').classList.remove('hidden'); bumpCount(); if(window.plausible) window.plausible('Waitlist Signup',{props:{perfil:perfil}}); },
+      function(){ form.classList.add('hidden'); document.getElementById('waitlist-success').classList.remove('hidden'); bumpCount(); if(typeof gtag==='function') gtag('event','generate_lead',{perfil:perfil,origen:'form'}); if(window.plausible) window.plausible('Waitlist Signup',{props:{perfil:perfil}}); },
       function(){ alert('Hubo un error, intenta de nuevo.'); });
     });
 
