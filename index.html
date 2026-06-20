@@ -11,12 +11,38 @@
 <title>Presu — tus gastos personales, claros</title>
 <meta name="description" content="Presu reúne los gastos de tus bancos colombianos, los organiza solos y te muestra a dónde se va tu plata. 100% privado: tus datos viven cifrados en tu equipo.">
 <link rel="canonical" href="https://presu.asimetrica.co/"> <!-- [DOMINIO] -->
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+<meta name="keywords" content="finanzas personales, control de gastos, presupuesto personal, app de gastos Colombia, organizar gastos, extracto bancario, Bancolombia, Nu, Davivienda, RappiCard, finanzas privadas">
+<meta name="author" content="Asimétrica">
+<meta name="application-name" content="Presu">
+<meta name="apple-mobile-web-app-title" content="Presu">
+
+<!-- Open Graph -->
 <meta property="og:type" content="website">
+<meta property="og:site_name" content="Presu">
+<meta property="og:locale" content="es_CO">
 <meta property="og:title" content="Presu — tus gastos personales, claros">
-<meta property="og:description" content="Todos tus bancos en un solo lugar. Solo para tus ojos. Local y cifrado, sin nube.">
+<meta property="og:description" content="Reúne los gastos de tus bancos colombianos, los organiza solos y te muestra a dónde se va tu plata. Local y cifrado, en tu equipo.">
 <meta property="og:image" content="https://presu.asimetrica.co/presu-og.png"> <!-- [DOMINIO] -->
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Presu — tus gastos personales, claros">
 <meta property="og:url" content="https://presu.asimetrica.co/"> <!-- [DOMINIO] -->
+
+<!-- Twitter / X -->
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Presu — tus gastos personales, claros">
+<meta name="twitter:description" content="Todos tus bancos en un solo lugar. Local y cifrado, en tu equipo.">
+<meta name="twitter:image" content="https://presu.asimetrica.co/presu-og.png"> <!-- [DOMINIO] -->
+<meta name="twitter:image:alt" content="Presu — tus gastos personales, claros">
+
+<!-- Iconos -->
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
 <meta name="theme-color" content="#0E0E11">
 
 <!-- Familia tipográfica de Asimétrica: Satoshi (titulares) + Inter (texto) -->
@@ -442,6 +468,82 @@
     .chart-legend{gap:10px;flex-wrap:wrap}
   }
 </style>
+
+<!-- ════════════ Datos estructurados (Schema.org / JSON-LD) ════════════
+     Mejora cómo Google entiende y muestra Presu (rich results).
+     El FAQPage refleja EXACTAMENTE las preguntas visibles en la página. -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://asimetrica.co/#organization",
+      "name": "Asimétrica",
+      "url": "https://asimetrica.co",
+      "logo": "https://asimetrica.co/logo.png",
+      "areaServed": "CO"
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://presu.asimetrica.co/#website",
+      "url": "https://presu.asimetrica.co/",
+      "name": "Presu",
+      "inLanguage": "es-CO",
+      "publisher": { "@id": "https://asimetrica.co/#organization" }
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://presu.asimetrica.co/#app",
+      "name": "Presu",
+      "applicationCategory": "FinanceApplication",
+      "operatingSystem": "macOS, Windows",
+      "inLanguage": "es-CO",
+      "url": "https://presu.asimetrica.co/",
+      "image": "https://presu.asimetrica.co/presu-og.png",
+      "description": "Presu reúne los gastos de tus bancos colombianos, los organiza solos y te muestra a dónde se va tu plata. Local-first: tus datos viven cifrados en tu propio equipo, no en la nube.",
+      "publisher": { "@id": "https://asimetrica.co/#organization" },
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "COP",
+        "description": "Empieza gratis con importación manual y panel básico."
+      }
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://presu.asimetrica.co/#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "¿Es seguro? ¿Dónde quedan mis datos?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Tus datos quedan cifrados en tu propio computador, no en un servidor ni en la nube. Presu es local-first: la información no sale de tu equipo, así que nadie más —ni Asimétrica— puede verla." }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Necesito dar la clave de mi banco?",
+          "acceptedAnswer": { "@type": "Answer", "text": "No. Presu no se conecta a tu banca en línea ni te pide usuario o clave. Solo importas el PDF de tu extracto (o un pantallazo) y Presu lo lee." }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Qué bancos sirven?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Hoy: Bancolombia, Nu, Davivienda y RappiCard. Seguimos sumando más." }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Tiene costo?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Puedes empezar gratis con la importación manual y el panel básico. Habrá un plan completo con funciones automáticas; definiremos los precios al lanzar." }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Funciona en Mac, Windows o celular?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Hoy funciona en computador, Mac y Windows. La versión para celular está en camino —te avisamos cuando esté lista." }
+        }
+      ]
+    }
+  ]
+}
+</script>
 </head>
 <body>
 
