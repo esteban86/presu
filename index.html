@@ -189,9 +189,11 @@
   .capture input:focus{outline:none;border-color:var(--mint);box-shadow:0 0 0 4px rgba(16,217,160,.16)}
   .capture .btn{white-space:nowrap;flex:none}
   /* Al enfocar el correo: la caja se expande a la derecha y el botón se contrae un poco */
-  .capture .btn-lg{transition:transform .16s var(--ease),box-shadow .16s,background .16s,padding .35s var(--ease)}
+  .capture .btn-lg{transition:transform .16s var(--ease),box-shadow .16s,background .16s,padding .4s var(--ease),font-size .4s var(--ease)}
+  .capture .btn-lg svg{transition:width .4s var(--ease),height .4s var(--ease)}
   @media(min-width:481px){
-    .capture-row:focus-within .btn-lg{padding-left:15px;padding-right:15px}
+    .capture-row:focus-within .btn-lg{padding-left:12px;padding-right:12px;font-size:.86rem}
+    .capture-row:focus-within .btn-lg svg{width:15px;height:15px}
   }
   .capture-note{margin-top:12px;font-size:.84rem;color:var(--mut2);display:flex;align-items:center;gap:8px}
   .capture-note svg{color:var(--mint);flex:none}
@@ -846,7 +848,7 @@
         </div>
         <div class="field consent">
           <input type="checkbox" id="consent" name="consent" required aria-required="true">
-          <label for="consent">Autorizo el tratamiento de mis datos según la <a href="#" target="_blank" rel="noopener">política de privacidad</a>.</label>
+          <label for="consent">Autorizo el tratamiento de mis datos según la <a href="https://asimetrica.co/privacidad/" target="_blank" rel="noopener">política de privacidad</a>.</label>
         </div>
         <p class="err" id="consent-err">Necesitamos tu autorización para continuar.</p>
         <input type="text" name="botcheck" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
@@ -871,7 +873,7 @@
       </span>
       <a class="endorse" href="https://asimetrica.co" target="_blank" rel="noopener">de <img src="https://asimetrica.co/logo.png" alt="Asimétrica"></a>
     </div>
-    <div>© 2026 Presu · Hecho en Colombia · <a href="#">Privacidad</a></div>
+    <div>© 2026 Presu · Hecho en Colombia · <a href="https://asimetrica.co/privacidad/" target="_blank" rel="noopener">Privacidad</a></div>
   </div>
 </footer>
 
