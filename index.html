@@ -45,12 +45,12 @@
     --ease:cubic-bezier(.2,.7,.2,1);
   }
   *{box-sizing:border-box}
-  html{scroll-behavior:smooth}
+  html{scroll-behavior:smooth;overflow-x:clip}
   body{margin:0;font-family:var(--body);color:var(--tx);background:var(--bg);line-height:1.6;-webkit-font-smoothing:antialiased;font-size:16px;overflow-x:clip}
   ::selection{background:rgba(16,217,160,.26);color:#fff}
   .wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px}
   h1,h2,h3{font-family:var(--head);line-height:1.08;letter-spacing:-0.03em;margin:0;font-weight:900;color:#fff}
-  h1{font-size:clamp(2.4rem,5.6vw,3.85rem);letter-spacing:-0.04em}
+  h1{font-size:clamp(2rem,7vw,3.85rem);letter-spacing:-0.04em;overflow-wrap:break-word}
   h2{font-size:clamp(1.8rem,3.8vw,2.6rem);margin-bottom:14px}
   h3{font-size:1.16rem;font-weight:700}
   p{margin:0 0 14px}
@@ -134,7 +134,7 @@
   .feat-extra{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:64px}
   .feat-extra .x{display:inline-flex;align-items:center;gap:8px;background:var(--bg-2);border:1px solid var(--line);border-radius:999px;padding:9px 16px;font-size:.86rem;color:var(--tx);font-weight:500}
   .feat-extra .x svg{color:var(--mint-bright)}
-  @media(max-width:860px){.show-row{grid-template-columns:1fr;gap:28px}.show-row.rev .show-copy{order:1}.show-row.rev .show-art{order:2}.show{gap:60px}.stat .sv{font-size:1rem}}
+  @media(max-width:860px){.show-row{grid-template-columns:1fr;gap:28px}.show-row>*{min-width:0}.show-row.rev .show-copy{order:1}.show-row.rev .show-art{order:2}.show{gap:56px}.stat .sv{font-size:1rem}}
 
   /* Eyebrow */
   .eyebrow{display:inline-flex;align-items:center;gap:11px;font-family:var(--body);font-size:.76rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--mint-bright);margin-bottom:18px}
@@ -175,6 +175,7 @@
   /* Hero */
   .hero{padding-top:64px;padding-bottom:88px;overflow:hidden}
   .hero-grid{display:grid;grid-template-columns:1.02fr .98fr;gap:52px;align-items:center;position:relative;z-index:2}
+  .hero-grid>*{min-width:0}
   .pill-badge{display:inline-flex;align-items:center;gap:9px;background:rgba(16,217,160,.1);border:1px solid rgba(16,217,160,.28);color:var(--mint-bright);font-weight:600;font-size:.82rem;padding:7px 15px;border-radius:999px;margin-bottom:22px}
   .pill-badge .ping{width:8px;height:8px;border-radius:50%;background:var(--mint);box-shadow:0 0 10px var(--mint);animation:ping 2s infinite}
   @keyframes ping{0%{box-shadow:0 0 0 0 rgba(16,217,160,.55),0 0 10px var(--mint)}70%{box-shadow:0 0 0 8px rgba(16,217,160,0),0 0 10px var(--mint)}100%{box-shadow:0 0 0 0 rgba(16,217,160,0),0 0 10px var(--mint)}}
@@ -354,12 +355,48 @@
   @media (max-width:820px){
     section{padding:62px 0}
     .hero{padding-top:44px;padding-bottom:60px}
-    .hero-grid{grid-template-columns:1fr;gap:46px}
+    .hero-grid{grid-template-columns:1fr;gap:40px}
     .hero .sub{max-width:none}
     .cards,.steps,.features,.plans{grid-template-columns:1fr}
+    .cards>*,.steps>*,.features>*,.plans>*{min-width:0}
     .block{padding:38px 26px}
     .mascot{right:10px;top:-22px;width:56px;height:56px}
     .formcard{padding:28px}
+  }
+
+  /* Tablet/phone: el header solo deja marca + CTA; el sello "de Asimétrica" estorba */
+  @media(max-width:560px){
+    .endorse{display:none}
+    .nav-cta{gap:0}
+    section{padding:54px 0}
+    .privacy .lead,.b2b p{font-size:1.06rem}
+  }
+
+  /* Phone: el mock no debe forzar ancho — se apila la rueda sobre la lista */
+  @media(max-width:480px){
+    .wheel-wrap{flex-direction:column;align-items:center;gap:18px}
+    .wheel{margin:0 auto}
+    .catrows{width:100%}
+    .banks{padding:26px 0}
+    .banks-inner{gap:12px 18px}
+    .bank-logo{height:46px;padding:0 14px}
+    .bank-logo img{height:24px}
+    .feat-extra{margin-top:44px}
+    .formcard{padding:24px 20px}
+    .block{padding:32px 22px}
+    /* Mock del showcase: que el panel quepa sin recortarse */
+    .panel{padding:16px}
+    .stat-grid{gap:7px}
+    .stat{padding:10px 9px}
+    .stat .sv{font-size:.86rem}
+    .stat .sl{font-size:.62rem}
+    .stat .sd{font-size:.58rem}
+    .rings{gap:6px}
+    .ring .rc{width:46px;height:46px}
+    .ring .rc::after{inset:5px}
+    .ring .rt{font-size:.56rem}
+    .dash-date{display:none}
+    .chart-legend{gap:10px;flex-wrap:wrap}
   }
 </style>
 </head>
