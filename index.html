@@ -52,29 +52,29 @@
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
-<meta name="theme-color" content="#0E0E11">
+<meta name="theme-color" content="#08080A">
 
 <!-- Familia tipográfica de Asimétrica: Satoshi (titulares) + Inter (texto) -->
-<link rel="preconnect" href="https://api.fontshare.com" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://api.fontshare.com/v2/css?f[]=satoshi@500,700,900&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
 <!-- Analítica privacy-friendly (configurable) -->
 <!-- <script defer data-domain="presu.asimetrica.co" src="https://plausible.io/js/script.js"></script> -->
 
 <style>
   :root{
-    /* Marca Asimétrica, calibrada para modo oscuro estilo Copilot Money */
-    --indigo:#6366F1; --indigo-soft:#8B8DF7; --mint:#10D9A0; --mint-bright:#2DE9B0; --coral:#FF7A6E;
-    --purple:#A855F7; --amber:#FFB020; --teal:#22D3EE; --pink:#FF6FB5;
+    /* Presu Design System — esmeralda + grafito, vidrio esmerilado */
+    --indigo:#818CF8; --indigo-soft:#A5B4FC; --mint:#34D399; --mint-bright:#5EEAB8; --mint-ink:#08231A; --coral:#FB7185;
+    --purple:#A855F7; --amber:#FBBF24; --teal:#5EEAD4; --pink:#F472B6; --blue:#60A5FA;
     /* superficies */
-    --bg:#0E0E12; --bg-2:#16161C; --bg-3:#1C1C24; --bg-elev:#202029;
+    --bg:#08080A; --bg-2:#101014; --bg-3:#141418; --bg-elev:#1B1B20;
     --line:rgba(255,255,255,.07); --line-2:rgba(255,255,255,.12);
-    --tx:#F4F4F6; --mut:#9A9AA6; --mut2:#6B6B76;
+    --tx:#F4F4F3; --mut:#A1A1A6; --mut2:#6B6B72;
     --radius:20px; --radius-sm:14px; --maxw:1160px;
-    --head:"Satoshi",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-    --body:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --head:"Space Grotesk",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    --body:"Hanken Grotesk",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
     --sh:0 1px 0 rgba(255,255,255,.04) inset, 0 18px 40px -24px rgba(0,0,0,.8);
     --sh-lg:0 1px 0 rgba(255,255,255,.05) inset, 0 40px 90px -40px rgba(0,0,0,.85);
     --ease:cubic-bezier(.2,.7,.2,1);
@@ -82,9 +82,11 @@
   *{box-sizing:border-box}
   html{scroll-behavior:smooth;overflow-x:clip}
   body{margin:0;font-family:var(--body);color:var(--tx);background:var(--bg);line-height:1.6;-webkit-font-smoothing:antialiased;font-size:16px;overflow-x:clip}
-  ::selection{background:rgba(16,217,160,.26);color:#fff}
+  /* Grano sutil global — textura del Presu Design System */
+  body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:9998;opacity:.04;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+  ::selection{background:rgba(52,211,153,.26);color:#fff}
   .wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px}
-  h1,h2,h3{font-family:var(--head);line-height:1.08;letter-spacing:-0.03em;margin:0;font-weight:900;color:#fff}
+  h1,h2,h3{font-family:var(--head);line-height:1.08;letter-spacing:-0.03em;margin:0;font-weight:700;color:#fff}
   h1{font-size:clamp(2rem,7vw,3.85rem);letter-spacing:-0.04em;overflow-wrap:break-word}
   h2{font-size:clamp(1.8rem,3.8vw,2.6rem);margin-bottom:14px}
   h3{font-size:1.16rem;font-weight:700}
@@ -101,7 +103,7 @@
   .show-row{display:grid;grid-template-columns:.92fr 1.08fr;gap:56px;align-items:center}
   .show-row.rev .show-copy{order:2}
   .show-row.rev .show-art{order:1}
-  .show-copy h3{font-family:var(--head);font-weight:900;font-size:clamp(1.5rem,3vw,2.05rem);letter-spacing:-0.03em;color:#fff;margin:0 0 12px;line-height:1.1}
+  .show-copy h3{font-family:var(--head);font-weight:700;font-size:clamp(1.5rem,3vw,2.05rem);letter-spacing:-0.03em;color:#fff;margin:0 0 12px;line-height:1.1}
   .show-copy>p{color:var(--mut);font-size:1.06rem;margin:0 0 18px;max-width:46ch}
   .show-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:11px}
   .show-list li{display:flex;gap:10px;align-items:flex-start;color:var(--tx);font-size:.97rem}
@@ -109,7 +111,7 @@
   .show-art{position:relative}
   .panel-glow{position:absolute;inset:-14% -10%;border-radius:50%;filter:blur(74px);opacity:.4;z-index:0}
   .panel{background:linear-gradient(180deg,var(--bg-3),var(--bg-2));border:1px solid var(--line-2);border-radius:var(--radius);box-shadow:var(--sh-lg);padding:18px;position:relative;z-index:2}
-  .panel-cap{position:absolute;top:-11px;left:20px;z-index:3;background:rgba(99,102,241,.18);border:1px solid rgba(99,102,241,.4);color:var(--indigo-soft);font-size:.62rem;font-weight:700;padding:4px 10px;border-radius:999px;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+  .panel-cap{position:absolute;top:-11px;left:20px;z-index:3;background:rgba(52,211,153,.14);border:1px solid rgba(52,211,153,.34);color:var(--mint);font-family:var(--mono);font-size:.6rem;font-weight:500;padding:4px 10px;border-radius:999px;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap}
 
   /* dashboard mock */
   .dash-top{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:13px}
@@ -144,10 +146,10 @@
   /* Ritmo de gasto · estilo Copilot (navy + degradado + pill) */
   .chart-panel{background:linear-gradient(165deg,#0F1838 0%,#0A0F26 72%);border-color:rgba(99,102,241,.22)}
   .ch-head{text-align:center;margin:8px 0 16px}
-  .ch-big{font-family:var(--head);font-weight:900;font-size:clamp(1.6rem,3.4vw,2rem);letter-spacing:-0.03em;color:#fff;line-height:1}
+  .ch-big{font-family:var(--head);font-weight:700;font-size:clamp(1.6rem,3.4vw,2rem);letter-spacing:-0.03em;color:#fff;line-height:1}
   .ch-big span{font-size:.86rem;font-weight:600;color:var(--mut)}
   .ch-sub{font-size:.84rem;color:var(--indigo-soft);margin-top:7px;font-weight:500}
-  .chart-pill{position:absolute;background:var(--mint);color:#06251B;font-weight:700;font-size:.74rem;padding:5px 11px;border-radius:9px;white-space:nowrap;box-shadow:0 8px 20px -8px rgba(16,217,160,.6);z-index:4}
+  .chart-pill{position:absolute;background:var(--mint);color:#06251B;font-weight:700;font-size:.74rem;padding:5px 11px;border-radius:9px;white-space:nowrap;box-shadow:0 8px 20px -8px rgba(52,211,153,.6);z-index:4}
   .chart-pill::after{content:"";position:absolute;left:50%;bottom:-5px;transform:translateX(-50%);border-left:6px solid transparent;border-right:6px solid transparent;border-top:6px solid var(--mint)}
 
   /* sync mock */
@@ -172,7 +174,7 @@
   @media(max-width:860px){.show-row{grid-template-columns:1fr;gap:28px}.show-row>*{min-width:0}.show-row.rev .show-copy{order:1}.show-row.rev .show-art{order:2}.show{gap:56px}.stat .sv{font-size:1rem}}
 
   /* Eyebrow */
-  .eyebrow{display:inline-flex;align-items:center;gap:11px;font-family:var(--body);font-size:.76rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--mint-bright);margin-bottom:18px}
+  .eyebrow{display:inline-flex;align-items:center;gap:11px;font-family:var(--mono);font-size:.7rem;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--mint);margin-bottom:18px}
   .eyebrow::before{content:"";width:24px;height:1.5px;background:var(--mint-bright);opacity:.6;display:inline-block}
   .eyebrow.center-eb{justify-content:center}
 
@@ -180,8 +182,8 @@
   .btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;font-family:var(--body);font-size:1rem;font-weight:600;padding:14px 24px;border-radius:14px;border:0;cursor:pointer;transition:transform .16s var(--ease),box-shadow .16s,background .16s,border-color .16s;line-height:1}
   .btn:active{transform:translateY(1px) scale(.99)}
   .btn svg{flex:none}
-  .btn-primary{background:var(--mint);color:#06251B;box-shadow:0 10px 26px -10px rgba(16,217,160,.6);font-weight:700}
-  .btn-primary:hover{background:var(--mint-bright);transform:translateY(-2px);box-shadow:0 16px 34px -10px rgba(16,217,160,.7)}
+  .btn-primary{background:var(--mint);color:var(--mint-ink);box-shadow:0 10px 28px -8px rgba(52,211,153,.5);font-weight:700}
+  .btn-primary:hover{background:var(--mint-bright);transform:translateY(-2px);box-shadow:0 16px 34px -10px rgba(52,211,153,.7)}
   .btn-ghost{background:rgba(255,255,255,.05);color:#fff;border:1px solid var(--line-2)}
   .btn-ghost:hover{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.22)}
   .btn-lg{padding:16px 30px;font-size:1.05rem}
@@ -194,7 +196,12 @@
   header{position:sticky;top:0;z-index:50;background:rgba(14,14,18,.72);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
   .nav{display:flex;align-items:center;justify-content:space-between;height:68px}
   .brandlock{display:flex;align-items:center;gap:13px}
-  .brand{display:flex;align-items:center;gap:10px;font-family:var(--head);font-weight:900;font-size:1.32rem;color:#fff;letter-spacing:-0.03em}
+  .brand{display:flex;align-items:center;gap:10px;font-family:var(--head);font-weight:700;font-size:1.32rem;color:#fff;letter-spacing:-0.03em}
+  /* Wordmark Presu — minúscula + franja esmeralda tipo resaltador (firma del Design System) */
+  .wordmark{position:relative;display:inline-flex;align-items:center;line-height:.9}
+  .wm-text{position:relative;z-index:1;font-family:var(--head);font-weight:700;font-size:1.6rem;letter-spacing:-.05em;color:var(--tx);line-height:.9}
+  .wm-bar{position:absolute;left:-5%;right:-8%;top:53%;height:.36em;border-radius:999px;background:var(--mint);transform:rotate(-9deg);z-index:0}
+  footer .wm-text{font-size:1.3rem}
   .endorse{display:flex;align-items:center;gap:6px;padding-left:13px;border-left:1px solid var(--line-2);font-size:.76rem;color:var(--mut2);font-weight:500}
   .endorse img{height:15px;width:auto;opacity:.7;filter:brightness(0) invert(1)}
   .nav-cta{display:flex;align-items:center;gap:20px}
@@ -211,9 +218,9 @@
   .hero{padding-top:64px;padding-bottom:88px;overflow:hidden}
   .hero-grid{display:grid;grid-template-columns:1.02fr .98fr;gap:52px;align-items:center;position:relative;z-index:2}
   .hero-grid>*{min-width:0}
-  .pill-badge{display:inline-flex;align-items:center;gap:9px;background:rgba(16,217,160,.1);border:1px solid rgba(16,217,160,.28);color:var(--mint-bright);font-weight:600;font-size:.82rem;padding:7px 15px;border-radius:999px;margin-bottom:22px}
+  .pill-badge{display:inline-flex;align-items:center;gap:9px;background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.28);color:var(--mint-bright);font-weight:600;font-size:.82rem;padding:7px 15px;border-radius:999px;margin-bottom:22px}
   .pill-badge .ping{width:8px;height:8px;border-radius:50%;background:var(--mint);box-shadow:0 0 10px var(--mint);animation:ping 2s infinite}
-  @keyframes ping{0%{box-shadow:0 0 0 0 rgba(16,217,160,.55),0 0 10px var(--mint)}70%{box-shadow:0 0 0 8px rgba(16,217,160,0),0 0 10px var(--mint)}100%{box-shadow:0 0 0 0 rgba(16,217,160,0),0 0 10px var(--mint)}}
+  @keyframes ping{0%{box-shadow:0 0 0 0 rgba(52,211,153,.55),0 0 10px var(--mint)}70%{box-shadow:0 0 0 8px rgba(52,211,153,0),0 0 10px var(--mint)}100%{box-shadow:0 0 0 0 rgba(52,211,153,0),0 0 10px var(--mint)}}
   .hero .sub{font-size:1.18rem;color:var(--mut);max-width:37ch;margin-top:20px}
 
   /* Inline capture */
@@ -221,7 +228,7 @@
   .capture-row{display:flex;gap:10px}
   .capture input{flex:1;min-width:0;padding:15px 18px;border:1px solid var(--line-2);border-radius:14px;font-size:16px;font-family:var(--body);color:#fff;background:var(--bg-3);transition:border-color .15s,box-shadow .15s}
   .capture input::placeholder{color:var(--mut2)}
-  .capture input:focus{outline:none;border-color:var(--mint);box-shadow:0 0 0 4px rgba(16,217,160,.16)}
+  .capture input:focus{outline:none;border-color:var(--mint);box-shadow:0 0 0 4px rgba(52,211,153,.16)}
   .capture .btn{white-space:nowrap;flex:none}
   /* Al enfocar el correo: la caja se expande a la derecha y el botón se contrae un poco */
   .capture .btn-lg{transition:transform .16s var(--ease),box-shadow .16s,background .16s,padding .4s var(--ease),font-size .4s var(--ease)}
@@ -242,7 +249,7 @@
   .proof .pt b{color:#fff;font-weight:700}
   .sec-head .proof{justify-content:center;margin-top:18px}
   .capture-err{color:#FF8A9B;font-size:.82rem;margin-top:9px;display:none}
-  .capture-ok{display:none;align-items:center;gap:13px;background:rgba(16,217,160,.1);border:1px solid rgba(16,217,160,.3);border-radius:16px;padding:16px 20px;margin-top:30px;max-width:470px}
+  .capture-ok{display:none;align-items:center;gap:13px;background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.3);border-radius:16px;padding:16px 20px;margin-top:30px;max-width:470px}
   .capture-ok .ok-ic{width:40px;height:40px;border-radius:50%;background:var(--mint);color:#06251B;display:grid;place-items:center;flex:none}
   .capture-ok strong{display:block;color:#fff}
   .capture-ok span{font-size:.88rem;color:var(--mut)}
@@ -250,8 +257,8 @@
 
   /* Hero mock — pantalla estilo app */
   .heromock{position:relative}
-  .mock-glow{position:absolute;inset:6% 2%;background:radial-gradient(circle at 30% 30%,rgba(16,217,160,.5),transparent 60%),radial-gradient(circle at 75% 70%,rgba(99,102,241,.5),transparent 60%);filter:blur(60px);opacity:.5;z-index:0}
-  .mascot{position:absolute;right:-2px;top:-30px;z-index:4;filter:drop-shadow(0 10px 22px rgba(16,217,160,.3))}
+  .mock-glow{position:absolute;inset:6% 2%;background:radial-gradient(circle at 30% 30%,rgba(52,211,153,.5),transparent 60%),radial-gradient(circle at 75% 70%,rgba(129,140,248,.42),transparent 60%);filter:blur(60px);opacity:.5;z-index:0}
+  .mascot{position:absolute;right:-2px;top:-30px;z-index:4;filter:drop-shadow(0 10px 22px rgba(52,211,153,.3))}
   .mock{position:relative;z-index:2;background:linear-gradient(180deg,#1B1B22,#141419);border:1px solid var(--line-2);border-radius:26px;box-shadow:var(--sh-lg);padding:22px}
   .mock-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
   .mock-head .t1{font-family:var(--head);font-weight:700;font-size:1.04rem;color:#fff}
@@ -264,7 +271,7 @@
     background:conic-gradient(var(--indigo) 0 34%, var(--purple) 34% 54%, var(--mint) 54% 67%, var(--amber) 67% 74%, var(--coral) 74% 90%, var(--teal) 90% 100%)}
   .wheel::after{content:"";position:absolute;inset:24px;background:#15151b;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(255,255,255,.05)}
   .wheel .wl{position:absolute;inset:0;display:grid;place-content:center;text-align:center;z-index:1}
-  .wheel .wl b{font-family:var(--head);font-weight:900;font-size:1.18rem;color:#fff;line-height:1}
+  .wheel .wl b{font-family:var(--head);font-weight:700;font-size:1.18rem;color:#fff;line-height:1}
   .wheel .wl span{font-size:.62rem;color:var(--mut2);letter-spacing:.06em;text-transform:uppercase;margin-top:3px;display:block}
   .catrows{flex:1;display:flex;flex-direction:column;gap:7px}
   .catrow{display:flex;align-items:center;gap:10px;font-size:.84rem}
@@ -303,7 +310,7 @@
   .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;position:relative;z-index:2}
   .step{position:relative;background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius);padding:28px 26px;transition:transform .22s var(--ease),border-color .22s}
   .step:hover{transform:translateY(-5px);border-color:var(--line-2)}
-  .step .num{width:44px;height:44px;border-radius:13px;background:rgba(16,217,160,.12);color:var(--mint-bright);font-family:var(--head);font-weight:900;display:grid;place-items:center;margin-bottom:16px;font-size:1.15rem;border:1px solid rgba(16,217,160,.3)}
+  .step .num{width:44px;height:44px;border-radius:13px;background:rgba(52,211,153,.12);color:var(--mint-bright);font-family:var(--head);font-weight:700;display:grid;place-items:center;margin-bottom:16px;font-size:1.15rem;border:1px solid rgba(52,211,153,.3)}
   .step h3{margin-bottom:8px;color:#fff}
   .step p{margin:0;color:var(--mut)}
   .step-line{position:absolute;top:50px;right:-15px;color:var(--line-2);z-index:3}
@@ -340,7 +347,7 @@
   .plans{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:800px;margin:0 auto;position:relative;z-index:2}
   .plan{position:relative;background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius);padding:30px;transition:transform .22s var(--ease),border-color .22s}
   .plan:hover{transform:translateY(-5px);border-color:var(--line-2)}
-  .plan.pro{border:1px solid rgba(16,217,160,.45);background:linear-gradient(180deg,rgba(16,217,160,.06),var(--bg-2))}
+  .plan.pro{border:1px solid rgba(52,211,153,.45);background:linear-gradient(180deg,rgba(52,211,153,.06),var(--bg-2))}
   .plan .ptag{position:absolute;top:-12px;right:24px;background:var(--mint);color:#06251B;font-size:.7rem;font-weight:700;padding:5px 13px;border-radius:999px;letter-spacing:.03em}
   .plan h3{margin-bottom:5px;font-size:1.35rem;color:#fff}
   .plan .price{font-size:1rem;color:var(--mut2);margin-bottom:20px}
@@ -365,13 +372,13 @@
   label{display:block;font-weight:500;font-size:.9rem;margin-bottom:8px;color:var(--mut)}
   input[type=email],input[type=text],input[type=number]{width:100%;padding:13px 15px;border:1px solid var(--line-2);border-radius:13px;font-size:16px;font-family:var(--body);color:#fff;background:var(--bg-3);transition:border-color .15s,box-shadow .15s}
   input::placeholder{color:var(--mut2)}
-  input:focus{outline:none;border-color:var(--mint);box-shadow:0 0 0 4px rgba(16,217,160,.16)}
+  input:focus{outline:none;border-color:var(--mint);box-shadow:0 0 0 4px rgba(52,211,153,.16)}
   .segmented{display:grid;grid-template-columns:1fr 1fr;gap:10px;border:0;padding:0;margin:0 0 18px}
   .seg{position:relative}
   .seg input{position:absolute;opacity:0;inset:0;cursor:pointer}
   .seg span{display:block;text-align:center;padding:13px;border:1px solid var(--line-2);border-radius:13px;font-weight:600;color:var(--mut);transition:.15s;background:var(--bg-3)}
-  .seg input:checked + span{border-color:var(--mint);background:rgba(16,217,160,.12);color:#fff}
-  .seg input:focus-visible + span{box-shadow:0 0 0 3px rgba(16,217,160,.22)}
+  .seg input:checked + span{border-color:var(--mint);background:rgba(52,211,153,.12);color:#fff}
+  .seg input:focus-visible + span{box-shadow:0 0 0 3px rgba(52,211,153,.22)}
   legend{font-weight:500;font-size:.9rem;margin-bottom:8px;padding:0;color:var(--mut)}
   .consent{display:flex;gap:11px;align-items:flex-start;font-size:.85rem;color:var(--mut)}
   .consent input{margin-top:3px;width:18px;height:18px;flex:none;accent-color:var(--mint)}
@@ -379,7 +386,7 @@
   .err{color:#FF8A9B;font-size:.8rem;margin-top:6px;display:none}
   .hidden{display:none}
   .success{text-align:center;padding:20px 0}
-  .success .check{width:64px;height:64px;border-radius:50%;background:rgba(16,217,160,.14);color:var(--mint-bright);display:grid;place-items:center;margin:0 auto 18px}
+  .success .check{width:64px;height:64px;border-radius:50%;background:rgba(52,211,153,.14);color:var(--mint-bright);display:grid;place-items:center;margin:0 auto 18px}
   .success h3{color:#fff}
   .success p{color:var(--mut)}
   .hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
@@ -570,20 +577,8 @@
 <header>
   <div class="wrap nav">
     <div class="brandlock">
-      <span class="brand">
-        <svg width="34" height="34" viewBox="0 0 40 40" aria-hidden="true" style="flex:none">
-          <defs>
-            <linearGradient id="pg" gradientUnits="userSpaceOnUse" x1="6" y1="3" x2="34" y2="37"><stop offset="0" stop-color="#6366F1"/><stop offset=".52" stop-color="#8B5CF6"/><stop offset="1" stop-color="#10D9A0"/></linearGradient>
-            <linearGradient id="pgE" gradientUnits="userSpaceOnUse" x1="20" y1="2.5" x2="20" y2="37.5"><stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset=".55" stop-color="#fff" stop-opacity="0"/></linearGradient>
-          </defs>
-          <rect data-comment-anchor="62707b13fe-circle" x="2.5" y="2.5" width="35" height="35" rx="11.5" fill="url(#pg)"/>
-          <rect x="3.3" y="3.3" width="33.4" height="33.4" rx="10.8" fill="none" stroke="url(#pgE)" stroke-width="1"/>
-          <rect x="13" y="10" width="5.4" height="20" rx="2.7" fill="#fff"/>
-          <circle cx="20.6" cy="16.2" r="7.3" fill="#fff"/>
-          <circle cx="21.4" cy="16.2" r="3.5" fill="url(#pg)"/>
-          <circle cx="21.4" cy="16.2" r="1.55" fill="#2DE9B0"/>
-        </svg>
-        Presu
+      <span class="brand wordmark" aria-label="Presu">
+        <span class="wm-bar" aria-hidden="true"></span><span class="wm-text">presu</span>
       </span>
       <a class="endorse" href="https://asimetrica.co" target="_blank" rel="noopener">de <img src="https://asimetrica.co/logo.png" alt="Asimétrica"></a>
     </div>
@@ -597,8 +592,8 @@
 
 <!-- HERO -->
 <section class="hero">
-  <div class="glow" style="width:520px;height:520px;background:#10D9A0;right:-160px;top:-160px;opacity:.16;animation:drift2 24s ease-in-out infinite"></div>
-  <div class="glow" style="width:440px;height:440px;background:#6366F1;left:-180px;bottom:-160px;opacity:.18;animation:drift 26s ease-in-out infinite"></div>
+  <div class="glow" style="width:520px;height:520px;background:#34D399;right:-160px;top:-160px;opacity:.16;animation:drift2 24s ease-in-out infinite"></div>
+  <div class="glow" style="width:440px;height:440px;background:#818CF8;left:-180px;bottom:-160px;opacity:.18;animation:drift 26s ease-in-out infinite"></div>
   <div class="wrap hero-grid">
     <div>
       <span class="pill-badge"><span class="ping"></span> Acceso anticipado · cupos limitados al lanzar</span>
@@ -624,10 +619,10 @@
       </div>
       <div class="proof hidden" id="proof-hero">
         <div class="avatars" aria-hidden="true">
-          <span class="av" style="background:#6366F1"></span>
-          <span class="av" style="background:#10D9A0"></span>
+          <span class="av" style="background:#818CF8"></span>
+          <span class="av" style="background:#34D399"></span>
           <span class="av" style="background:#A855F7"></span>
-          <span class="av" style="background:#FF7A6E"></span>
+          <span class="av" style="background:#FB7185"></span>
         </div>
         <span class="pt"><b class="count">—</b> personas ya están en la lista</span>
       </div>
@@ -636,16 +631,11 @@
     <div class="heromock reveal">
       <div class="mock-glow"></div>
       <svg class="mascot" width="66" height="66" viewBox="0 0 40 40" aria-hidden="true">
-        <defs>
-          <linearGradient id="mg" gradientUnits="userSpaceOnUse" x1="6" y1="3" x2="34" y2="37"><stop offset="0" stop-color="#6366F1"/><stop offset=".52" stop-color="#8B5CF6"/><stop offset="1" stop-color="#10D9A0"/></linearGradient>
-          <linearGradient id="mgE" gradientUnits="userSpaceOnUse" x1="20" y1="2.5" x2="20" y2="37.5"><stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset=".55" stop-color="#fff" stop-opacity="0"/></linearGradient>
-        </defs>
-        <rect x="2.5" y="2.5" width="35" height="35" rx="11.5" fill="url(#mg)"/>
-        <rect x="3.3" y="3.3" width="33.4" height="33.4" rx="10.8" fill="none" stroke="url(#mgE)" stroke-width="1"/>
-        <rect x="13" y="10" width="5.4" height="20" rx="2.7" fill="#fff"/>
-        <circle cx="20.6" cy="16.2" r="7.3" fill="#fff"/>
-        <circle cx="21.4" cy="16.2" r="3.5" fill="url(#mg)"/>
-        <circle cx="21.4" cy="16.2" r="1.55" fill="#2DE9B0"/>
+        <rect x="2.5" y="2.5" width="35" height="35" rx="11.5" fill="#34D399"/>
+        <rect x="3.3" y="3.3" width="33.4" height="33.4" rx="10.8" fill="none" stroke="rgba(255,255,255,.28)" stroke-width="1"/>
+        <rect x="11" y="22" width="4.6" height="8" rx="1.6" fill="#08231A"/>
+        <rect x="17.7" y="16" width="4.6" height="14" rx="1.6" fill="#08231A"/>
+        <rect x="24.4" y="10" width="4.6" height="20" rx="1.6" fill="#08231A"/>
       </svg>
       <div class="mock">
         <div class="mock-head">
@@ -658,11 +648,11 @@
         <div class="wheel-wrap">
           <div class="wheel"><div class="wl"><b class="num">$4,82M</b><span>Junio</span></div></div>
           <div class="catrows">
-            <div class="catrow"><span class="cdot" style="background:#6366F1"></span><span class="cname">Mercado</span><span class="cval num">$1.640.000</span></div>
+            <div class="catrow"><span class="cdot" style="background:#818CF8"></span><span class="cname">Mercado</span><span class="cval num">$1.640.000</span></div>
             <div class="catrow"><span class="cdot" style="background:#A855F7"></span><span class="cname">Restaurantes</span><span class="cval num">$980.000</span></div>
-            <div class="catrow"><span class="cdot" style="background:#10D9A0"></span><span class="cname">Transporte</span><span class="cval num">$620.000</span></div>
-            <div class="catrow"><span class="cdot" style="background:#FFB020"></span><span class="cname">Suscripciones</span><span class="cval num">$310.000</span></div>
-            <div class="catrow"><span class="cdot" style="background:#FF7A6E"></span><span class="cname">Compras</span><span class="cval num">$770.000</span></div>
+            <div class="catrow"><span class="cdot" style="background:#34D399"></span><span class="cname">Transporte</span><span class="cval num">$620.000</span></div>
+            <div class="catrow"><span class="cdot" style="background:#FBBF24"></span><span class="cname">Suscripciones</span><span class="cval num">$310.000</span></div>
+            <div class="catrow"><span class="cdot" style="background:#FB7185"></span><span class="cname">Compras</span><span class="cval num">$770.000</span></div>
             <div class="catrow"><span class="cdot" style="background:#22D3EE"></span><span class="cname">Otros</span><span class="cval num">$500.000</span></div>
           </div>
         </div>
@@ -698,16 +688,16 @@
       <p>Te suena, ¿cierto?</p>
     </div>
     <div class="cards">
-      <div class="card reveal"><div class="ic" style="background:rgba(255,122,110,.16);color:#FF7A6E"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><h3>La plata se va sin saber en qué</h3><p>Ganas bien, pero al final del mes no cuadra. Sin un panorama claro, decidir es adivinar.</p></div>
+      <div class="card reveal"><div class="ic" style="background:rgba(255,122,110,.16);color:#FB7185"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><h3>La plata se va sin saber en qué</h3><p>Ganas bien, pero al final del mes no cuadra. Sin un panorama claro, decidir es adivinar.</p></div>
       <div class="card reveal"><div class="ic" style="background:rgba(99,102,241,.16);color:#8B8DF7"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg></div><h3>Cuatro apps de bancos distintas</h3><p>Bancolombia por aquí, Nu por allá, la tarjeta en otra. Nunca ves todo junto.</p></div>
-      <div class="card reveal"><div class="ic" style="background:rgba(16,217,160,.16);color:#2DE9B0"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 0 0 0-9h-1.8A7 7 0 1 0 4 16.7"/><path d="m9 13 2 2 4-4"/></svg></div><h3>Las otras apps suben todo a la nube</h3><p>Para organizarte te piden entregar tus datos financieros a un servidor ajeno. No, gracias.</p></div>
+      <div class="card reveal"><div class="ic" style="background:rgba(52,211,153,.16);color:#5EEAB8"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 0 0 0-9h-1.8A7 7 0 1 0 4 16.7"/><path d="m9 13 2 2 4-4"/></svg></div><h3>Las otras apps suben todo a la nube</h3><p>Para organizarte te piden entregar tus datos financieros a un servidor ajeno. No, gracias.</p></div>
     </div>
   </div>
 </section>
 
 <!-- COMO FUNCIONA -->
 <section id="como">
-  <div class="glow" style="width:420px;height:420px;background:#6366F1;right:-160px;top:-100px;opacity:.12"></div>
+  <div class="glow" style="width:420px;height:420px;background:#818CF8;right:-160px;top:-100px;opacity:.12"></div>
   <div class="wrap">
     <div class="sec-head reveal"><span class="eyebrow center-eb">Cómo funciona</span><h2>Listo en tres pasos</h2></div>
     <div class="steps">
@@ -743,7 +733,7 @@
           </ul>
         </div>
         <div class="show-art">
-          <div class="panel-glow" style="background:linear-gradient(120deg,#6366F1,#10D9A0)"></div>
+          <div class="panel-glow" style="background:linear-gradient(120deg,#818CF8,#34D399)"></div>
           <div class="panel">
             <span class="panel-cap">Inicio</span>
             <div class="dash-top">
@@ -782,26 +772,26 @@
           </ul>
         </div>
         <div class="show-art">
-          <div class="panel-glow" style="background:linear-gradient(120deg,#10D9A0,#6366F1)"></div>
+          <div class="panel-glow" style="background:linear-gradient(120deg,#34D399,#818CF8)"></div>
           <div class="panel">
             <span class="panel-cap">Ritmo de gasto</span>
             <div class="chart-hd"><span class="ct">Ritmo de Gasto</span><span class="cl">Ver análisis →</span></div>
             <div style="position:relative">
               <svg viewBox="0 0 340 184" width="100%" style="display:block" role="img" aria-label="Gráfica de ritmo de gasto">
                 <defs>
-                  <linearGradient id="realfill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#10D9A0" stop-opacity=".30"/><stop offset="1" stop-color="#10D9A0" stop-opacity="0"/></linearGradient>
-                  <linearGradient id="lineg" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FFB020"/><stop offset=".5" stop-color="#9BE15D"/><stop offset="1" stop-color="#10D9A0"/></linearGradient>
+                  <linearGradient id="realfill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#34D399" stop-opacity=".30"/><stop offset="1" stop-color="#34D399" stop-opacity="0"/></linearGradient>
+                  <linearGradient id="lineg" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FBBF24"/><stop offset=".5" stop-color="#9BE15D"/><stop offset="1" stop-color="#34D399"/></linearGradient>
                 </defs>
                 <line x1="30" y1="24" x2="332" y2="24" stroke="rgba(255,255,255,.05)"/>
                 <line x1="30" y1="87" x2="332" y2="87" stroke="rgba(255,255,255,.05)"/>
                 <line x1="30" y1="150" x2="332" y2="150" stroke="rgba(255,255,255,.09)"/>
-                <line x1="30" y1="35" x2="332" y2="35" stroke="#FF7A6E" stroke-width="1.6" stroke-dasharray="6 5" opacity=".7"/>
+                <line x1="30" y1="35" x2="332" y2="35" stroke="#FB7185" stroke-width="1.6" stroke-dasharray="6 5" opacity=".7"/>
                 <path d="M30 148 C80 130 110 112 150 100 C200 84 270 54 326 42" fill="none" stroke="rgba(255,255,255,.42)" stroke-width="2.2" stroke-dasharray="6 5"/>
                 <path class="area-fade" d="M30 140 C66 132 92 116 120 108 C156 98 182 95 210 86 L210 150 L30 150 Z" fill="url(#realfill)"/>
                 <path class="grow-line" pathLength="1" d="M30 140 C66 132 92 116 120 108 C156 98 182 95 210 86" fill="none" stroke="url(#lineg)" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
                 <line x1="210" y1="22" x2="210" y2="150" stroke="#8B8DF7" stroke-width="1.4" stroke-dasharray="4 4" opacity=".55"/>
-                <circle class="land-pulse" cx="210" cy="86" r="8.5" fill="#10D9A0" opacity=".25" style="transform-box:fill-box;transform-origin:center"/>
-                <circle class="land-dot" cx="210" cy="86" r="5" fill="#10D9A0" stroke="#0E0E12" stroke-width="2.2"/>
+                <circle class="land-pulse" cx="210" cy="86" r="8.5" fill="#34D399" opacity=".25" style="transform-box:fill-box;transform-origin:center"/>
+                <circle class="land-dot" cx="210" cy="86" r="5" fill="#34D399" stroke="#0E0E12" stroke-width="2.2"/>
                 <line x1="300" y1="35" x2="300" y2="150" stroke="rgba(255,255,255,.12)" stroke-width="1"/>
                 <circle cx="300" cy="44" r="4" fill="#9A9AA6" stroke="#0E0E12" stroke-width="2"/>
                 <text x="4" y="27" fill="#6B6B76" font-size="8.5" font-family="Inter">18M</text>
@@ -814,9 +804,9 @@
               <div class="chart-pill pop" style="left:45%;top:24%">$268.000 por debajo</div>
             </div>
             <div class="chart-legend">
-              <span><i style="border:0;height:3px;width:18px;border-radius:2px;background:linear-gradient(90deg,#FFB020,#10D9A0)"></i> Gastado real</span>
+              <span><i style="border:0;height:3px;width:18px;border-radius:2px;background:linear-gradient(90deg,#FBBF24,#34D399)"></i> Gastado real</span>
               <span><i style="border-color:rgba(255,255,255,.45);border-top-style:dashed"></i> Esperado</span>
-              <span><i style="border-color:#FF7A6E;border-top-style:dashed"></i> Presupuesto</span>
+              <span><i style="border-color:#FB7185;border-top-style:dashed"></i> Presupuesto</span>
             </div>
           </div>
         </div>
@@ -835,7 +825,7 @@
           </ul>
         </div>
         <div class="show-art">
-          <div class="panel-glow" style="background:linear-gradient(120deg,#6366F1,#A855F7)"></div>
+          <div class="panel-glow" style="background:linear-gradient(120deg,#818CF8,#A855F7)"></div>
           <div class="panel">
             <span class="panel-cap">Sincronización</span>
             <div class="sync-hd"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg> Sincronización con tu correo</div>
@@ -872,7 +862,7 @@
 <section id="privacidad" style="padding:28px 0">
   <div class="wrap">
     <div class="block privacy reveal" data-comment-anchor="058ad3c12f-div">
-      <div class="glow" style="width:380px;height:380px;background:#10D9A0;right:-120px;top:-140px;opacity:.16;animation:drift 22s ease-in-out infinite"></div>
+      <div class="glow" style="width:380px;height:380px;background:#34D399;right:-120px;top:-140px;opacity:.16;animation:drift 22s ease-in-out infinite"></div>
       <span class="eyebrow">Privacidad real</span>
       <h2>Tus datos viven en tu equipo. Punto.</h2>
       <p class="lead">Presu funciona <strong>local-first</strong>: tu información financiera se guarda <strong>cifrada en tu computador</strong>, no en un servidor. No necesitas crear una cuenta. Ni Asimétrica, ni nosotros, ni nadie más puede ver tus movimientos —simplemente no salen de tu equipo.</p>
@@ -945,9 +935,9 @@
 
 <!-- WAITLIST -->
 <section id="waitlist">
-  <div class="glow" style="width:480px;height:480px;background:#10D9A0;left:50%;transform:translateX(-50%);top:-140px;opacity:.14"></div>
+  <div class="glow" style="width:480px;height:480px;background:#34D399;left:50%;transform:translateX(-50%);top:-140px;opacity:.14"></div>
   <div class="wrap">
-    <div class="sec-head reveal"><span class="eyebrow center-eb">Lista de espera</span><h2>Sé de los primeros en usar <span class="mintword">Presu</span></h2><p>Te escribimos primero cuando abramos cupos. Gratis para empezar, sin spam.</p><div class="proof hidden" id="proof-wait"><div class="avatars" aria-hidden="true"><span class="av" style="background:#6366F1"></span><span class="av" style="background:#10D9A0"></span><span class="av" style="background:#A855F7"></span><span class="av" style="background:#FF7A6E"></span></div><span class="pt"><b class="count">—</b> personas ya están en la lista</span></div></div>
+    <div class="sec-head reveal"><span class="eyebrow center-eb">Lista de espera</span><h2>Sé de los primeros en usar <span class="mintword">Presu</span></h2><p>Te escribimos primero cuando abramos cupos. Gratis para empezar, sin spam.</p><div class="proof hidden" id="proof-wait"><div class="avatars" aria-hidden="true"><span class="av" style="background:#818CF8"></span><span class="av" style="background:#34D399"></span><span class="av" style="background:#A855F7"></span><span class="av" style="background:#FB7185"></span></div><span class="pt"><b class="count">—</b> personas ya están en la lista</span></div></div>
     <div class="formcard reveal">
       <form id="waitlist-form" novalidate>
         <fieldset class="segmented" id="perfil-group">
@@ -989,9 +979,8 @@
 <footer>
   <div class="wrap footrow">
     <div class="brandlock">
-      <span class="brand" style="font-size:1.1rem">
-        <svg width="26" height="26" viewBox="0 0 40 40" aria-hidden="true" style="flex:none"><defs><linearGradient id="fg2" gradientUnits="userSpaceOnUse" x1="6" y1="3" x2="34" y2="37"><stop offset="0" stop-color="#6366F1"/><stop offset=".52" stop-color="#8B5CF6"/><stop offset="1" stop-color="#10D9A0"/></linearGradient><linearGradient id="fg2E" gradientUnits="userSpaceOnUse" x1="20" y1="2.5" x2="20" y2="37.5"><stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset=".55" stop-color="#fff" stop-opacity="0"/></linearGradient></defs><rect x="2.5" y="2.5" width="35" height="35" rx="11.5" fill="url(#fg2)"/><rect x="3.3" y="3.3" width="33.4" height="33.4" rx="10.8" fill="none" stroke="url(#fg2E)" stroke-width="1"/><rect x="13" y="10" width="5.4" height="20" rx="2.7" fill="#fff"/><circle cx="20.6" cy="16.2" r="7.3" fill="#fff"/><circle cx="21.4" cy="16.2" r="3.5" fill="url(#fg2)"/><circle cx="21.4" cy="16.2" r="1.55" fill="#2DE9B0"/></svg>
-        Presu
+      <span class="brand wordmark" aria-label="Presu">
+        <span class="wm-bar" aria-hidden="true"></span><span class="wm-text">presu</span>
       </span>
       <a class="endorse" href="https://asimetrica.co" target="_blank" rel="noopener">de <img src="https://asimetrica.co/logo.png" alt="Asimétrica"></a>
     </div>
