@@ -259,6 +259,10 @@
   .heromock{position:relative}
   .mock-glow{position:absolute;inset:6% 2%;background:radial-gradient(circle at 30% 30%,rgba(52,211,153,.5),transparent 60%),radial-gradient(circle at 75% 70%,rgba(129,140,248,.42),transparent 60%);filter:blur(60px);opacity:.5;z-index:0}
   .mascot{position:absolute;right:-2px;top:-30px;z-index:4;filter:drop-shadow(0 10px 22px rgba(52,211,153,.3))}
+  /* App icon oficial de Presu: squircle oscuro + "p" + franja esmeralda */
+  .app-icon{width:66px;height:66px;border-radius:20px;background:#0E0E11;border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .app-icon .ai-bar{position:absolute;left:16%;right:16%;top:52%;height:12px;border-radius:999px;background:var(--mint);transform:rotate(-9deg)}
+  .app-icon .ai-p{position:relative;font-family:var(--head);font-weight:700;font-size:40px;color:#F4F4F3;line-height:1;letter-spacing:-.05em}
   .mock{position:relative;z-index:2;background:linear-gradient(180deg,#1B1B22,#141419);border:1px solid var(--line-2);border-radius:26px;box-shadow:var(--sh-lg);padding:22px}
   .mock-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
   .mock-head .t1{font-family:var(--head);font-weight:700;font-size:1.04rem;color:#fff}
@@ -630,13 +634,9 @@
 
     <div class="heromock reveal">
       <div class="mock-glow"></div>
-      <svg class="mascot" width="66" height="66" viewBox="0 0 40 40" aria-hidden="true">
-        <rect x="2.5" y="2.5" width="35" height="35" rx="11.5" fill="#34D399"/>
-        <rect x="3.3" y="3.3" width="33.4" height="33.4" rx="10.8" fill="none" stroke="rgba(255,255,255,.28)" stroke-width="1"/>
-        <rect x="11" y="22" width="4.6" height="8" rx="1.6" fill="#08231A"/>
-        <rect x="17.7" y="16" width="4.6" height="14" rx="1.6" fill="#08231A"/>
-        <rect x="24.4" y="10" width="4.6" height="20" rx="1.6" fill="#08231A"/>
-      </svg>
+      <div class="mascot app-icon" aria-label="Presu" role="img">
+        <span class="ai-bar" aria-hidden="true"></span><span class="ai-p">p</span>
+      </div>
       <div class="mock">
         <div class="mock-head">
           <div>

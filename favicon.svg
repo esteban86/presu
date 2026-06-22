@@ -1,6 +1,6 @@
 <svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-  <rect x="0" y="0" width="40" height="40" rx="9" fill="#34D399"/>
-  <rect x="9.5" y="22" width="5" height="9" rx="1.8" fill="#08231A"/>
-  <rect x="17.5" y="15" width="5" height="16" rx="1.8" fill="#08231A"/>
-  <rect x="25.5" y="9" width="5" height="22" rx="1.8" fill="#08231A"/>
+  <rect width="40" height="40" rx="9" fill="#0E0E11"/>
+  <rect x="3.3" y="3.3" width="33.4" height="33.4" rx="7.5" fill="none" stroke="#ffffff" stroke-opacity=".10" stroke-width="1"/>
+  <rect x="6.4" y="17.4" width="27.2" height="7.2" rx="3.6" fill="#34D399" transform="rotate(-9 20 21)"/>
+  <text x="20" y="29" text-anchor="middle" font-family="'Space Grotesk','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="29" font-weight="700" fill="#F4F4F3" letter-spacing="-1">p</text>
 </svg>
