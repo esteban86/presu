@@ -612,7 +612,7 @@
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
           </button>
         </div>
-        <p class="capture-err" id="hero-err">Escribe un correo válido.</p>
+        <p class="capture-err" id="hero-err">Revisa el correo —parece que le falta algo.</p>
         <p class="capture-note">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
           Gratis para empezar · Tus datos no salen de tu equipo · Sin spam
@@ -949,7 +949,7 @@
         <div class="field">
           <label for="email">Correo <span aria-hidden="true" style="color:var(--mint-bright)">*</span></label>
           <input type="email" id="email" name="email" autocomplete="email" placeholder="tu@correo.com" required aria-required="true">
-          <p class="err" id="email-err">Escribe un correo válido.</p>
+          <p class="err" id="email-err">Revisa el correo —parece que le falta algo.</p>
         </div>
         <div class="field">
           <label for="nombre">Nombre <span style="font-weight:400;color:var(--mut2)">(opcional)</span></label>
@@ -963,7 +963,7 @@
           <input type="checkbox" id="consent" name="consent" required aria-required="true">
           <label for="consent">Autorizo el tratamiento de mis datos según la <a href="https://asimetrica.co/privacidad/" target="_blank" rel="noopener">política de privacidad</a>.</label>
         </div>
-        <p class="err" id="consent-err">Necesitamos tu autorización para continuar.</p>
+        <p class="err" id="consent-err">Solo falta tu visto bueno aquí para sumarte.</p>
         <input type="text" name="botcheck" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
         <button type="submit" class="btn btn-primary btn-lg" style="width:100%">Únete a la lista de espera</button>
         <p style="font-size:.8rem;text-align:center;margin:14px 0 0;color:var(--mut2)">Mac y Windows · móvil próximamente · Presu, de Asimétrica</p>
@@ -1051,7 +1051,7 @@
       heroErr.style.display='none';
       send({ access_key:WEB3FORMS_KEY, subject:'Nuevo registro en waitlist de Presu (persona · hero)', from_name:'Presu Waitlist', perfil:'persona', correo:email, origen:'hero' },
         function(){ heroForm.style.display='none'; heroOk.style.display='flex'; bumpCount(); if(typeof gtag==='function') gtag('event','generate_lead',{perfil:'persona',origen:'hero'}); if(window.plausible) window.plausible('Waitlist Signup',{props:{perfil:'persona',origen:'hero'}}); },
-        function(){ alert('Hubo un error, intenta de nuevo.'); });
+        function(){ alert('Algo falló de nuestro lado. Reintenta en un momento.'); });
     });
 
     // Full form
@@ -1087,7 +1087,7 @@
         empleados: perfil === 'empresa' ? form.empleados.value.trim() : ''
       },
       function(){ form.classList.add('hidden'); document.getElementById('waitlist-success').classList.remove('hidden'); bumpCount(); if(typeof gtag==='function') gtag('event','generate_lead',{perfil:perfil,origen:'form'}); if(window.plausible) window.plausible('Waitlist Signup',{props:{perfil:perfil}}); },
-      function(){ alert('Hubo un error, intenta de nuevo.'); });
+      function(){ alert('Algo falló de nuestro lado. Reintenta en un momento.'); });
     });
 
     // Reveal
