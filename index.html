@@ -1057,6 +1057,7 @@
 <script>
   (function(){
     var WEB3FORMS_KEY = '23113f8a-ca24-4475-a1fe-43cd35227ff8';
+    var WEB3FORMS_KEY_BACKUP = 'f87a5362-30c9-458f-918a-639af988f6ee';
     var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     /* ── Contador de registros ───────────────────────────────────────
@@ -1088,10 +1089,21 @@
     loadCount();
     function send(payload, ok, fail){
       if (WEB3FORMS_KEY === 'REEMPLAZA_CON_TU_ACCESS_KEY') { ok(); return; }
-      fetch('https://api.web3forms.com/submit', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) })
-        .then(function(r){ return r.json(); })
-        .then(function(res){ if(res.success) ok(); else fail(); })
-        .catch(fail);
+      // Un envío contra una key dada; resuelve true si Web3Forms confirma éxito.
+      function postTo(key, isBackup){
+        var body = {};
+        for (var k in payload) { if (Object.prototype.hasOwnProperty.call(payload, k)) body[k] = payload[k]; }
+        body.access_key = key;
+        if (isBackup) { body.via = 'respaldo'; body.subject = '[RESPALDO] ' + (body.subject || 'Nuevo registro en waitlist de Presu'); }
+        return fetch('https://api.web3forms.com/submit', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) })
+          .then(function(r){ return r.json().catch(function(){ return { success:false }; }); })
+          .then(function(res){ return !!(res && res.success); })
+          .catch(function(){ return false; });
+      }
+      // Failover: si el primario (Pro) falla por lo que sea, reintenta en el respaldo.
+      postTo(WEB3FORMS_KEY, false)
+        .then(function(okPrimary){ return okPrimary || postTo(WEB3FORMS_KEY_BACKUP, true); })
+        .then(function(success){ if (success) ok(); else fail(); });
     }
 
     // ── Countdown al lanzamiento de la beta ──
