@@ -223,6 +223,22 @@
   @keyframes ping{0%{box-shadow:0 0 0 0 rgba(52,211,153,.55),0 0 10px var(--mint)}70%{box-shadow:0 0 0 8px rgba(52,211,153,0),0 0 10px var(--mint)}100%{box-shadow:0 0 0 0 rgba(52,211,153,0),0 0 10px var(--mint)}}
   .hero .sub{font-size:1.18rem;color:var(--mut);max-width:37ch;margin-top:20px}
 
+  /* Countdown al lanzamiento de la beta */
+  .countdown{margin-top:26px;max-width:470px;display:flex;flex-direction:column;gap:13px}
+  .cd-top{display:inline-flex;align-items:center;gap:9px;font-family:var(--mono);font-size:.7rem;font-weight:500;letter-spacing:.13em;text-transform:uppercase;color:var(--mint)}
+  .cd-top::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--mint);box-shadow:0 0 9px var(--mint)}
+  .cd-units{display:flex;align-items:flex-start;gap:9px}
+  .cd-u{display:flex;flex-direction:column;align-items:center;background:var(--bg-3);border:1px solid var(--line-2);border-radius:14px;padding:11px 0 8px;min-width:64px}
+  .cd-u b{font-family:var(--mono);font-size:1.72rem;font-weight:500;color:#fff;line-height:1;font-variant-numeric:tabular-nums}
+  .cd-u span{font-size:.6rem;color:var(--mut2);letter-spacing:.09em;text-transform:uppercase;margin-top:7px}
+  .cd-sep{font-family:var(--mono);font-size:1.4rem;color:var(--mut2);line-height:1;padding-top:11px}
+  .cd-note{font-size:.9rem;color:var(--mut);line-height:1.5}
+  .cd-note b{color:var(--mint-bright);font-weight:600}
+  .cd-live{display:none;align-items:center;gap:8px;font-family:var(--mono);font-size:.82rem;letter-spacing:.04em;color:var(--mint-bright)}
+  .countdown.is-live .cd-units,.countdown.is-live .cd-top{display:none}
+  .countdown.is-live .cd-live{display:flex}
+  @media(max-width:480px){.cd-u{min-width:0;flex:1;padding:10px 0 7px}.cd-u b{font-size:1.5rem}.cd-sep{display:none}}
+
   /* Inline capture */
   .capture{margin-top:30px;max-width:470px}
   .capture-row{display:flex;gap:10px}
@@ -601,9 +617,24 @@
   <div class="glow" style="width:440px;height:440px;background:#818CF8;left:-180px;bottom:-160px;opacity:.18;animation:drift 26s ease-in-out infinite"></div>
   <div class="wrap hero-grid">
     <div>
-      <span class="pill-badge"><span class="ping"></span> Acceso anticipado · cupos limitados al lanzar</span>
+      <span class="pill-badge"><span class="ping"></span> La beta abre el martes 30 de junio</span>
       <h1>Tus gastos personales, <span class="mintword">claros</span>.</h1>
       <p class="sub">Presu reúne tus gastos de Bancolombia, Nu, Davivienda y más, los organiza solos y te dice —en una frase, no en una hoja de cálculo— a dónde se va tu plata y si vas bien este mes. Todo vive cifrado en tu equipo: sin nube, sin cuentas, sin que nadie más lo vea.</p>
+
+      <div class="countdown" id="countdown" data-launch="2026-06-30T00:00:00-05:00">
+        <span class="cd-top">Falta para abrir la beta</span>
+        <div class="cd-units" role="timer" aria-label="Cuenta regresiva para el lanzamiento de la beta">
+          <div class="cd-u"><b id="cd-d">00</b><span>días</span></div>
+          <span class="cd-sep">:</span>
+          <div class="cd-u"><b id="cd-h">00</b><span>horas</span></div>
+          <span class="cd-sep">:</span>
+          <div class="cd-u"><b id="cd-m">00</b><span>min</span></div>
+          <span class="cd-sep">:</span>
+          <div class="cd-u"><b id="cd-s">00</b><span>seg</span></div>
+        </div>
+        <span class="cd-live">● La beta ya está abierta —entra y reclama tu acceso.</span>
+        <p class="cd-note">Entra a la lista <b>antes del 30 de junio</b> y eres de los primeros en probarla: nos ayudas con tu feedback y usas <b>Presu completo, gratis</b>.</p>
+      </div>
 
       <form id="hero-form" class="capture" novalidate>
         <div class="capture-row">
@@ -916,7 +947,7 @@
         </ul>
       </div>
     </div>
-    <p class="pricelabel">Precios al lanzar. Quien entre por la lista de espera lo sabrá primero.</p>
+    <p class="pricelabel">Quien entre a la lista antes del <b style="color:var(--tx)">30 de junio</b> arranca la beta con todas las funciones gratis. Los precios del plan completo se definen al lanzar.</p>
   </div>
 </section>
 
@@ -928,7 +959,7 @@
       <details open><summary>¿Es seguro? ¿Dónde quedan mis datos?<span class="plus">+</span></summary><p>Tus datos quedan cifrados en tu propio computador, no en un servidor ni en la nube. Presu es local-first: la información no sale de tu equipo, así que nadie más —ni Asimétrica— puede verla.</p></details>
       <details><summary>¿Necesito dar la clave de mi banco?<span class="plus">+</span></summary><p>No. Presu no se conecta a tu banca en línea ni te pide usuario o clave. Solo importas el PDF de tu extracto (o un pantallazo) y Presu lo lee.</p></details>
       <details><summary>¿Qué bancos sirven?<span class="plus">+</span></summary><p>Hoy: Bancolombia, Nu, Davivienda y RappiCard. Seguimos sumando más.</p></details>
-      <details><summary>¿Tiene costo?<span class="plus">+</span></summary><p>Puedes empezar gratis con la importación manual y el panel básico. Habrá un plan completo con funciones automáticas; definiremos los precios al lanzar.</p></details>
+      <details><summary>¿Tiene costo?<span class="plus">+</span></summary><p>Si entras a la lista antes del 30 de junio, usas toda la beta gratis a cambio de tu feedback. Después podrás seguir gratis con la importación manual y el panel básico; el plan completo con funciones automáticas tendrá un precio que definiremos al lanzar.</p></details>
       <details><summary>¿Funciona en Mac, Windows o celular?<span class="plus">+</span></summary><p>Hoy funciona en computador, Mac y Windows. La versión para celular está en camino —te avisamos cuando esté lista.</p></details>
     </div>
   </div>
@@ -938,7 +969,7 @@
 <section id="waitlist">
   <div class="glow" style="width:480px;height:480px;background:#34D399;left:50%;transform:translateX(-50%);top:-140px;opacity:.14"></div>
   <div class="wrap">
-    <div class="sec-head reveal"><span class="eyebrow center-eb">Lista de espera</span><h2>Sé de los primeros en usar <span class="mintword">Presu</span></h2><p>Te escribimos primero cuando abramos cupos. Gratis para empezar, sin spam.</p><div class="proof hidden" id="proof-wait"><div class="avatars" aria-hidden="true"><span class="av" style="background:#818CF8"></span><span class="av" style="background:#34D399"></span><span class="av" style="background:#A855F7"></span><span class="av" style="background:#FB7185"></span></div><span class="pt"><b class="count">—</b> personas ya están en la lista</span></div></div>
+    <div class="sec-head reveal"><span class="eyebrow center-eb">Lista de espera</span><h2>Sé de los primeros en usar <span class="mintword">Presu</span></h2><p>La beta abre el <b style="color:var(--tx)">martes 30 de junio</b>. Entra antes y usas Presu completo gratis, a cambio de tu feedback. Sin spam.</p><div class="proof hidden" id="proof-wait"><div class="avatars" aria-hidden="true"><span class="av" style="background:#818CF8"></span><span class="av" style="background:#34D399"></span><span class="av" style="background:#A855F7"></span><span class="av" style="background:#FB7185"></span></div><span class="pt"><b class="count">—</b> personas ya están en la lista</span></div></div>
     <div class="formcard reveal">
       <form id="waitlist-form" novalidate>
         <fieldset class="segmented" id="perfil-group">
@@ -1038,6 +1069,26 @@
         .then(function(res){ if(res.success) ok(); else fail(); })
         .catch(fail);
     }
+
+    // ── Countdown al lanzamiento de la beta ──
+    (function(){
+      var cd = document.getElementById('countdown');
+      if (!cd) return;
+      var target = new Date(cd.getAttribute('data-launch')).getTime();
+      var dEl=document.getElementById('cd-d'), hEl=document.getElementById('cd-h'), mEl=document.getElementById('cd-m'), sEl=document.getElementById('cd-s');
+      function pad(n){ return (n<10?'0':'')+n; }
+      function tick(){
+        var diff = target - Date.now();
+        if (diff <= 0){ cd.classList.add('is-live'); dEl.textContent=hEl.textContent=mEl.textContent=sEl.textContent='00'; clearInterval(timer); return; }
+        var s = Math.floor(diff/1000);
+        dEl.textContent = pad(Math.floor(s/86400));
+        hEl.textContent = pad(Math.floor(s%86400/3600));
+        mEl.textContent = pad(Math.floor(s%3600/60));
+        sEl.textContent = pad(s%60);
+      }
+      tick();
+      var timer = setInterval(tick, 1000);
+    })();
 
     // Hero capture
     var heroForm = document.getElementById('hero-form');
