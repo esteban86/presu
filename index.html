@@ -221,7 +221,8 @@
   .pill-badge{display:inline-flex;align-items:center;gap:9px;background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.28);color:var(--mint-bright);font-weight:600;font-size:.82rem;padding:7px 15px;border-radius:999px;margin-bottom:22px}
   .pill-badge .ping{width:8px;height:8px;border-radius:50%;background:var(--mint);box-shadow:0 0 10px var(--mint);animation:ping 2s infinite}
   @keyframes ping{0%{box-shadow:0 0 0 0 rgba(52,211,153,.55),0 0 10px var(--mint)}70%{box-shadow:0 0 0 8px rgba(52,211,153,0),0 0 10px var(--mint)}100%{box-shadow:0 0 0 0 rgba(52,211,153,0),0 0 10px var(--mint)}}
-  .hero .sub{font-size:1.18rem;color:var(--mut);max-width:37ch;margin-top:20px}
+  .hero .pitch{font-size:1.34rem;color:var(--tx);font-weight:500;max-width:34ch;line-height:1.4;margin-top:16px}
+  .hero .sub{font-size:1.06rem;color:var(--mut);max-width:38ch;margin-top:13px}
 
   /* Countdown al lanzamiento de la beta */
   .countdown{margin-top:26px;max-width:470px;display:flex;flex-direction:column;gap:13px}
@@ -376,6 +377,15 @@
   .plan li{padding:9px 0 9px 30px;position:relative;font-size:.96rem;color:var(--mut)}
   .plan li svg{position:absolute;left:0;top:11px;color:var(--mint-bright)}
   .pricelabel{text-align:center;color:var(--mut2);font-size:.9rem;margin-top:22px;position:relative;z-index:2}
+  /* Value stack de pioneros */
+  .offer-stack{max-width:560px;margin:38px auto 0;position:relative;z-index:2}
+  .offer-stack .os-eb{display:block;font-family:var(--mono);font-size:.7rem;font-weight:500;letter-spacing:.13em;text-transform:uppercase;color:var(--mint);margin-bottom:6px;text-align:center}
+  .offer-stack .os-lead{text-align:center;color:var(--mut);font-size:.96rem;margin:0 0 16px}
+  .offer-stack ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+  .offer-stack li{display:flex;align-items:flex-start;gap:12px;background:var(--bg-2);border:1px solid var(--line);border-radius:14px;padding:13px 15px;font-size:.93rem;color:var(--mut);line-height:1.45}
+  .offer-stack li b{color:var(--tx);font-weight:600}
+  .offer-stack .os-ic{flex:none;width:22px;height:22px;border-radius:50%;background:var(--mint);color:#06251B;display:grid;place-items:center;margin-top:1px}
+  .offer-stack .os-tag{flex:none;font-family:var(--mono);font-size:.56rem;font-weight:500;letter-spacing:.1em;color:var(--mint);background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.3);border-radius:999px;padding:5px 8px;margin-top:1px}
 
   /* FAQ */
   .faq{max-width:800px;margin:0 auto;position:relative;z-index:2}
@@ -617,8 +627,9 @@
   <div class="glow" style="width:440px;height:440px;background:#818CF8;left:-180px;bottom:-160px;opacity:.18;animation:drift 26s ease-in-out infinite"></div>
   <div class="wrap hero-grid">
     <div>
-      <span class="pill-badge"><span class="ping"></span> La beta abre el martes 30 de junio</span>
+      <span class="pill-badge"><span class="ping"></span> Acceso pionero · gratis antes del 30 de junio</span>
       <h1>Tus gastos personales, <span class="mintword">claros</span>.</h1>
+      <p class="pitch">Tu plata de todos los bancos, clara y en calma — y solo en tu equipo.</p>
       <p class="sub">Presu reúne tus gastos de Bancolombia, Nu, Davivienda y más, los organiza solos y te dice —en una frase, no en una hoja de cálculo— a dónde se va tu plata y si vas bien este mes. Todo vive cifrado en tu equipo: sin nube, sin cuentas, sin que nadie más lo vea.</p>
 
       <div class="countdown" id="countdown" data-launch="2026-06-30T10:00:00-05:00">
@@ -633,7 +644,7 @@
           <div class="cd-u"><b id="cd-s">00</b><span>seg</span></div>
         </div>
         <span class="cd-live">● La beta ya está abierta —entra y reclama tu acceso.</span>
-        <p class="cd-note">Entra a la lista <b>antes del 30 de junio</b> y eres de los primeros en probarla: nos ayudas con tu feedback y usas <b>Presu completo, gratis</b>.</p>
+        <p class="cd-note">Los <b>pioneros</b> entran antes del 30: prueban la beta, le dan forma con su feedback y usan <b>Presu completo, gratis</b>.</p>
       </div>
 
       <form id="hero-form" class="capture" novalidate>
@@ -947,7 +958,18 @@
         </ul>
       </div>
     </div>
-    <p class="pricelabel">Quien entre a la lista antes del <b style="color:var(--tx)">30 de junio</b> arranca la beta con todas las funciones gratis. Los precios del plan completo se definen al lanzar.</p>
+    <div class="offer-stack reveal">
+      <span class="os-eb">¿Entras antes del 30 de junio? Eres pionero</span>
+      <p class="os-lead">No pagas nada por la beta y además te llevas esto:</p>
+      <ul>
+        <li><span class="os-ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span><b>Presu completo, gratis</b> — todas las funciones de la beta, sin pagar nada.</span></li>
+        <li><span class="os-tag">BONO</span><span><b>Guía para ordenar tu plata</b> — un PDF corto de Asimétrica para dejar tus finanzas en orden, apenas entras.</span></li>
+        <li><span class="os-tag">BONO</span><span><b>Sesión en vivo con Asimétrica</b> — resuelves tus dudas de plata con el equipo, en directo.</span></li>
+        <li><span class="os-tag">BONO</span><span><b>Tu precio de pionero, para siempre</b> — cuando el plan completo sea de pago, mantienes una tarifa especial.</span></li>
+        <li><span class="os-tag">BONO</span><span><b>Decides qué sigue</b> — pides qué banco o función construimos después.</span></li>
+      </ul>
+    </div>
+    <p class="pricelabel">Los precios del plan completo se definen al lanzar. Quien entre por la lista lo sabrá primero.</p>
   </div>
 </section>
 
@@ -959,7 +981,8 @@
       <details open><summary>¿Es seguro? ¿Dónde quedan mis datos?<span class="plus">+</span></summary><p>Tus datos quedan cifrados en tu propio computador, no en un servidor ni en la nube. Presu es local-first: la información no sale de tu equipo, así que nadie más —ni Asimétrica— puede verla.</p></details>
       <details><summary>¿Necesito dar la clave de mi banco?<span class="plus">+</span></summary><p>No. Presu no se conecta a tu banca en línea ni te pide usuario o clave. Solo importas el PDF de tu extracto (o un pantallazo) y Presu lo lee.</p></details>
       <details><summary>¿Qué bancos sirven?<span class="plus">+</span></summary><p>Hoy: Bancolombia, Nu, Davivienda y RappiCard. Seguimos sumando más.</p></details>
-      <details><summary>¿Tiene costo?<span class="plus">+</span></summary><p>Si entras a la lista antes del 30 de junio, usas toda la beta gratis a cambio de tu feedback. Después podrás seguir gratis con la importación manual y el panel básico; el plan completo con funciones automáticas tendrá un precio que definiremos al lanzar.</p></details>
+      <details><summary>¿Qué gano por entrar antes del lanzamiento?<span class="plus">+</span></summary><p>Eres pionero: usas Presu completo gratis durante la beta, recibes la guía «De ruido a claridad» de Asimétrica, entras a una sesión de finanzas en vivo solo para pioneros, conservas un precio especial cuando salga el plan de pago y ayudas a decidir qué banco o función construimos después. A cambio, solo te pedimos tu feedback.</p></details>
+      <details><summary>¿Tiene costo?<span class="plus">+</span></summary><p>Si entras como pionero (antes del 30 de junio), usas toda la beta gratis a cambio de tu feedback y conservas un precio especial cuando salga el plan completo. Después podrás seguir gratis con la importación manual y el panel básico; el plan completo con funciones automáticas tendrá un precio que definiremos al lanzar.</p></details>
       <details><summary>¿Funciona en Mac, Windows o celular?<span class="plus">+</span></summary><p>Hoy funciona en computador, Mac y Windows. La versión para celular está en camino —te avisamos cuando esté lista.</p></details>
     </div>
   </div>
@@ -969,7 +992,7 @@
 <section id="waitlist">
   <div class="glow" style="width:480px;height:480px;background:#34D399;left:50%;transform:translateX(-50%);top:-140px;opacity:.14"></div>
   <div class="wrap">
-    <div class="sec-head reveal"><span class="eyebrow center-eb">Lista de espera</span><h2>Sé de los primeros en usar <span class="mintword">Presu</span></h2><p>La beta abre el <b style="color:var(--tx)">martes 30 de junio</b>. Entra antes y usas Presu completo gratis, a cambio de tu feedback. Sin spam.</p><div class="proof hidden" id="proof-wait"><div class="avatars" aria-hidden="true"><span class="av" style="background:#818CF8"></span><span class="av" style="background:#34D399"></span><span class="av" style="background:#A855F7"></span><span class="av" style="background:#FB7185"></span></div><span class="pt"><b class="count">—</b> personas ya están en la lista</span></div></div>
+    <div class="sec-head reveal"><span class="eyebrow center-eb">Lista de espera</span><h2>Sé de los primeros en usar <span class="mintword">Presu</span></h2><p>La beta abre el <b style="color:var(--tx)">martes 30 de junio</b>. Los pioneros entran antes y usan Presu completo gratis —más unos bonos— a cambio de su feedback. Sin spam.</p><div class="proof hidden" id="proof-wait"><div class="avatars" aria-hidden="true"><span class="av" style="background:#818CF8"></span><span class="av" style="background:#34D399"></span><span class="av" style="background:#A855F7"></span><span class="av" style="background:#FB7185"></span></div><span class="pt"><b class="count">—</b> personas ya están en la lista</span></div></div>
     <div class="formcard reveal">
       <form id="waitlist-form" novalidate>
         <fieldset class="segmented" id="perfil-group">
