@@ -1061,33 +1061,28 @@
     var WAITLIST_API = 'https://presu-waitlist.asimetrica.workers.dev';
     var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    /* ── Contador de registros ───────────────────────────────────────
-       Cuenta real y compartida vía Abacus (sin backend). Cada registro
-       exitoso suma 1; todos los visitantes ven el mismo total.
-       BASE = registros que ya tienes (míralo en tu panel de Web3Forms)
-       para que el número público coincida con la realidad. */
-    var COUNTER = { api:'https://abacus.jasoncameron.dev', ns:'presu-asimetrica', key:'waitlist', base:3 };
+    /* ── Contador de registros (en vivo) ─────────────────────────────
+       El número real vive en el Worker (KV). La landing lo consulta al
+       cargar y cada 15s, así sube solo sin que el visitante refresque. */
+    var lastCount = 0;
     function fmtCount(n){ try{ return n.toLocaleString('es-CO'); }catch(e){ return String(n); } }
     function renderCount(total){
       if (total > 0) {
+        lastCount = total;
         document.querySelectorAll('.count').forEach(function(el){ el.textContent = fmtCount(total); });
         document.querySelectorAll('.proof').forEach(function(el){ el.classList.remove('hidden'); });
       }
     }
     function loadCount(){
-      fetch(COUNTER.api+'/get/'+COUNTER.ns+'/'+COUNTER.key)
+      fetch(WAITLIST_API + '/count', { cache:'no-store' })
         .then(function(r){ return r.json(); })
-        .then(function(d){ renderCount(COUNTER.base + (d.value||0)); })
-        .catch(function(){ renderCount(COUNTER.base); });
-    }
-    function bumpCount(){
-      if (localStorage.getItem('presu_counted') === '1') { return; }
-      fetch(COUNTER.api+'/hit/'+COUNTER.ns+'/'+COUNTER.key)
-        .then(function(r){ return r.json(); })
-        .then(function(d){ localStorage.setItem('presu_counted','1'); renderCount(COUNTER.base + (d.value||0)); })
+        .then(function(d){ if (d && typeof d.count === 'number') renderCount(d.count); })
         .catch(function(){});
     }
+    // Tras inscribirse: sube el número de una (optimista) y reconcilia con el Worker.
+    function bumpCount(){ if (lastCount > 0) renderCount(lastCount + 1); setTimeout(loadCount, 1800); }
     loadCount();
+    setInterval(loadCount, 15000);
     // Envía el registro al Worker (que hace dedup + guarda + manda los correos).
     // ok() si es nuevo, already() si el correo ya estaba, fail() si hubo error.
     function send(payload, ok, fail, already){

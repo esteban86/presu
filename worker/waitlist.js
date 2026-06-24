@@ -36,8 +36,16 @@ export default {
 
     if (request.method === 'OPTIONS') return new Response(null, { headers: cors });
 
+    const path = new URL(request.url).pathname;
+
     // Endpoint admin: envía la bienvenida UNA sola vez a un correo (idempotente).
-    if (new URL(request.url).pathname === '/admin/welcome') return adminWelcome(request, env, cors);
+    if (path === '/admin/welcome') return adminWelcome(request, env, cors);
+
+    // Conteo público (para el contador en vivo de la landing).
+    if (request.method === 'GET' && path === '/count') {
+      const count = parseInt((await env.WAITLIST.get('meta:count')) || '0', 10);
+      return json({ count }, 200, { ...cors, 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store' });
+    }
 
     if (request.method !== 'POST') return json({ status: 'error', reason: 'method' }, 405, cors);
 
