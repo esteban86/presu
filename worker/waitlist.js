@@ -117,8 +117,12 @@ function welcomeHtml(r) {
     <p style="font-size:15px;line-height:1.6;color:#D4D4D6;margin:0 0 22px">¡Listo! Ya estás en la lista —eres <b style="color:#34D399">pionero de Presu</b>, de los primeros en probarla.</p>
     <div style="background:#101014;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:18px 20px;margin:0 0 22px">
       <p style="font-size:15px;line-height:1.6;color:#D4D4D6;margin:0 0 12px">📅 La beta abre el <b style="color:#F4F4F3">martes 30 de junio</b>. Te escribimos a ti primero, sin afán.</p>
-      <p style="font-size:15px;line-height:1.6;color:#D4D4D6;margin:0 0 12px">🎁 Como pionero usas Presu completo gratis a cambio de tu feedback, y conservas un precio especial cuando salga el plan de pago.</p>
+      <p style="font-size:15px;line-height:1.6;color:#D4D4D6;margin:0 0 12px">🎁 Como pionero usas Presu completo gratis y tienes <b style="color:#F4F4F3">bonos extra</b> (una guía, una sesión en vivo con Asimétrica y un precio especial de pionero). Pronto te damos todos los detalles.</p>
       <p style="font-size:15px;line-height:1.6;color:#D4D4D6;margin:0">🔒 Cuando entres, en una sola frase sabrás a dónde se va tu plata y si vas bien este mes —sin hojas de cálculo y sin nube: todo vive cifrado en tu propio equipo.</p>
+    </div>
+    <div style="text-align:center;margin:0 0 24px">
+      <p style="font-size:15px;line-height:1.6;color:#D4D4D6;margin:0 0 14px">¿Conoces a alguien a quien le sirva tener su plata clara? Pásale la voz 🌱 —entre más pioneros, mejor.</p>
+      <a href="https://presu.asimetrica.co" style="display:inline-block;background:#34D399;color:#08231A;font-weight:700;text-decoration:none;padding:13px 24px;border-radius:14px;font-size:15px">Compartir Presu</a>
     </div>
     <p style="font-size:15px;line-height:1.6;color:#D4D4D6;margin:0 0 22px">¿Se te ocurre algo que te gustaría ver en Presu? Responde este correo —leemos a cada pionero.</p>
     <p style="font-size:15px;line-height:1.6;color:#D4D4D6;margin:0">Nos vemos el 30,<br><b style="color:#F4F4F3">Equipo de Presu</b> · de Asimétrica<br><span style="color:#34D399">Tu plata, clara.</span></p>
