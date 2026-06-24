@@ -1062,11 +1062,8 @@
     var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     /* ── Contador de registros ───────────────────────────────────────
-       Cuenta real y compartida vía Abacus (sin backend). Cada registro
-       exitoso suma 1; todos los visitantes ven el mismo total.
-       BASE = registros que ya tienes (míralo en tu panel de Web3Forms)
-       para que el número público coincida con la realidad. */
-    var COUNTER = { api:'https://abacus.jasoncameron.dev', ns:'presu-asimetrica', key:'waitlist', base:3 };
+       Lee el total real del Worker/KV y lo refresca sin recargar la página. */
+    var COUNT_REFRESH_MS = 15000;
     function fmtCount(n){ try{ return n.toLocaleString('es-CO'); }catch(e){ return String(n); } }
     function renderCount(total){
       if (total > 0) {
@@ -1075,27 +1072,25 @@
       }
     }
     function loadCount(){
-      fetch(COUNTER.api+'/get/'+COUNTER.ns+'/'+COUNTER.key)
+      fetch(WAITLIST_API + '/count', { cache:'no-store' })
         .then(function(r){ return r.json(); })
-        .then(function(d){ renderCount(COUNTER.base + (d.value||0)); })
-        .catch(function(){ renderCount(COUNTER.base); });
-    }
-    function bumpCount(){
-      if (localStorage.getItem('presu_counted') === '1') { return; }
-      fetch(COUNTER.api+'/hit/'+COUNTER.ns+'/'+COUNTER.key)
-        .then(function(r){ return r.json(); })
-        .then(function(d){ localStorage.setItem('presu_counted','1'); renderCount(COUNTER.base + (d.value||0)); })
+        .then(function(d){ if (d && d.status === 'ok') renderCount(Number(d.total) || 0); })
         .catch(function(){});
     }
+    function syncCountFromResponse(res){
+      if (res && typeof res.total === 'number') renderCount(res.total);
+      else loadCount();
+    }
     loadCount();
+    setInterval(loadCount, COUNT_REFRESH_MS);
     // Envía el registro al Worker (que hace dedup + guarda + manda los correos).
     // ok() si es nuevo, already() si el correo ya estaba, fail() si hubo error.
     function send(payload, ok, fail, already){
       fetch(WAITLIST_API, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) })
         .then(function(r){ return r.json().catch(function(){ return { status:'error' }; }); })
         .then(function(res){
-          if (res && res.status === 'ok') ok();
-          else if (res && res.status === 'already') { if (already) already(); else ok(); }
+          if (res && res.status === 'ok') { syncCountFromResponse(res); ok(res); }
+          else if (res && res.status === 'already') { syncCountFromResponse(res); if (already) already(res); else ok(res); }
           else fail();
         })
         .catch(fail);
@@ -1132,7 +1127,7 @@
       if (!EMAIL_RE.test(email)) { heroErr.style.display='block'; heroEmail.focus(); return; }
       heroErr.style.display='none';
       send({ perfil:'persona', correo:email, origen:'hero' },
-        function(){ heroForm.style.display='none'; heroOk.style.display='flex'; bumpCount(); if(typeof gtag==='function') gtag('event','generate_lead',{perfil:'persona',origen:'hero'}); if(window.plausible) window.plausible('Waitlist Signup',{props:{perfil:'persona',origen:'hero'}}); },
+        function(){ heroForm.style.display='none'; heroOk.style.display='flex'; if(typeof gtag==='function') gtag('event','generate_lead',{perfil:'persona',origen:'hero'}); if(window.plausible) window.plausible('Waitlist Signup',{props:{perfil:'persona',origen:'hero'}}); },
         function(){ alert('Algo falló de nuestro lado. Reintenta en un momento.'); },
         function(){ heroForm.style.display='none'; heroOk.querySelector('strong').textContent='¡Ya estás en la lista! 🎉'; heroOk.querySelector('span').textContent='Ese correo ya está inscrito. Te avisamos primero cuando abramos.'; heroOk.style.display='flex'; });
     });
@@ -1166,7 +1161,7 @@
         empresa: perfil === 'empresa' ? form.empresa.value.trim() : '',
         empleados: perfil === 'empresa' ? form.empleados.value.trim() : ''
       },
-      function(){ form.classList.add('hidden'); document.getElementById('waitlist-success').classList.remove('hidden'); bumpCount(); if(typeof gtag==='function') gtag('event','generate_lead',{perfil:perfil,origen:'form'}); if(window.plausible) window.plausible('Waitlist Signup',{props:{perfil:perfil}}); },
+      function(){ form.classList.add('hidden'); document.getElementById('waitlist-success').classList.remove('hidden'); if(typeof gtag==='function') gtag('event','generate_lead',{perfil:perfil,origen:'form'}); if(window.plausible) window.plausible('Waitlist Signup',{props:{perfil:perfil}}); },
       function(){ alert('Algo falló de nuestro lado. Reintenta en un momento.'); },
       function(){ var s=document.getElementById('waitlist-success'); s.querySelector('h3').textContent='¡Ya estás en la lista! 🎉'; s.querySelector('p').textContent='Ese correo ya está inscrito. Te avisamos primero cuando abramos cupos.'; form.classList.add('hidden'); s.classList.remove('hidden'); });
     });
