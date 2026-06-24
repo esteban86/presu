@@ -7,7 +7,6 @@
  *   3. Si es nuevo → lo guarda en KV, envía el correo de BIENVENIDA al inscrito
  *      y una NOTIFICACIÓN al equipo, ambos vía Resend desde presu@asimetrica.co.
  *      Responde {status:'ok', total:N}.
- *   4. Expone GET /count para que la landing muestre el total real sin recargar.
  *
  * Bindings en Cloudflare:
  *   - KV namespace  →  binding: WAITLIST
@@ -30,30 +29,15 @@ export default {
     const allowOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
     const cors = {
       'Access-Control-Allow-Origin': allowOrigin,
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type',
       'Vary': 'Origin',
     };
 
     if (request.method === 'OPTIONS') return new Response(null, { headers: cors });
-
-    const url = new URL(request.url);
-
-    if (url.pathname === '/count') {
-      if (request.method !== 'GET') return json({ status: 'error', reason: 'method' }, 405, cors);
-      const total = await getCount(env);
-      return json({ status: 'ok', total }, 200, {
-        ...cors,
-        'Cache-Control': 'no-store',
-      });
-    }
-
-    // Endpoint admin: envía la bienvenida UNA sola vez a un correo (idempotente).
-    if (url.pathname === '/admin/welcome') return adminWelcome(request, env, cors);
-
     if (request.method !== 'POST') return json({ status: 'error', reason: 'method' }, 405, cors);
 
-    const debug = url.searchParams.has('debug');
+    const debug = new URL(request.url).searchParams.has('debug');
 
     let data;
     try { data = await request.json(); } catch (e) { return json({ status: 'error', reason: 'json' }, 400, cors); }
@@ -65,7 +49,7 @@ export default {
 
     // ── Dedup ──
     const existing = await env.WAITLIST.get('email:' + email);
-    if (existing) return json({ status: 'already', total: await getCount(env) }, 200, cors);
+    if (existing) return json({ status: 'already' }, 200, cors);
 
     const record = {
       email,
@@ -78,7 +62,7 @@ export default {
     };
     await env.WAITLIST.put('email:' + email, JSON.stringify(record));
 
-    let total = await getCount(env) + 1;
+    let total = parseInt((await env.WAITLIST.get('meta:count')) || '0', 10) + 1;
     await env.WAITLIST.put('meta:count', String(total));
 
     // ── Correos vía Resend (best-effort: si fallan, el registro ya quedó guardado) ──
@@ -90,7 +74,6 @@ export default {
         subject: '¡Ya eres pionero de Presu! 🎉',
         html: welcomeHtml(record),
       });
-      if (mail.welcome && mail.welcome.ok) await env.WAITLIST.put('welcomed:' + email, String(Date.now()));
       if (env.NOTIFY_EMAIL) {
         mail.notify = await sendResend(env, {
           to: env.NOTIFY_EMAIL,
@@ -106,34 +89,6 @@ export default {
     return json(resp, 200, cors);
   },
 };
-
-async function getCount(env) {
-  const raw = await env.WAITLIST.get('meta:count');
-  const total = parseInt(raw || '0', 10);
-  return Number.isFinite(total) && total > 0 ? total : 0;
-}
-
-async function adminWelcome(request, env, cors) {
-  if (request.method !== 'POST') return json({ error: 'method' }, 405, cors);
-  const token = request.headers.get('X-Admin-Token') || '';
-  if (!env.ADMIN_TOKEN || token !== env.ADMIN_TOKEN) return json({ error: 'unauthorized' }, 401, cors);
-  let body; try { body = await request.json(); } catch (e) { return json({ error: 'json' }, 400, cors); }
-  const email = String(body.email || '').trim().toLowerCase();
-  if (!EMAIL_RE.test(email)) return json({ status: 'error', reason: 'email' }, 400, cors);
-  // Idempotente: si ya se le envió la bienvenida, no repetir.
-  if (await env.WAITLIST.get('welcomed:' + email)) return json({ status: 'skipped' }, 200, cors);
-  let rec = { email, perfil: 'persona', nombre: '' };
-  const raw = await env.WAITLIST.get('email:' + email);
-  if (raw) { try { rec = JSON.parse(raw); } catch (e) {} }
-  const res = await sendResend(env, {
-    to: email,
-    reply_to: env.NOTIFY_EMAIL || undefined,
-    subject: '¡Ya eres pionero de Presu! 🎉',
-    html: welcomeHtml(rec),
-  });
-  if (res.ok) { await env.WAITLIST.put('welcomed:' + email, String(Date.now())); return json({ status: 'sent', id: res.id }, 200, cors); }
-  return json({ status: 'error', detail: res }, 502, cors);
-}
 
 async function sendResend(env, { to, subject, html, reply_to }) {
   try {
