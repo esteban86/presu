@@ -110,7 +110,7 @@ function esc(s) { return String(s || '').replace(/[&<>"]/g, function (c) { retur
 
 function welcomeHtml(r) {
   const hola = r.nombre ? 'Hola, ' + esc(r.nombre) + ' 👋' : 'Hola 👋';
-  return `<!doctype html><html><body style="margin:0;background:#08080A;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#F4F4F3">
+  return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;background:#08080A;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#F4F4F3">
   <div style="max-width:520px;margin:0 auto;padding:36px 28px">
     <div style="font-size:26px;font-weight:700;letter-spacing:-.02em;color:#F4F4F3;margin-bottom:24px">presu<span style="color:#34D399">.</span></div>
     <p style="font-size:18px;margin:0 0 18px">${hola}</p>
@@ -126,7 +126,7 @@ function welcomeHtml(r) {
 }
 
 function notifyHtml(r, total) {
-  return `<!doctype html><html><body style="font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#111">
+  return `<!doctype html><html><head><meta charset="utf-8"></head><body style="font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#111">
   <h2 style="margin:0 0 12px">Nuevo registro en la waitlist 🎉</h2>
   <p style="margin:4px 0"><b>Correo:</b> ${esc(r.email)}</p>
   <p style="margin:4px 0"><b>Perfil:</b> ${esc(r.perfil)}</p>
