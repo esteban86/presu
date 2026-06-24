@@ -1056,8 +1056,9 @@
 
 <script>
   (function(){
-    var WEB3FORMS_KEY = '23113f8a-ca24-4475-a1fe-43cd35227ff8';
-    var WEB3FORMS_KEY_BACKUP = 'f87a5362-30c9-458f-918a-639af988f6ee';
+    // El formulario pasa por nuestro Worker de Cloudflare: dedup por correo,
+    // guardado, y correo de bienvenida + notificación vía Resend (desde el Worker).
+    var WAITLIST_API = 'https://presu-waitlist.asimetrica.workers.dev';
     var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     /* ── Contador de registros ───────────────────────────────────────
@@ -1087,23 +1088,17 @@
         .catch(function(){});
     }
     loadCount();
-    function send(payload, ok, fail){
-      if (WEB3FORMS_KEY === 'REEMPLAZA_CON_TU_ACCESS_KEY') { ok(); return; }
-      // Un envío contra una key dada; resuelve true si Web3Forms confirma éxito.
-      function postTo(key, isBackup){
-        var body = {};
-        for (var k in payload) { if (Object.prototype.hasOwnProperty.call(payload, k)) body[k] = payload[k]; }
-        body.access_key = key;
-        if (isBackup) { body.via = 'respaldo'; body.subject = '[RESPALDO] ' + (body.subject || 'Nuevo registro en waitlist de Presu'); }
-        return fetch('https://api.web3forms.com/submit', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) })
-          .then(function(r){ return r.json().catch(function(){ return { success:false }; }); })
-          .then(function(res){ return !!(res && res.success); })
-          .catch(function(){ return false; });
-      }
-      // Failover: si el primario (Pro) falla por lo que sea, reintenta en el respaldo.
-      postTo(WEB3FORMS_KEY, false)
-        .then(function(okPrimary){ return okPrimary || postTo(WEB3FORMS_KEY_BACKUP, true); })
-        .then(function(success){ if (success) ok(); else fail(); });
+    // Envía el registro al Worker (que hace dedup + guarda + manda los correos).
+    // ok() si es nuevo, already() si el correo ya estaba, fail() si hubo error.
+    function send(payload, ok, fail, already){
+      fetch(WAITLIST_API, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) })
+        .then(function(r){ return r.json().catch(function(){ return { status:'error' }; }); })
+        .then(function(res){
+          if (res && res.status === 'ok') ok();
+          else if (res && res.status === 'already') { if (already) already(); else ok(); }
+          else fail();
+        })
+        .catch(fail);
     }
 
     // ── Countdown al lanzamiento de la beta ──
@@ -1136,9 +1131,10 @@
       var email = heroEmail.value.trim();
       if (!EMAIL_RE.test(email)) { heroErr.style.display='block'; heroEmail.focus(); return; }
       heroErr.style.display='none';
-      send({ access_key:WEB3FORMS_KEY, subject:'Nuevo registro en waitlist de Presu (persona · hero)', from_name:'Presu Waitlist', perfil:'persona', correo:email, origen:'hero' },
+      send({ perfil:'persona', correo:email, origen:'hero' },
         function(){ heroForm.style.display='none'; heroOk.style.display='flex'; bumpCount(); if(typeof gtag==='function') gtag('event','generate_lead',{perfil:'persona',origen:'hero'}); if(window.plausible) window.plausible('Waitlist Signup',{props:{perfil:'persona',origen:'hero'}}); },
-        function(){ alert('Algo falló de nuestro lado. Reintenta en un momento.'); });
+        function(){ alert('Algo falló de nuestro lado. Reintenta en un momento.'); },
+        function(){ heroForm.style.display='none'; heroOk.querySelector('strong').textContent='¡Ya estás en la lista! 🎉'; heroOk.querySelector('span').textContent='Ese correo ya está inscrito. Te avisamos primero cuando abramos.'; heroOk.style.display='flex'; });
     });
 
     // Full form
@@ -1166,15 +1162,13 @@
       if (!consentOk) { form.consent.focus(); return; }
       var perfil = form.querySelector('input[name=perfil]:checked').value;
       send({
-        access_key: WEB3FORMS_KEY,
-        subject: 'Nuevo registro en waitlist de Presu (' + perfil + ')',
-        from_name: 'Presu Waitlist',
         perfil: perfil, correo: email, nombre: form.nombre.value.trim(),
         empresa: perfil === 'empresa' ? form.empresa.value.trim() : '',
         empleados: perfil === 'empresa' ? form.empleados.value.trim() : ''
       },
       function(){ form.classList.add('hidden'); document.getElementById('waitlist-success').classList.remove('hidden'); bumpCount(); if(typeof gtag==='function') gtag('event','generate_lead',{perfil:perfil,origen:'form'}); if(window.plausible) window.plausible('Waitlist Signup',{props:{perfil:perfil}}); },
-      function(){ alert('Algo falló de nuestro lado. Reintenta en un momento.'); });
+      function(){ alert('Algo falló de nuestro lado. Reintenta en un momento.'); },
+      function(){ var s=document.getElementById('waitlist-success'); s.querySelector('h3').textContent='¡Ya estás en la lista! 🎉'; s.querySelector('p').textContent='Ese correo ya está inscrito. Te avisamos primero cuando abramos cupos.'; form.classList.add('hidden'); s.classList.remove('hidden'); });
     });
 
     // Reveal
