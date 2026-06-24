@@ -382,14 +382,18 @@
   .plan li svg{position:absolute;left:0;top:11px;color:var(--mint-bright)}
   .pricelabel{text-align:center;color:var(--mut2);font-size:.9rem;margin-top:22px;position:relative;z-index:2}
   /* Value stack de pioneros */
-  .offer-stack{max-width:560px;margin:38px auto 0;position:relative;z-index:2}
-  .offer-stack .os-eb{display:block;font-family:var(--mono);font-size:.7rem;font-weight:500;letter-spacing:.13em;text-transform:uppercase;color:var(--mint);margin-bottom:6px;text-align:center}
-  .offer-stack .os-lead{text-align:center;color:var(--mut);font-size:.96rem;margin:0 0 16px}
-  .offer-stack ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
-  .offer-stack li{display:flex;align-items:flex-start;gap:12px;background:var(--bg-2);border:1px solid var(--line);border-radius:14px;padding:13px 15px;font-size:.93rem;color:var(--mut);line-height:1.45}
-  .offer-stack li b{color:var(--tx);font-weight:600}
-  .offer-stack .os-ic{flex:none;width:22px;height:22px;border-radius:50%;background:var(--mint);color:#06251B;display:grid;place-items:center;margin-top:1px}
-  .offer-stack .os-tag{flex:none;font-family:var(--mono);font-size:.56rem;font-weight:500;letter-spacing:.1em;color:var(--mint);background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.3);border-radius:999px;padding:5px 8px;margin-top:1px}
+  .offer-stack{max-width:620px;margin:52px auto 0;position:relative;z-index:2;background:linear-gradient(180deg,rgba(52,211,153,.08),rgba(52,211,153,.02));border:1px solid rgba(52,211,153,.32);border-radius:26px;padding:32px 30px;box-shadow:0 40px 90px -50px rgba(52,211,153,.55)}
+  .offer-stack::before{content:"";position:absolute;inset:0;border-radius:26px;padding:1px;background:linear-gradient(180deg,rgba(52,211,153,.45),transparent 60%);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+  .offer-stack .os-eb{display:block;font-family:var(--mono);font-size:.74rem;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--mint);margin-bottom:12px;text-align:center}
+  .offer-stack .os-lead{text-align:center;color:var(--tx);font-family:var(--head);font-weight:600;font-size:1.5rem;letter-spacing:-.015em;line-height:1.25;margin:0 0 24px}
+  .offer-stack .os-lead b{color:var(--mint-bright)}
+  .offer-stack ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:11px}
+  .offer-stack li{display:flex;align-items:flex-start;gap:14px;background:var(--bg-2);border:1px solid var(--line-2);border-radius:15px;padding:16px 18px;font-size:1.02rem;color:#D4D4D6;line-height:1.5;transition:transform .2s var(--ease),border-color .2s}
+  .offer-stack li:hover{transform:translateY(-2px);border-color:rgba(52,211,153,.4)}
+  .offer-stack li:first-child{background:rgba(52,211,153,.1);border-color:rgba(52,211,153,.4)}
+  .offer-stack li b{color:#fff;font-weight:700}
+  .offer-stack .os-ic{flex:none;width:26px;height:26px;border-radius:50%;background:var(--mint);color:#06251B;display:grid;place-items:center;margin-top:1px;box-shadow:0 0 14px rgba(52,211,153,.5)}
+  .offer-stack .os-tag{flex:none;font-family:var(--mono);font-size:.58rem;font-weight:600;letter-spacing:.12em;color:#06251B;background:var(--mint);border-radius:999px;padding:5px 9px;margin-top:2px}
 
   /* FAQ */
   .faq{max-width:800px;margin:0 auto;position:relative;z-index:2}
@@ -964,7 +968,7 @@
     </div>
     <div class="offer-stack reveal">
       <span class="os-eb">¿Entras antes del 30 de junio? Eres pionero</span>
-      <p class="os-lead">No pagas nada por la beta y además te llevas esto:</p>
+      <p class="os-lead"><b>No pagas nada</b> por la beta —y además te llevas esto:</p>
       <ul>
         <li><span class="os-ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span><b>Presu completo, gratis</b> — todas las funciones de la beta, sin pagar nada.</span></li>
         <li><span class="os-tag">BONO</span><span><b>Guía para ordenar tu plata</b> — un PDF corto de Asimétrica para dejar tus finanzas en orden, apenas entras.</span></li>
