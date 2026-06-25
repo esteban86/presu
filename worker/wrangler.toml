@@ -8,5 +8,24 @@ compatibility_date = "2024-11-01"
 binding = "WAITLIST"
 id = "7aec6338c2e042e3acc5c03a592c0da7"
 
+# Cron de LANZAMIENTO (solo prod): jue 25 jun, 16:00–16:19 UTC = 11:00am Colombia.
+# Dispara cada minuto en esa ventana; cada disparo envía un lote (idempotente),
+# así drena toda la base en ~14 min. Pasada esa fecha no vuelve a dispararse.
+[triggers]
+crons = ["0-19 16 25 6 *"]
+
 # WEB3FORMS_KEY se carga como secret (no se commitea):
 #   npx wrangler secret put WEB3FORMS_KEY
+
+# ── Entorno de PRUEBAS (staging) ──────────────────────────────
+# Worker y KV aparte para probar la campaña de referidos sin tocar producción.
+#   Deploy:  npx wrangler deploy --env staging
+[env.staging]
+name = "presu-waitlist-staging"
+
+[[env.staging.kv_namespaces]]
+binding = "WAITLIST"
+id = "14cae570f4024c458142cd264a3775e8"
+
+[env.staging.vars]
+NOTIFY_EMAIL = "esteban@aleph0.com.co"

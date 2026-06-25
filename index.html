@@ -1065,8 +1065,21 @@
   (function(){
     // El formulario pasa por nuestro Worker de Cloudflare: dedup por correo,
     // guardado, y correo de bienvenida + notificación vía Resend (desde el Worker).
-    var WAITLIST_API = 'https://presu-waitlist.asimetrica.workers.dev';
+    var WAITLIST_API = location.hostname === 'presu.asimetrica.co'
+      ? 'https://presu-waitlist.asimetrica.workers.dev'
+      : 'https://presu-waitlist-staging.asimetrica.workers.dev';
     var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // Código de referido entrante (?ref=) — se recuerda por si vuelve luego.
+    var REF = (function(){ try{ var u=new URLSearchParams(location.search).get('ref'); if(u){ localStorage.setItem('presu_ref', u.toUpperCase()); } return (localStorage.getItem('presu_ref')||'').toUpperCase(); }catch(e){ return ''; } })();
+    // CTA tras inscribirse: convierte al nuevo inscrito en referidor.
+    function referralCTA(code){
+      if(!code) return '';
+      return '<div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--line)">'
+        + '<div style="font-weight:600;color:var(--tx);margin-bottom:6px">Ahora vuélvete Fundador 🚀</div>'
+        + '<div style="font-size:.9rem;color:var(--mut);margin-bottom:12px">Invita amigos y desbloquea bonos extra. El Top 3 se lleva acompañamiento 1:1 + libro (valor $1.500.000), gratis.</div>'
+        + '<a href="/fundador.html?code=' + code + '" style="display:inline-flex;align-items:center;gap:7px;background:var(--mint);color:#08231A;font-weight:700;text-decoration:none;padding:11px 18px;border-radius:12px;font-size:.92rem">Ver mi panel e invitar →</a>'
+        + '</div>';
+    }
 
     /* ── Contador de registros (en vivo) ─────────────────────────────
        El número real vive en el Worker (KV). La landing lo consulta al
@@ -1100,8 +1113,8 @@
       fetch(WAITLIST_API, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) })
         .then(function(r){ return r.json().catch(function(){ return { status:'error' }; }); })
         .then(function(res){
-          if (res && res.status === 'ok') ok();
-          else if (res && res.status === 'already') { if (already) already(); else ok(); }
+          if (res && res.status === 'ok') ok(res);
+          else if (res && res.status === 'already') { if (already) already(); else ok(res); }
           else fail();
         })
         .catch(fail);
@@ -1137,8 +1150,8 @@
       var email = heroEmail.value.trim();
       if (!EMAIL_RE.test(email)) { heroErr.style.display='block'; heroEmail.focus(); return; }
       heroErr.style.display='none';
-      send({ perfil:'persona', correo:email, origen:'hero' },
-        function(){ heroForm.style.display='none'; heroOk.style.display='flex'; bumpCount(); if(typeof gtag==='function') gtag('event','generate_lead',{perfil:'persona',origen:'hero'}); if(window.plausible) window.plausible('Waitlist Signup',{props:{perfil:'persona',origen:'hero'}}); },
+      send({ perfil:'persona', correo:email, origen:'hero', ref:REF },
+        function(res){ heroForm.style.display='none'; heroOk.style.display='flex'; if(res&&res.ref) heroOk.insertAdjacentHTML('afterend', referralCTA(res.ref)); bumpCount(); if(typeof gtag==='function') gtag('event','generate_lead',{perfil:'persona',origen:'hero'}); if(window.plausible) window.plausible('Waitlist Signup',{props:{perfil:'persona',origen:'hero'}}); },
         function(){ alert('Algo falló de nuestro lado. Reintenta en un momento.'); },
         function(){ heroForm.style.display='none'; heroOk.querySelector('strong').textContent='¡Ya estás en la lista! 🎉'; heroOk.querySelector('span').textContent='Ese correo ya está inscrito. Te avisamos primero cuando abramos.'; heroOk.style.display='flex'; });
     });
@@ -1170,9 +1183,9 @@
       send({
         perfil: perfil, correo: email, nombre: form.nombre.value.trim(),
         empresa: perfil === 'empresa' ? form.empresa.value.trim() : '',
-        empleados: perfil === 'empresa' ? form.empleados.value.trim() : ''
+        empleados: perfil === 'empresa' ? form.empleados.value.trim() : '', ref: REF
       },
-      function(){ form.classList.add('hidden'); document.getElementById('waitlist-success').classList.remove('hidden'); bumpCount(); if(typeof gtag==='function') gtag('event','generate_lead',{perfil:perfil,origen:'form'}); if(window.plausible) window.plausible('Waitlist Signup',{props:{perfil:perfil}}); },
+      function(res){ form.classList.add('hidden'); var s=document.getElementById('waitlist-success'); s.classList.remove('hidden'); if(res&&res.ref) s.insertAdjacentHTML('beforeend', referralCTA(res.ref)); bumpCount(); if(typeof gtag==='function') gtag('event','generate_lead',{perfil:perfil,origen:'form'}); if(window.plausible) window.plausible('Waitlist Signup',{props:{perfil:perfil}}); },
       function(){ alert('Algo falló de nuestro lado. Reintenta en un momento.'); },
       function(){ var s=document.getElementById('waitlist-success'); s.querySelector('h3').textContent='¡Ya estás en la lista! 🎉'; s.querySelector('p').textContent='Ese correo ya está inscrito. Te avisamos primero cuando abramos cupos.'; form.classList.add('hidden'); s.classList.remove('hidden'); });
     });
