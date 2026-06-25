@@ -384,17 +384,32 @@ function tierEmailHtml(t, rec, env) {
   const muro = SITE + '/muro.html';
   const c = 'font-size:15px;line-height:1.6;color:#D4D4D6;margin:0 0 14px';
   const hola = rec.nombre ? 'Hola, ' + esc(rec.nombre) + ' 👋' : 'Hola 👋';
+  const h = 'font-size:24px;font-weight:800;color:#fff;letter-spacing:-.01em;margin:0 0 12px';
+  const sub = 'color:#A1A1A6';
   let body;
   if (t.min === 3) {
-    body = '<p style="' + c + '">Llegaste a <b style="color:#34D399">3 referidos</b> —ya eres <b style="color:#F4F4F3">Fundador de Presu</b> 🏅. Tu nombre ya aparece en el <a href="' + muro + '" style="color:#5EEAB8">Muro de Fundadores</a>.</p><p style="' + c + '">Sigue invitando: a los 7 entras al Círculo. <a href="' + panel + '" style="color:#5EEAB8">Ver tu panel →</a></p>';
+    body = '<h1 style="' + h + '">¡Eres Fundador! 🏅</h1>'
+      + '<p style="' + c + '">Llegaste a <b style="color:#34D399">3 referidos efectivos</b> —eres de las personas que está <b style="color:#F4F4F3">construyendo Presu desde el día cero</b>. Esto desbloqueas:</p>'
+      + '<ul style="' + c + ';padding-left:18px">'
+      + '<li>🏅 <b style="color:#F4F4F3">Insignia de Fundador</b> — tu estatus dentro de la comunidad y el producto.</li>'
+      + '<li>🧱 <b style="color:#F4F4F3"><a href="' + muro + '" style="color:#5EEAB8">Muro de Fundadores</a></b> — tu nombre ya está publicado ahí, a la vista de todos.</li>'
+      + '</ul>'
+      + '<p style="' + c + '">Y conservas todos tus bonos de pionero. <b style="color:#F4F4F3">A 4 referidos del Círculo</b> (grupo privado + Masterclass + voto en el roadmap). <a href="' + panel + '" style="color:#5EEAB8">Ver mi panel →</a></p>';
   } else if (t.min === 7) {
     const wa = env.CIRCULO_WHATSAPP || '';
-    body = '<p style="' + c + '">¡Increíble! Con <b style="color:#34D399">7 referidos</b> entraste al <b style="color:#F4F4F3">Círculo de Fundadores</b> 🎉. Esto desbloqueas:</p>'
-      + (wa ? '<div style="text-align:center;margin:0 0 16px"><a href="' + wa + '" style="display:inline-block;background:#34D399;color:#08231A;font-weight:700;text-decoration:none;padding:13px 24px;border-radius:14px">Unirme al grupo privado</a></div>' : '')
-      + '<ul style="' + c + ';padding-left:18px"><li>🎓 <b style="color:#F4F4F3">Masterclass de Asimétrica</b> — te avisamos la fecha.</li><li>🗳️ <b style="color:#F4F4F3"><a href="' + SITE + '/roadmap.html?code=' + (rec.ref || '') + '" style="color:#5EEAB8">Tablero de roadmap</a></b> — propón y vota las próximas funciones.</li></ul>'
-      + '<p style="' + c + '"><a href="' + panel + '" style="color:#5EEAB8">Ver tu panel →</a></p>';
+    body = '<h1 style="' + h + '">¡Entraste al Círculo! 🎉</h1>'
+      + '<p style="' + c + '">Con <b style="color:#34D399">7 referidos</b> llegaste al núcleo de Presu. Esto es lo que incluye:</p>'
+      + (wa ? '<div style="text-align:center;margin:0 0 18px"><a href="' + wa + '" style="display:inline-block;background:#34D399;color:#08231A;font-weight:800;text-decoration:none;padding:14px 26px;border-radius:14px;font-size:16px">Unirme al grupo privado →</a></div>' : '')
+      + '<div style="background:#101014;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px 18px;margin:0 0 16px">'
+      + '<p style="' + c + ';margin:0 0 13px">👥 <b style="color:#fff">Grupo privado de Fundadores</b><br><span style="' + sub + '">Canal directo con el equipo de Asimétrica y los demás Fundadores: ves las novedades antes que nadie y tu feedback decide qué construimos.</span></p>'
+      + '<p style="' + c + ';margin:0 0 13px">🎓 <b style="color:#fff">Masterclass de Asimétrica</b><br><span style="' + sub + '">Una sesión en vivo de nuestra firma de CFO sobre cómo poner tu plata en orden. Exclusiva del Círculo —te avisamos la fecha.</span></p>'
+      + '<p style="' + c + ';margin:0">🗳️ <b style="color:#fff"><a href="' + SITE + '/roadmap.html?code=' + (rec.ref || '') + '" style="color:#5EEAB8">Voto en el roadmap</a></b><br><span style="' + sub + '">Entra al tablero privado a proponer funciones y votar las próximas. Lo más votado se construye: tú decides qué sigue.</span></p>'
+      + '</div>'
+      + '<p style="' + c + '">Sigue: a 15 eres <b style="color:#F4F4F3">Súper Fundador</b>, y el <b style="color:#34D399">Top 3</b> se lleva el 1:1 en finanzas (3 meses) + libro ($1.500.000). <a href="' + panel + '" style="color:#5EEAB8">Ver mi panel →</a></p>';
   } else {
-    body = '<p style="' + c + '">¡Eres <b style="color:#F4F4F3">Súper Fundador</b> 🚀! Gracias por llevar Presu tan lejos. <a href="' + panel + '" style="color:#5EEAB8">Ver tu panel →</a></p>';
+    body = '<h1 style="' + h + '">¡Eres Súper Fundador! 🚀</h1>'
+      + '<p style="' + c + '">Con <b style="color:#34D399">15 referidos</b> estás en la <b style="color:#F4F4F3">élite de pioneros</b> que está poniendo a Presu en el mapa. Gracias —en serio.</p>'
+      + '<p style="' + c + '">Estás peleando de frente por el <b style="color:#34D399">Top 3</b>: acompañamiento 1:1 en finanzas por 3 meses + libro (valor $1.500.000), gratis. <a href="' + panel + '" style="color:#5EEAB8">Ver el ranking →</a></p>';
   }
   return '<!doctype html><html><head><meta charset="utf-8"></head><body style="margin:0;background:#08080A;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#F4F4F3"><div style="max-width:520px;margin:0 auto;padding:36px 28px"><div style="font-size:26px;font-weight:700;letter-spacing:-.02em;margin-bottom:22px">presu<span style="color:#34D399">.</span></div><p style="font-size:18px;margin:0 0 16px">' + hola + '</p>' + body + '<p style="font-size:13px;color:#8A8A90;margin:18px 0 0">Tu plata, clara.</p></div></body></html>';
 }
