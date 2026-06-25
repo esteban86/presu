@@ -27,7 +27,6 @@ const DISPOSABLE = ['mailinator.com', 'guerrillamail.com', '10minutemail.com', '
 const TIERS = [
   { min: 3, name: 'Fundador' },
   { min: 7, name: 'Círculo de Fundadores' },
-  { min: 15, name: 'Súper Fundador' },
 ];
 const CAMPAIGN_SUBJECT = 'Tu link de Fundador ya está aquí 🚀';
 const CAMPAIGN_BATCH = 30; // envíos por disparo del cron (bajo el límite de subrequests)
@@ -362,10 +361,9 @@ function welcomeHtml(r) {
     <ul style="font-size:15px;line-height:1.7;color:#D4D4D6;margin:0 0 18px;padding-left:20px">
       <li><b style="color:#fff">3</b> → Fundador (insignia + Muro)</li>
       <li><b style="color:#fff">7</b> → Círculo privado + Masterclass</li>
-      <li><b style="color:#fff">15</b> → Súper Fundador</li>
     </ul>
     <div style="border:1px solid rgba(52,211,153,.45);border-radius:16px;padding:15px 18px;margin:0 0 24px">
-      <span style="font-size:15px;line-height:1.5;color:#D4D4D6">🏆 <b style="color:#fff">Top 3</b> al cierre: 1:1 en finanzas por 3 meses + libro <b style="color:#34D399">(valor $1.500.000), gratis.</b></span>
+      <span style="font-size:15px;line-height:1.5;color:#D4D4D6">🏆 <b style="color:#fff">Top 3 → Súper Fundador</b>: acompañamiento 1:1 en finanzas por 3 meses + libro <b style="color:#34D399">(valor $1.500.000), gratis.</b></span>
     </div>
     <div style="text-align:center;margin:0 0 20px">
       <a href="${panel}" style="color:#5EEAB8;font-size:15px;font-weight:600;text-decoration:none">Ver mi panel y el ranking →</a>
@@ -405,7 +403,7 @@ function tierEmailHtml(t, rec, env) {
       + '<p style="' + c + ';margin:0 0 13px">🎓 <b style="color:#fff">Masterclass de Asimétrica</b><br><span style="' + sub + '">Una sesión en vivo de nuestra firma de CFO sobre cómo poner tu plata en orden. Exclusiva del Círculo —te avisamos la fecha.</span></p>'
       + '<p style="' + c + ';margin:0">🗳️ <b style="color:#fff"><a href="' + SITE + '/roadmap.html?code=' + (rec.ref || '') + '" style="color:#5EEAB8">Voto en el roadmap</a></b><br><span style="' + sub + '">Entra al tablero privado a proponer funciones y votar las próximas. Lo más votado se construye: tú decides qué sigue.</span></p>'
       + '</div>'
-      + '<p style="' + c + '">Sigue: a 15 eres <b style="color:#F4F4F3">Súper Fundador</b>, y el <b style="color:#34D399">Top 3</b> se lleva el 1:1 en finanzas (3 meses) + libro ($1.500.000). <a href="' + panel + '" style="color:#5EEAB8">Ver mi panel →</a></p>';
+      + '<p style="' + c + '">Sigue subiendo: el <b style="color:#34D399">Top 3</b> del ranking se corona <b style="color:#F4F4F3">Súper Fundador</b> y se lleva el acompañamiento 1:1 en finanzas (3 meses) + libro ($1.500.000). <a href="' + panel + '" style="color:#5EEAB8">Ver el ranking →</a></p>';
   } else {
     body = '<h1 style="' + h + '">¡Eres Súper Fundador! 🚀</h1>'
       + '<p style="' + c + '">Con <b style="color:#34D399">15 referidos</b> estás en la <b style="color:#F4F4F3">élite de pioneros</b> que está poniendo a Presu en el mapa. Gracias —en serio.</p>'

@@ -80,7 +80,7 @@
 
     <div class="card">
       <h2>Ranking de Fundadores</h2>
-      <p class="muted" style="margin-top:0">Top 3 al cierre: acompañamiento 1:1 en finanzas 3 meses + libro (valor $1.500.000), gratis.</p>
+      <p class="muted" style="margin-top:0">El <b style="color:var(--mint)">Top 3</b> al cierre se corona <b style="color:var(--mint)">Súper Fundador</b>: acompañamiento 1:1 en finanzas (3 meses) + libro (valor $1.500.000), gratis.</p>
       <ul class="rank" id="rank"></ul>
     </div>
   </div>
@@ -96,7 +96,6 @@
   var TIERS = [
     {min:3, label:'<b>Fundador</b> — insignia + Muro de Fundadores'},
     {min:7, label:'<b>Círculo</b> — grupo privado + Masterclass + voto en el roadmap'},
-    {min:15, label:'<b>Súper Fundador</b>'},
   ];
   function toast(t){ var el=document.getElementById('toast'); el.textContent=t; el.classList.add('on'); setTimeout(function(){el.classList.remove('on');},1600); }
 
@@ -116,10 +115,10 @@
 
     var n = me.referrals||0;
     document.getElementById('count').textContent = n;
-    var nextMin = me.next ? me.next.min : 15;
+    var nextMin = me.next ? me.next.min : 7;
     document.getElementById('nextLine').innerHTML = me.next
       ? 'Vas <b>'+n+'/'+me.next.min+'</b> para <b>'+me.next.name+'</b>'
-      : '¡Llegaste a lo más alto! 🏆';
+      : '¡Estás en el Círculo! Apunta al <b>Top 3</b> para ser <b>Súper Fundador</b> 🏆';
     document.getElementById('barFill').style.width = Math.min(100, Math.round(n/nextMin*100))+'%';
 
     document.getElementById('link').value = shareLink;
