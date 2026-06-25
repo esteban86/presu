@@ -137,7 +137,7 @@
       cc.innerHTML = '<h2>Círculo de Fundadores 🎉</h2>'
         + '<p class="muted" style="margin-top:0">Desbloqueaste el grupo privado, la Masterclass y el voto en el roadmap.</p>'
         + (me.circulo.whatsapp ? '<a class="btn btn-mint" style="display:inline-block;text-decoration:none;margin:4px 0 14px" href="'+me.circulo.whatsapp+'" target="_blank" rel="noopener">Unirme al grupo privado →</a>' : '')
-        + '<ul class="tiers"><li class="on"><span class="dot">🎓</span><span><b>Masterclass de Asimétrica</b> — '+me.circulo.masterclass+'</span></li><li class="on"><span class="dot">🗳️</span><span><b>Voto en el roadmap</b> — '+me.circulo.roadmap+'</span></li></ul>';
+        + '<ul class="tiers"><li class="on"><span class="dot">🎓</span><span><b>Masterclass de Asimétrica</b> — '+me.circulo.masterclass+'</span></li><li class="on"><span class="dot">🗳️</span><span><b>Voto en el roadmap</b> — <a href="/roadmap.html?code='+code+'" style="color:var(--mint-bright)">abrir el tablero →</a></span></li></ul>';
     }
 
     var top = (lb && lb.top) || [];

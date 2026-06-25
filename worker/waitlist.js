@@ -80,6 +80,9 @@ export default {
       const founders = lb.filter(function (x) { return x.count >= TIERS[0].min; }).map(function (x) { return { name: x.name, count: x.count }; });
       return json({ founders: founders, total: founders.length }, 200, pub);
     }
+    if (request.method === 'GET' && path === '/roadmap') return roadmapList(request, env, pub, url);
+    if (path === '/roadmap/propose') return roadmapPropose(request, env, cors);
+    if (path === '/roadmap/vote') return roadmapVote(request, env, cors);
 
     if (request.method !== 'POST') return json({ status: 'error', reason: 'method' }, 405, cors);
 
@@ -258,6 +261,72 @@ async function adminCampaignOne(request, env, cors) {
   return json({ status: 'error', detail: res }, 502, cors);
 }
 
+// ── Roadmap privado del Círculo (7+ referidos) ───────────────
+async function circuloMember(env, code) {
+  if (!code) return null;
+  const email = await env.WAITLIST.get('code:' + code);
+  if (!email) return null;
+  const n = parseInt((await env.WAITLIST.get('referrals:' + email)) || '0', 10);
+  return n >= 7 ? email : null;
+}
+async function genFeatureId(env) {
+  for (let t = 0; t < 6; t++) {
+    const a = new Uint8Array(8); crypto.getRandomValues(a);
+    let c = ''; for (let i = 0; i < 8; i++) c += CODE_ALPHABET[a[i] % CODE_ALPHABET.length];
+    if (!(await env.WAITLIST.get('feature:' + c))) return c;
+  }
+  return null;
+}
+async function roadmapList(request, env, pub, url) {
+  const code = (url.searchParams.get('code') || '').trim().toUpperCase();
+  const member = await circuloMember(env, code);
+  if (!member) return json({ error: 'forbidden' }, 403, pub);
+  const list = await env.WAITLIST.list({ prefix: 'feature:', limit: 200 });
+  const feats = [];
+  for (const k of list.keys) {
+    try {
+      const f = JSON.parse(await env.WAITLIST.get(k.name));
+      f.voted = !!(await env.WAITLIST.get('voted:' + f.id + ':' + code));
+      feats.push(f);
+    } catch (e) {}
+  }
+  feats.sort(function (a, b) { return (b.votes || 0) - (a.votes || 0) || (b.ts || 0) - (a.ts || 0); });
+  return json({ features: feats }, 200, pub);
+}
+async function roadmapPropose(request, env, cors) {
+  if (request.method !== 'POST') return json({ error: 'method' }, 405, cors);
+  let b; try { b = await request.json(); } catch (e) { return json({ error: 'json' }, 400, cors); }
+  const code = String(b.code || '').trim().toUpperCase();
+  const member = await circuloMember(env, code);
+  if (!member) return json({ error: 'forbidden' }, 403, cors);
+  const title = String(b.title || '').trim().slice(0, 120);
+  if (title.length < 3) return json({ error: 'title' }, 400, cors);
+  const desc = String(b.desc || '').trim().slice(0, 400);
+  const id = await genFeatureId(env);
+  let rec = {}; try { rec = JSON.parse((await env.WAITLIST.get('email:' + member)) || '{}'); } catch (e) {}
+  const f = { id, title, desc, by: displayName(rec, member), ts: Date.now(), votes: 1 };
+  await env.WAITLIST.put('feature:' + id, JSON.stringify(f));
+  await env.WAITLIST.put('voted:' + id + ':' + code, '1');
+  return json({ ok: true, id }, 200, cors);
+}
+async function roadmapVote(request, env, cors) {
+  if (request.method !== 'POST') return json({ error: 'method' }, 405, cors);
+  let b; try { b = await request.json(); } catch (e) { return json({ error: 'json' }, 400, cors); }
+  const code = String(b.code || '').trim().toUpperCase();
+  const member = await circuloMember(env, code);
+  if (!member) return json({ error: 'forbidden' }, 403, cors);
+  const id = String(b.id || '').trim();
+  const raw = await env.WAITLIST.get('feature:' + id);
+  if (!raw) return json({ error: 'not_found' }, 404, cors);
+  const f = JSON.parse(raw);
+  const vk = 'voted:' + id + ':' + code;
+  const has = await env.WAITLIST.get(vk);
+  if (has) { await env.WAITLIST.delete(vk); f.votes = Math.max(0, (f.votes || 0) - 1); }
+  else { await env.WAITLIST.put(vk, '1'); f.votes = (f.votes || 0) + 1; }
+  await env.WAITLIST.put('feature:' + id, JSON.stringify(f));
+  return json({ ok: true, votes: f.votes, voted: !has }, 200, cors);
+}
+
 // ── Resend ───────────────────────────────────────────────────
 async function sendResend(env, { to, subject, html, reply_to }) {
   try {
@@ -321,7 +390,7 @@ function tierEmailHtml(t, rec, env) {
     const wa = env.CIRCULO_WHATSAPP || '';
     body = '<p style="' + c + '">¡Increíble! Con <b style="color:#34D399">7 referidos</b> entraste al <b style="color:#F4F4F3">Círculo de Fundadores</b> 🎉. Esto desbloqueas:</p>'
       + (wa ? '<div style="text-align:center;margin:0 0 16px"><a href="' + wa + '" style="display:inline-block;background:#34D399;color:#08231A;font-weight:700;text-decoration:none;padding:13px 24px;border-radius:14px">Unirme al grupo privado</a></div>' : '')
-      + '<ul style="' + c + ';padding-left:18px"><li>🎓 <b style="color:#F4F4F3">Masterclass de Asimétrica</b> — te avisamos la fecha.</li><li>🗳️ <b style="color:#F4F4F3">Voto en el roadmap</b> — muy pronto te abrimos el tablero para proponer y votar funciones.</li></ul>'
+      + '<ul style="' + c + ';padding-left:18px"><li>🎓 <b style="color:#F4F4F3">Masterclass de Asimétrica</b> — te avisamos la fecha.</li><li>🗳️ <b style="color:#F4F4F3"><a href="' + SITE + '/roadmap.html?code=' + (rec.ref || '') + '" style="color:#5EEAB8">Tablero de roadmap</a></b> — propón y vota las próximas funciones.</li></ul>'
       + '<p style="' + c + '"><a href="' + panel + '" style="color:#5EEAB8">Ver tu panel →</a></p>';
   } else {
     body = '<p style="' + c + '">¡Eres <b style="color:#F4F4F3">Súper Fundador</b> 🚀! Gracias por llevar Presu tan lejos. <a href="' + panel + '" style="color:#5EEAB8">Ver tu panel →</a></p>';
