@@ -346,30 +346,31 @@ function welcomeHtml(r) {
   const link = SITE + '/?ref=' + (r.ref || '');
   const panel = SITE + '/fundador.html?code=' + (r.ref || '');
   const waMsg = encodeURIComponent('Me sumé a Presu 🌿 — reúne tus gastos de todos tus bancos y te dice si vas bien, privado y en tu equipo. La beta abre el 30 de junio y entrando antes es gratis. Te dejo mi link: ' + link);
-  const c = 'font-size:15px;line-height:1.6;color:#D4D4D6;margin:0 0 12px';
-  return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;background:#08080A;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#F4F4F3">
-  <div style="max-width:540px;margin:0 auto;padding:36px 28px">
-    <div style="font-size:26px;font-weight:700;letter-spacing:-.02em;margin-bottom:24px">presu<span style="color:#34D399">.</span></div>
-    <p style="font-size:18px;margin:0 0 18px">${hola}</p>
-    <p style="${c}">¡Listo! Ya estás en la lista —eres <b style="color:#34D399">pionero de Presu</b>. Tus bonos ya están <b style="color:#F4F4F3">asegurados</b> por entrar antes del 30: app completa gratis en la beta, la guía de Asimétrica, sesión en vivo, precio de pionero y voz en lo que construimos.</p>
-    <div style="border-top:1px solid rgba(255,255,255,.1);margin:26px 0 22px"></div>
-    <p style="font-size:19px;font-weight:700;color:#fff;margin:0 0 6px">¿Quieres más? Vuélvete <span style="color:#34D399">Fundador</span> 🚀</p>
-    <p style="${c}">Invita amigos con tu link y desbloquea, <b style="color:#F4F4F3">además</b> de tus bonos:</p>
-    <ul style="${c};padding-left:18px">
-      <li><b style="color:#F4F4F3">3 amigos</b> → Insignia + Muro de Fundadores</li>
-      <li><b style="color:#F4F4F3">7</b> → Círculo privado + Masterclass de Asimétrica + voto en el roadmap</li>
-      <li><b style="color:#F4F4F3">15</b> → Súper Fundador</li>
-      <li><b style="color:#34D399">Top 3</b> → acompañamiento 1:1 en finanzas por 3 meses + libro (valor $1.500.000), gratis</li>
+  return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;background:#08080A;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#F4F4F3">
+  <div style="max-width:540px;margin:0 auto;padding:32px 24px">
+    <div style="font-size:24px;font-weight:800;letter-spacing:-.02em;margin-bottom:18px">presu<span style="color:#34D399">.</span></div>
+    <p style="font-size:16px;color:#A1A1A6;margin:0 0 6px">${hola}</p>
+    <h1 style="font-size:30px;line-height:1.12;font-weight:800;letter-spacing:-.02em;margin:0 0 12px;color:#fff">¡Ya eres pionero! <span style="color:#34D399">🎉</span></h1>
+    <p style="font-size:16px;line-height:1.55;color:#D4D4D6;margin:0 0 22px">Tus bonos ya están <b style="color:#fff">asegurados</b>. Ahora viene lo mejor: <b style="color:#34D399">comparte tu link y vuélvete Fundador</b> —cada amigo que entra te sube de nivel.</p>
+    <div style="background:#0E2A20;border:1px solid rgba(52,211,153,.5);border-radius:20px;padding:24px 20px;text-align:center;margin:0 0 26px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#5EEAB8;margin-bottom:12px">Tu link para invitar</div>
+      <div style="background:#08080A;border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:12px 10px;font-family:'JetBrains Mono',monospace;font-size:13px;color:#5EEAB8;word-break:break-all;margin-bottom:18px">${link}</div>
+      <a href="https://wa.me/?text=${waMsg}" style="display:block;background:#34D399;color:#08231A;font-weight:800;font-size:17px;text-decoration:none;padding:16px;border-radius:14px">📲 Compartir por WhatsApp</a>
+      <div style="font-size:13px;color:#8A8A90;margin-top:12px">Pásalo a quien le sirva tener su plata clara 🌱</div>
+    </div>
+    <p style="font-size:15px;line-height:1.6;color:#D4D4D6;margin:0 0 10px"><b style="color:#fff">Cada amigo te sube de nivel:</b></p>
+    <ul style="font-size:15px;line-height:1.7;color:#D4D4D6;margin:0 0 18px;padding-left:20px">
+      <li><b style="color:#fff">3</b> → Fundador (insignia + Muro)</li>
+      <li><b style="color:#fff">7</b> → Círculo privado + Masterclass</li>
+      <li><b style="color:#fff">15</b> → Súper Fundador</li>
     </ul>
-    <p style="font-size:13px;color:#A1A1A6;margin:18px 0 6px">Tu link para compartir:</p>
-    <div style="background:#101014;border:1px solid rgba(52,211,153,.3);border-radius:12px;padding:13px 15px;font-family:'JetBrains Mono',monospace;font-size:14px;color:#5EEAB8;word-break:break-all">${link}</div>
-    <div style="text-align:center;margin:20px 0 8px">
-      <a href="https://wa.me/?text=${waMsg}" style="display:inline-block;background:#34D399;color:#08231A;font-weight:700;text-decoration:none;padding:13px 26px;border-radius:14px;font-size:15px">Compartir por WhatsApp</a>
+    <div style="border:1px solid rgba(52,211,153,.45);border-radius:16px;padding:15px 18px;margin:0 0 24px">
+      <span style="font-size:15px;line-height:1.5;color:#D4D4D6">🏆 <b style="color:#fff">Top 3</b> al cierre: 1:1 en finanzas por 3 meses + libro <b style="color:#34D399">(valor $1.500.000), gratis.</b></span>
     </div>
-    <div style="text-align:center;margin:0 0 22px">
-      <a href="${panel}" style="color:#5EEAB8;font-size:14px;text-decoration:underline">Ver mi progreso y el ranking →</a>
+    <div style="text-align:center;margin:0 0 20px">
+      <a href="${panel}" style="color:#5EEAB8;font-size:15px;font-weight:600;text-decoration:none">Ver mi panel y el ranking →</a>
     </div>
-    <p style="font-size:13px;line-height:1.6;color:#8A8A90;margin:0">Solo cuentan los amigos que se inscriban de verdad. Nos vemos el 30 —<span style="color:#34D399">tu plata, clara.</span></p>
+    <p style="font-size:12px;line-height:1.6;color:#6B6B72;margin:0;text-align:center">Solo cuentan los amigos que se inscriban de verdad. <span style="color:#34D399">Tu plata, clara.</span></p>
   </div></body></html>`;
 }
 
