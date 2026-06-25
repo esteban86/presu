@@ -26,7 +26,8 @@ const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 const DISPOSABLE = ['mailinator.com', 'guerrillamail.com', '10minutemail.com', 'tempmail.com', 'temp-mail.org', 'yopmail.com', 'trashmail.com', 'getnada.com', 'sharklasers.com', 'maildrop.cc', 'dispostable.com', 'fakeinbox.com', 'mohmal.com'];
 const TIERS = [
   { min: 3, name: 'Fundador' },
-  { min: 7, name: 'Círculo de Fundadores' },
+  { min: 7, name: 'Círculo privado' },
+  { min: 15, name: 'Masterclass' },
 ];
 const CAMPAIGN_SUBJECT = 'Tu link de Fundador ya está aquí 🚀';
 const CAMPAIGN_BATCH = 30; // envíos por disparo del cron (bajo el límite de subrequests)
@@ -65,7 +66,7 @@ export default {
       if (!owner) return json({ error: 'not_found' }, 404, pub);
       const n = parseInt((await env.WAITLIST.get('referrals:' + owner)) || '0', 10);
       const meResp = { referrals: n, ...tierFor(n), link: SITE + '/?ref=' + code };
-      if (n >= 7) meResp.circulo = { whatsapp: env.CIRCULO_WHATSAPP || '', masterclass: 'Te avisamos la fecha', roadmap: 'Muy pronto' };
+      if (n >= 7) meResp.unlock = { whatsapp: env.CIRCULO_WHATSAPP || '', roadmap: true, masterclass: n >= 15 };
       return json(meResp, 200, pub);
     }
     if (request.method === 'GET' && path === '/leaderboard') {
@@ -360,10 +361,11 @@ function welcomeHtml(r) {
     <p style="font-size:15px;line-height:1.6;color:#D4D4D6;margin:0 0 10px"><b style="color:#fff">Cada amigo te sube de nivel:</b></p>
     <ul style="font-size:15px;line-height:1.7;color:#D4D4D6;margin:0 0 18px;padding-left:20px">
       <li><b style="color:#fff">3</b> → Fundador (insignia + Muro)</li>
-      <li><b style="color:#fff">7</b> → Círculo privado + Masterclass</li>
+      <li><b style="color:#fff">7</b> → Círculo privado (grupo + voto en el roadmap)</li>
+      <li><b style="color:#fff">15</b> → Masterclass de Asimétrica</li>
     </ul>
     <div style="border:1px solid rgba(52,211,153,.45);border-radius:16px;padding:15px 18px;margin:0 0 24px">
-      <span style="font-size:15px;line-height:1.5;color:#D4D4D6">🏆 <b style="color:#fff">Top 3 → Súper Fundador</b>: acompañamiento 1:1 en finanzas por 3 meses + libro <b style="color:#34D399">(valor $1.500.000), gratis.</b></span>
+      <span style="font-size:15px;line-height:1.5;color:#D4D4D6">🏆 <b style="color:#fff">Top 3 al cierre</b>: acompañamiento 1:1 en finanzas por 3 meses + libro <b style="color:#34D399">(valor $1.500.000), gratis.</b></span>
     </div>
     <div style="text-align:center;margin:0 0 20px">
       <a href="${panel}" style="color:#5EEAB8;font-size:15px;font-weight:600;text-decoration:none">Ver mi panel y el ranking →</a>
@@ -374,8 +376,8 @@ function welcomeHtml(r) {
 
 function tierSubject(t) {
   if (t.min === 3) return '¡Eres Fundador de Presu! 🏅';
-  if (t.min === 7) return '¡Entraste al Círculo de Fundadores! 🎉';
-  return 'Eres Súper Fundador de Presu 🚀';
+  if (t.min === 7) return '¡Entraste al Círculo privado! 🎉';
+  return '¡Desbloqueaste la Masterclass de Asimétrica! 🎓';
 }
 function tierEmailHtml(t, rec, env) {
   const panel = SITE + '/fundador.html?code=' + (rec.ref || '');
@@ -392,22 +394,21 @@ function tierEmailHtml(t, rec, env) {
       + '<li>🏅 <b style="color:#F4F4F3">Insignia de Fundador</b> — tu estatus dentro de la comunidad y el producto.</li>'
       + '<li>🧱 <b style="color:#F4F4F3"><a href="' + muro + '" style="color:#5EEAB8">Muro de Fundadores</a></b> — tu nombre ya está publicado ahí, a la vista de todos.</li>'
       + '</ul>'
-      + '<p style="' + c + '">Y conservas todos tus bonos de pionero. <b style="color:#F4F4F3">A 4 referidos del Círculo</b> (grupo privado + Masterclass + voto en el roadmap). <a href="' + panel + '" style="color:#5EEAB8">Ver mi panel →</a></p>';
+      + '<p style="' + c + '">Y conservas todos tus bonos de pionero. <b style="color:#F4F4F3">A 4 referidos del Círculo privado</b> (grupo + voto en el roadmap). <a href="' + panel + '" style="color:#5EEAB8">Ver mi panel →</a></p>';
   } else if (t.min === 7) {
     const wa = env.CIRCULO_WHATSAPP || '';
-    body = '<h1 style="' + h + '">¡Entraste al Círculo! 🎉</h1>'
-      + '<p style="' + c + '">Con <b style="color:#34D399">7 referidos</b> llegaste al núcleo de Presu. Esto es lo que incluye:</p>'
+    body = '<h1 style="' + h + '">¡Entraste al Círculo privado! 🎉</h1>'
+      + '<p style="' + c + '">Con <b style="color:#34D399">7 referidos</b> llegaste al núcleo de Presu:</p>'
       + (wa ? '<div style="text-align:center;margin:0 0 18px"><a href="' + wa + '" style="display:inline-block;background:#34D399;color:#08231A;font-weight:800;text-decoration:none;padding:14px 26px;border-radius:14px;font-size:16px">Unirme al grupo privado →</a></div>' : '')
       + '<div style="background:#101014;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px 18px;margin:0 0 16px">'
       + '<p style="' + c + ';margin:0 0 13px">👥 <b style="color:#fff">Grupo privado de Fundadores</b><br><span style="' + sub + '">Canal directo con el equipo de Asimétrica y los demás Fundadores: ves las novedades antes que nadie y tu feedback decide qué construimos.</span></p>'
-      + '<p style="' + c + ';margin:0 0 13px">🎓 <b style="color:#fff">Masterclass de Asimétrica</b><br><span style="' + sub + '">Una sesión en vivo de nuestra firma de CFO sobre cómo poner tu plata en orden. Exclusiva del Círculo —te avisamos la fecha.</span></p>'
       + '<p style="' + c + ';margin:0">🗳️ <b style="color:#fff"><a href="' + SITE + '/roadmap.html?code=' + (rec.ref || '') + '" style="color:#5EEAB8">Voto en el roadmap</a></b><br><span style="' + sub + '">Entra al tablero privado a proponer funciones y votar las próximas. Lo más votado se construye: tú decides qué sigue.</span></p>'
       + '</div>'
-      + '<p style="' + c + '">Sigue subiendo: el <b style="color:#34D399">Top 3</b> del ranking se corona <b style="color:#F4F4F3">Súper Fundador</b> y se lleva el acompañamiento 1:1 en finanzas (3 meses) + libro ($1.500.000). <a href="' + panel + '" style="color:#5EEAB8">Ver el ranking →</a></p>';
+      + '<p style="' + c + '">Sigue: a <b style="color:#F4F4F3">15</b> desbloqueas la <b style="color:#F4F4F3">Masterclass de Asimétrica</b>, y el <b style="color:#34D399">Top 3</b> se lleva el 1:1 (3 meses) + libro ($1.500.000). <a href="' + panel + '" style="color:#5EEAB8">Ver mi panel →</a></p>';
   } else {
-    body = '<h1 style="' + h + '">¡Eres Súper Fundador! 🚀</h1>'
-      + '<p style="' + c + '">Con <b style="color:#34D399">15 referidos</b> estás en la <b style="color:#F4F4F3">élite de pioneros</b> que está poniendo a Presu en el mapa. Gracias —en serio.</p>'
-      + '<p style="' + c + '">Estás peleando de frente por el <b style="color:#34D399">Top 3</b>: acompañamiento 1:1 en finanzas por 3 meses + libro (valor $1.500.000), gratis. <a href="' + panel + '" style="color:#5EEAB8">Ver el ranking →</a></p>';
+    body = '<h1 style="' + h + '">¡Desbloqueaste la Masterclass! 🎓</h1>'
+      + '<p style="' + c + '">Con <b style="color:#34D399">15 referidos</b> te ganaste un cupo en la <b style="color:#F4F4F3">Masterclass de Asimétrica</b> —una sesión en vivo de nuestra firma de CFO sobre cómo poner tu plata en orden, solo para los Fundadores que más han corrido la voz. <b style="color:#F4F4F3">Te avisamos la fecha.</b></p>'
+      + '<p style="' + c + '">Y estás peleando de frente por el <b style="color:#34D399">Top 3</b>: acompañamiento 1:1 en finanzas (3 meses) + libro (valor $1.500.000), gratis. <a href="' + panel + '" style="color:#5EEAB8">Ver el ranking →</a></p>';
   }
   return '<!doctype html><html><head><meta charset="utf-8"></head><body style="margin:0;background:#08080A;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#F4F4F3"><div style="max-width:520px;margin:0 auto;padding:36px 28px"><div style="font-size:26px;font-weight:700;letter-spacing:-.02em;margin-bottom:22px">presu<span style="color:#34D399">.</span></div><p style="font-size:18px;margin:0 0 16px">' + hola + '</p>' + body + '<p style="font-size:13px;color:#8A8A90;margin:18px 0 0">Tu plata, clara.</p></div></body></html>';
 }

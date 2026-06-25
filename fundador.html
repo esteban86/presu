@@ -80,7 +80,7 @@
 
     <div class="card">
       <h2>Ranking de Fundadores</h2>
-      <p class="muted" style="margin-top:0">El <b style="color:var(--mint)">Top 3</b> al cierre se corona <b style="color:var(--mint)">Súper Fundador</b>: acompañamiento 1:1 en finanzas (3 meses) + libro (valor $1.500.000), gratis.</p>
+      <p class="muted" style="margin-top:0">El <b style="color:var(--mint)">Top 3</b> al cierre se lleva el premio: acompañamiento 1:1 en finanzas (3 meses) + libro (valor $1.500.000), gratis.</p>
       <ul class="rank" id="rank"></ul>
     </div>
   </div>
@@ -95,7 +95,8 @@
   var code = (new URLSearchParams(location.search).get('code')||'').trim().toUpperCase();
   var TIERS = [
     {min:3, label:'<b>Fundador</b> — insignia + Muro de Fundadores'},
-    {min:7, label:'<b>Círculo</b> — grupo privado + Masterclass + voto en el roadmap'},
+    {min:7, label:'<b>Círculo privado</b> — grupo + voto en el roadmap'},
+    {min:15, label:'<b>Masterclass</b> de Asimétrica'},
   ];
   function toast(t){ var el=document.getElementById('toast'); el.textContent=t; el.classList.add('on'); setTimeout(function(){el.classList.remove('on');},1600); }
 
@@ -115,10 +116,10 @@
 
     var n = me.referrals||0;
     document.getElementById('count').textContent = n;
-    var nextMin = me.next ? me.next.min : 7;
+    var nextMin = me.next ? me.next.min : 15;
     document.getElementById('nextLine').innerHTML = me.next
       ? 'Vas <b>'+n+'/'+me.next.min+'</b> para <b>'+me.next.name+'</b>'
-      : '¡Estás en el Círculo! Apunta al <b>Top 3</b> para ser <b>Súper Fundador</b> 🏆';
+      : '¡Lo desbloqueaste todo! Ahora apunta al <b>Top 3</b> del ranking 🏆';
     document.getElementById('barFill').style.width = Math.min(100, Math.round(n/nextMin*100))+'%';
 
     document.getElementById('link').value = shareLink;
@@ -130,13 +131,16 @@
     }).join('');
     document.getElementById('tiers').innerHTML = tl;
 
-    if (me.circulo) {
+    if (me.unlock) {
       var cc = document.getElementById('circuloCard');
       cc.style.display = 'block';
-      cc.innerHTML = '<h2>Círculo de Fundadores 🎉</h2>'
-        + '<p class="muted" style="margin-top:0">Desbloqueaste el grupo privado, la Masterclass y el voto en el roadmap.</p>'
-        + (me.circulo.whatsapp ? '<a class="btn btn-mint" style="display:inline-block;text-decoration:none;margin:4px 0 14px" href="'+me.circulo.whatsapp+'" target="_blank" rel="noopener">Unirme al grupo privado →</a>' : '')
-        + '<ul class="tiers"><li class="on"><span class="dot">🎓</span><span><b>Masterclass de Asimétrica</b> — '+me.circulo.masterclass+'</span></li><li class="on"><span class="dot">🗳️</span><span><b>Voto en el roadmap</b> — <a href="/roadmap.html?code='+code+'" style="color:var(--mint-bright)">abrir el tablero →</a></span></li></ul>';
+      var mc = me.unlock.masterclass
+        ? '<li class="on"><span class="dot">🎓</span><span><b>Masterclass de Asimétrica</b> — te avisamos la fecha</span></li>'
+        : '<li><span class="dot"></span><span><b>Masterclass de Asimétrica</b> — a los 15 referidos</span></li>';
+      cc.innerHTML = '<h2>Círculo privado 🎉</h2>'
+        + '<p class="muted" style="margin-top:0">Tu acceso de Círculo: grupo privado + voto en el roadmap.</p>'
+        + (me.unlock.whatsapp ? '<a class="btn btn-mint" style="display:inline-block;text-decoration:none;margin:4px 0 14px" href="'+me.unlock.whatsapp+'" target="_blank" rel="noopener">Unirme al grupo privado →</a>' : '')
+        + '<ul class="tiers"><li class="on"><span class="dot">🗳️</span><span><b>Voto en el roadmap</b> — <a href="/roadmap.html?code='+code+'" style="color:var(--mint-bright)">abrir el tablero →</a></span></li>' + mc + '</ul>';
     }
 
     var top = (lb && lb.top) || [];
