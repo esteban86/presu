@@ -45,11 +45,13 @@
   <div class="live"><span class="dot"></span><span id="ago">actualizando…</span></div>
   <ul class="rank" id="rank"><li><span class="nm" style="color:var(--mut)">Cargando…</span></li></ul>
   <p class="muted">El <b style="color:var(--mint)">Top 3</b> al cierre se lleva el premio (1:1 + libro). Se actualiza solo cada 20s.</p>
+  <p style="text-align:center;margin-top:14px"><a href="#" id="adminBtn" style="color:var(--mut2);font-size:.78rem;text-decoration:underline">🔒 Ver con nombres y correos (admin)</a></p>
 </div>
 <script>
 (function(){
   var API='https://presu-waitlist.asimetrica.workers.dev';
   var medals=['🥇','🥈','🥉'];
+  var adminToken = sessionStorage.getItem('presu_admin') || '';
   function esc(s){return String(s||'').replace(/[&<>"]/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c];});}
   function load(){
     Promise.all([
@@ -68,7 +70,33 @@
       setTimeout(function(){var a=document.getElementById('ago'); if(a)a.textContent='actualiza cada 20s';},2000);
     }).catch(function(){ document.getElementById('ago').textContent='reintentando…'; });
   }
-  load(); setInterval(load, 20000);
+  function rowsHtml(items, withEmail){
+    if(!items.length) return '<li><span class="nm" style="color:var(--mut)">Aún nadie con referidos. ¡Pronto se llena!</span></li>';
+    return items.map(function(x,i){
+      var who = withEmail
+        ? esc(x.name||'Pionero')+'<br><span style="font-size:.76rem;color:var(--mut2);font-family:var(--mono)">'+esc(x.email||'')+'</span>'
+        : esc(x.name);
+      return '<li class="'+(i<3?'podio':'')+'"><span class="pos">'+(i<3?medals[i]:(i+1))+'</span><span class="nm">'+who+'</span><span class="ct">'+x.count+'</span></li>';
+    }).join('');
+  }
+  function loadAdmin(){
+    fetch(API+'/admin/stats',{headers:{'X-Admin-Token':adminToken},cache:'no-store'}).then(function(r){return r.json();}).then(function(d){
+      if(!d || d.error){ alert('Token inválido.'); adminToken=''; sessionStorage.removeItem('presu_admin'); load(); return; }
+      var lb=(d.leaderboard||[]);
+      document.getElementById('total').textContent=(d.total!=null)?d.total.toLocaleString('es-CO'):'—';
+      document.getElementById('fnd').textContent=lb.filter(function(x){return x.count>=3;}).length;
+      document.getElementById('rank').innerHTML = rowsHtml(lb.slice(0,25), true);
+      document.getElementById('ago').textContent='vista admin · actualizado';
+      setTimeout(function(){var a=document.getElementById('ago'); if(a)a.textContent='vista admin · cada 20s';},2000);
+    }).catch(function(){ document.getElementById('ago').textContent='reintentando…'; });
+  }
+  function tick(){ adminToken ? loadAdmin() : load(); }
+  document.getElementById('adminBtn').addEventListener('click', function(e){
+    e.preventDefault();
+    var t=prompt('Pega tu token admin para ver nombres y correos:');
+    if(t){ adminToken=t.trim(); sessionStorage.setItem('presu_admin', adminToken); tick(); }
+  });
+  tick(); setInterval(tick, 20000);
 })();
 </script>
 </body>
