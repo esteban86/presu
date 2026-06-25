@@ -127,7 +127,7 @@ export default {
     let mail = { welcome: null, notify: null };
     if (env.RESEND_API_KEY) {
       mail.welcome = await sendResend(env, { to: email, reply_to: env.NOTIFY_EMAIL || undefined, subject: '¡Ya eres pionero de Presu! 🎉', html: welcomeHtml(record) });
-      if (mail.welcome && mail.welcome.ok) await env.WAITLIST.put('welcomed:' + email, String(Date.now()));
+      if (mail.welcome && mail.welcome.ok) { await env.WAITLIST.put('welcomed:' + email, String(Date.now())); await env.WAITLIST.put('campaign:' + email, 'welcome'); }
       if (env.NOTIFY_EMAIL) mail.notify = await sendResend(env, { to: env.NOTIFY_EMAIL, reply_to: email, subject: 'Nuevo registro en la waitlist de Presu (' + record.perfil + ')', html: notifyHtml(record, total) });
     }
 
