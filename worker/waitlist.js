@@ -73,12 +73,12 @@ export default {
     if (request.method === 'GET' && path === '/leaderboard') {
       let lb = [];
       try { lb = JSON.parse((await env.WAITLIST.get('leaderboard')) || '[]'); } catch (e) {}
-      return json({ top: lb.slice(0, 25).map(function (x) { return { name: x.name, count: x.count }; }) }, 200, pub);
+      return json({ top: lb.slice(0, 25).map(function (x) { return { name: publicName(x), count: x.count }; }) }, 200, pub);
     }
     if (request.method === 'GET' && path === '/founders') {
       let lb = [];
       try { lb = JSON.parse((await env.WAITLIST.get('leaderboard')) || '[]'); } catch (e) {}
-      const founders = lb.filter(function (x) { return x.count >= TIERS[0].min; }).map(function (x) { return { name: x.name, count: x.count }; });
+      const founders = lb.filter(function (x) { return x.count >= TIERS[0].min; }).map(function (x) { return { name: publicName(x), count: x.count }; });
       return json({ founders: founders, total: founders.length }, 200, pub);
     }
     if (request.method === 'GET' && path === '/roadmap') return roadmapList(request, env, pub, url);
@@ -163,10 +163,22 @@ async function genCode(env) {
   }
   return null;
 }
+function maskEmail(email) {
+  const parts = (email || '').split('@');
+  const u = parts[0] || '', dom = parts[1] || '';
+  const masked = u.length <= 5 ? u + '***' : u.slice(0, 4) + '***' + u.slice(-1);
+  return masked + (dom ? '@' + dom : '');
+}
 function displayName(rec, email) {
   const n = ((rec && rec.nombre) || '').trim();
   if (n) { const p = n.split(/\s+/); return p[0] + (p[1] ? ' ' + p[1][0].toUpperCase() + '.' : ''); }
-  const u = (email || '').split('@')[0]; return u.slice(0, 2) + '***';
+  return maskEmail(email);
+}
+// Para el ranking público: respeta el nombre real si lo hay; si no, enmascara el correo guardado.
+function publicName(entry) {
+  const nm = (entry && entry.name) || '';
+  if (nm && nm.indexOf('@') === -1 && nm.indexOf('***') === -1) return nm;
+  return maskEmail(entry && entry.email);
 }
 async function creditReferral(env, refCode, newEmail) {
   const referrer = await env.WAITLIST.get('code:' + refCode);
