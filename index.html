@@ -679,7 +679,7 @@
           <span class="av" style="background:#A855F7"></span>
           <span class="av" style="background:#FB7185"></span>
         </div>
-        <span class="pt"><b class="count">—</b> personas ya están en la lista</span>
+        <span class="pt"><b class="count">—</b> / 1.000 cupos antes del lanzamiento</span>
       </div>
     </div>
 
@@ -1000,7 +1000,7 @@
 <section id="waitlist">
   <div class="glow" style="width:480px;height:480px;background:#34D399;left:50%;transform:translateX(-50%);top:-140px;opacity:.14"></div>
   <div class="wrap">
-    <div class="sec-head reveal"><span class="eyebrow center-eb">Lista de espera</span><h2>Sé de los primeros en usar <span class="mintword">Presu</span></h2><p>La beta abre el <b style="color:var(--tx)">martes 30 de junio</b>. Los pioneros entran antes y usan Presu completo gratis —más unos bonos— a cambio de su feedback. Sin spam.</p><div class="proof hidden" id="proof-wait"><div class="avatars" aria-hidden="true"><span class="av" style="background:#818CF8"></span><span class="av" style="background:#34D399"></span><span class="av" style="background:#A855F7"></span><span class="av" style="background:#FB7185"></span></div><span class="pt"><b class="count">—</b> personas ya están en la lista</span></div></div>
+    <div class="sec-head reveal"><span class="eyebrow center-eb">Lista de espera</span><h2>Sé de los primeros en usar <span class="mintword">Presu</span></h2><p>La beta abre el <b style="color:var(--tx)">martes 30 de junio</b>. Los pioneros entran antes y usan Presu completo gratis —más unos bonos— a cambio de su feedback. Sin spam.</p><div class="proof hidden" id="proof-wait"><div class="avatars" aria-hidden="true"><span class="av" style="background:#818CF8"></span><span class="av" style="background:#34D399"></span><span class="av" style="background:#A855F7"></span><span class="av" style="background:#FB7185"></span></div><span class="pt"><b class="count">—</b> / 1.000 cupos antes del lanzamiento</span></div></div>
     <div class="formcard reveal">
       <form id="waitlist-form" novalidate>
         <fieldset class="segmented" id="perfil-group">
@@ -1115,6 +1115,7 @@
         .then(function(res){
           if (res && res.status === 'ok') ok(res);
           else if (res && res.status === 'already') { if (already) already(); else ok(res); }
+          else if (res && res.status === 'full') { alert('¡Se llenaron los 1.000 cupos antes del lanzamiento! 🙌 Te avisamos si abrimos más.'); }
           else fail();
         })
         .catch(fail);

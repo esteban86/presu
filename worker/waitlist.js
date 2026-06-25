@@ -29,6 +29,7 @@ const TIERS = [
   { min: 7, name: 'Círculo privado' },
   { min: 15, name: 'Masterclass' },
 ];
+const CAP = 1000; // cupos máximos antes del lanzamiento; al llegar, se cierran los registros.
 const CAMPAIGN_SUBJECT = 'Tu link de Fundador ya está aquí 🚀';
 const CAMPAIGN_BATCH = 30; // envíos por disparo del cron (bajo el límite de subrequests)
 const TEST_EMAILS = ['x@x.com', 'prueba@asimetrica.co', 'prueba.worker@asimetrica.co', 'esteban.restrepo@bpt.global', 'debug1@aleph0.com.co', 'pionero.prueba@aleph0.com.co', 'chequeo.cuota@aleph0.com.co', 'esteban@aleph0.com.co'];
@@ -58,7 +59,7 @@ export default {
 
     if (request.method === 'GET' && path === '/count') {
       const count = parseInt((await env.WAITLIST.get('meta:count')) || '0', 10);
-      return json({ count }, 200, pub);
+      return json({ count, cap: CAP }, 200, pub);
     }
     if (request.method === 'GET' && path === '/me') {
       const code = (url.searchParams.get('code') || '').trim().toUpperCase();
@@ -95,6 +96,9 @@ export default {
 
     // Dedup
     if (await env.WAITLIST.get('email:' + email)) return json({ status: 'already' }, 200, cors);
+
+    // Cupo: solo CAP suscriptores antes del lanzamiento.
+    if (parseInt((await env.WAITLIST.get('meta:count')) || '0', 10) >= CAP) return json({ status: 'full', cap: CAP }, 200, cors);
 
     // Código de referido propio (para que esta persona también pueda invitar)
     const code = await genCode(env);
@@ -351,7 +355,8 @@ function welcomeHtml(r) {
     <div style="font-size:24px;font-weight:800;letter-spacing:-.02em;margin-bottom:18px">presu<span style="color:#34D399">.</span></div>
     <p style="font-size:16px;color:#A1A1A6;margin:0 0 6px">${hola}</p>
     <h1 style="font-size:30px;line-height:1.12;font-weight:800;letter-spacing:-.02em;margin:0 0 12px;color:#fff">¡Ya eres pionero! <span style="color:#34D399">🎉</span></h1>
-    <p style="font-size:16px;line-height:1.55;color:#D4D4D6;margin:0 0 22px">Tus bonos ya están <b style="color:#fff">asegurados</b>. Ahora viene lo mejor: <b style="color:#34D399">comparte tu link y vuélvete Fundador</b> —cada amigo que entra te sube de nivel.</p>
+    <p style="font-size:16px;line-height:1.55;color:#D4D4D6;margin:0 0 12px">Tus bonos ya están <b style="color:#fff">asegurados</b>. Ahora viene lo mejor: <b style="color:#34D399">comparte tu link y vuélvete Fundador</b> —cada amigo que entra te sube de nivel.</p>
+    <p style="font-size:14px;line-height:1.5;color:#5EEAB8;font-weight:600;margin:0 0 22px">⚡ Solo entran <b>1.000</b> antes del lanzamiento. Corre la voz antes de que se llenen los cupos.</p>
     <div style="background:#0E2A20;border:1px solid rgba(52,211,153,.5);border-radius:20px;padding:24px 20px;text-align:center;margin:0 0 26px">
       <div style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#5EEAB8;margin-bottom:12px">Tu link para invitar</div>
       <div style="background:#08080A;border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:12px 10px;font-family:'JetBrains Mono',monospace;font-size:13px;color:#5EEAB8;word-break:break-all;margin-bottom:18px">${link}</div>
