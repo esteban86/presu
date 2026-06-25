@@ -63,6 +63,8 @@
       <ul class="tiers" id="tiers"></ul>
     </div>
 
+    <div class="card" id="circuloCard" style="display:none"></div>
+
     <div class="card">
       <div class="label">Tu link para invitar</div>
       <div class="linkbox">
@@ -128,6 +130,15 @@
       return '<li class="'+(on?'on':'')+'"><span class="dot">'+(on?'✓':'')+'</span><span>'+t.min+' → '+t.label+'</span></li>';
     }).join('');
     document.getElementById('tiers').innerHTML = tl;
+
+    if (me.circulo) {
+      var cc = document.getElementById('circuloCard');
+      cc.style.display = 'block';
+      cc.innerHTML = '<h2>Círculo de Fundadores 🎉</h2>'
+        + '<p class="muted" style="margin-top:0">Desbloqueaste el grupo privado, la Masterclass y el voto en el roadmap.</p>'
+        + (me.circulo.whatsapp ? '<a class="btn btn-mint" style="display:inline-block;text-decoration:none;margin:4px 0 14px" href="'+me.circulo.whatsapp+'" target="_blank" rel="noopener">Unirme al grupo privado →</a>' : '')
+        + '<ul class="tiers"><li class="on"><span class="dot">🎓</span><span><b>Masterclass de Asimétrica</b> — '+me.circulo.masterclass+'</span></li><li class="on"><span class="dot">🗳️</span><span><b>Voto en el roadmap</b> — '+me.circulo.roadmap+'</span></li></ul>';
+    }
 
     var top = (lb && lb.top) || [];
     document.getElementById('rank').innerHTML = top.length

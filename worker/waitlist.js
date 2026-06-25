@@ -65,7 +65,9 @@ export default {
       const owner = code && await env.WAITLIST.get('code:' + code);
       if (!owner) return json({ error: 'not_found' }, 404, pub);
       const n = parseInt((await env.WAITLIST.get('referrals:' + owner)) || '0', 10);
-      return json({ referrals: n, ...tierFor(n), link: SITE + '/?ref=' + code }, 200, pub);
+      const meResp = { referrals: n, ...tierFor(n), link: SITE + '/?ref=' + code };
+      if (n >= 7) meResp.circulo = { whatsapp: env.CIRCULO_WHATSAPP || '', masterclass: 'Te avisamos la fecha', roadmap: 'Muy pronto' };
+      return json(meResp, 200, pub);
     }
     if (request.method === 'GET' && path === '/leaderboard') {
       let lb = [];
@@ -166,6 +168,11 @@ async function creditReferral(env, refCode, newEmail) {
   await env.WAITLIST.put('referrals:' + referrer, String(count));
   let rrec = {}; try { rrec = JSON.parse((await env.WAITLIST.get('email:' + referrer)) || '{}'); } catch (e) {}
   await bumpLeaderboard(env, referrer, displayName(rrec, referrer), count);
+  // ¿Cruzó un nivel justo ahora? Envía el correo de desbloqueo (best-effort).
+  const crossed = TIERS.find(function (t) { return t.min === count; });
+  if (crossed && env.RESEND_API_KEY) {
+    try { await sendResend(env, { to: referrer, reply_to: env.NOTIFY_EMAIL || undefined, subject: tierSubject(crossed), html: tierEmailHtml(crossed, rrec, env) }); } catch (e) {}
+  }
   return { referrer, count };
 }
 async function bumpLeaderboard(env, email, name, count) {
@@ -295,6 +302,31 @@ function welcomeHtml(r) {
     </div>
     <p style="font-size:13px;line-height:1.6;color:#8A8A90;margin:0">Solo cuentan los amigos que se inscriban de verdad. Nos vemos el 30 —<span style="color:#34D399">tu plata, clara.</span></p>
   </div></body></html>`;
+}
+
+function tierSubject(t) {
+  if (t.min === 3) return '¡Eres Fundador de Presu! 🏅';
+  if (t.min === 7) return '¡Entraste al Círculo de Fundadores! 🎉';
+  return 'Eres Súper Fundador de Presu 🚀';
+}
+function tierEmailHtml(t, rec, env) {
+  const panel = SITE + '/fundador.html?code=' + (rec.ref || '');
+  const muro = SITE + '/muro.html';
+  const c = 'font-size:15px;line-height:1.6;color:#D4D4D6;margin:0 0 14px';
+  const hola = rec.nombre ? 'Hola, ' + esc(rec.nombre) + ' 👋' : 'Hola 👋';
+  let body;
+  if (t.min === 3) {
+    body = '<p style="' + c + '">Llegaste a <b style="color:#34D399">3 referidos</b> —ya eres <b style="color:#F4F4F3">Fundador de Presu</b> 🏅. Tu nombre ya aparece en el <a href="' + muro + '" style="color:#5EEAB8">Muro de Fundadores</a>.</p><p style="' + c + '">Sigue invitando: a los 7 entras al Círculo. <a href="' + panel + '" style="color:#5EEAB8">Ver tu panel →</a></p>';
+  } else if (t.min === 7) {
+    const wa = env.CIRCULO_WHATSAPP || '';
+    body = '<p style="' + c + '">¡Increíble! Con <b style="color:#34D399">7 referidos</b> entraste al <b style="color:#F4F4F3">Círculo de Fundadores</b> 🎉. Esto desbloqueas:</p>'
+      + (wa ? '<div style="text-align:center;margin:0 0 16px"><a href="' + wa + '" style="display:inline-block;background:#34D399;color:#08231A;font-weight:700;text-decoration:none;padding:13px 24px;border-radius:14px">Unirme al grupo privado</a></div>' : '')
+      + '<ul style="' + c + ';padding-left:18px"><li>🎓 <b style="color:#F4F4F3">Masterclass de Asimétrica</b> — te avisamos la fecha.</li><li>🗳️ <b style="color:#F4F4F3">Voto en el roadmap</b> — muy pronto te abrimos el tablero para proponer y votar funciones.</li></ul>'
+      + '<p style="' + c + '"><a href="' + panel + '" style="color:#5EEAB8">Ver tu panel →</a></p>';
+  } else {
+    body = '<p style="' + c + '">¡Eres <b style="color:#F4F4F3">Súper Fundador</b> 🚀! Gracias por llevar Presu tan lejos. <a href="' + panel + '" style="color:#5EEAB8">Ver tu panel →</a></p>';
+  }
+  return '<!doctype html><html><head><meta charset="utf-8"></head><body style="margin:0;background:#08080A;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#F4F4F3"><div style="max-width:520px;margin:0 auto;padding:36px 28px"><div style="font-size:26px;font-weight:700;letter-spacing:-.02em;margin-bottom:22px">presu<span style="color:#34D399">.</span></div><p style="font-size:18px;margin:0 0 16px">' + hola + '</p>' + body + '<p style="font-size:13px;color:#8A8A90;margin:18px 0 0">Tu plata, clara.</p></div></body></html>';
 }
 
 function notifyHtml(r, total) {
