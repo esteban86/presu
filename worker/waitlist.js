@@ -72,7 +72,7 @@ export default {
     if (request.method === 'GET' && path === '/leaderboard') {
       let lb = [];
       try { lb = JSON.parse((await env.WAITLIST.get('leaderboard')) || '[]'); } catch (e) {}
-      return json({ top: lb.slice(0, 10).map(function (x) { return { name: x.name, count: x.count }; }) }, 200, pub);
+      return json({ top: lb.slice(0, 25).map(function (x) { return { name: x.name, count: x.count }; }) }, 200, pub);
     }
     if (request.method === 'GET' && path === '/founders') {
       let lb = [];
