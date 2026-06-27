@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Política de privacidad · Presu</title>
+<meta name="description" content="Cómo Presu trata tus datos: tus finanzas viven en tu equipo; solo el dato mínimo viaja para funciones opcionales en la nube.">
+<link rel="icon" href="/favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{--mint:#34D399;--mint-bright:#5EEAB8;--ink:#08231A;--tx:#F4F4F3;--mut:#A1A1A6;--mut2:#6B6B72;--bg:#08080A;--bg2:#101014;--bg3:#16161A;--line:rgba(255,255,255,.1);--head:"Space Grotesk",sans-serif;--mono:"JetBrains Mono",monospace}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--tx);font-family:"Hanken Grotesk",sans-serif;line-height:1.6;padding:44px 20px}
+  .wrap{max-width:720px;margin:0 auto}
+  .brand{font-family:var(--head);font-weight:700;font-size:23px;letter-spacing:-.02em;margin-bottom:20px;display:inline-block;text-decoration:none;color:var(--tx)}
+  .brand span{color:var(--mint)}
+  .eb{font-family:var(--mono);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mint);margin-bottom:10px}
+  h1{font-family:var(--head);font-weight:700;font-size:1.9rem;letter-spacing:-.02em;margin:0 0 8px}
+  .upd{color:var(--mut2);font-family:var(--mono);font-size:.78rem;margin:0 0 26px}
+  .lede{color:var(--mut);font-size:1.02rem;margin:0 0 12px}
+  h2{font-family:var(--head);font-weight:600;font-size:1.18rem;letter-spacing:-.01em;margin:34px 0 10px;color:var(--tx)}
+  p{color:var(--mut);margin:0 0 14px}
+  ul{color:var(--mut);margin:0 0 14px;padding-left:20px}
+  li{margin-bottom:9px}
+  strong,b{color:var(--tx);font-weight:600}
+  a{color:var(--mint-bright);text-decoration:none}
+  a:hover{text-decoration:underline}
+  code{font-family:var(--mono);font-size:.84em;background:var(--bg3);padding:2px 6px;border-radius:6px;color:var(--tx)}
+  .callout{background:var(--bg2);border:1px solid var(--line);border-left:3px solid var(--mint);border-radius:12px;padding:14px 16px;margin:0 0 14px;color:var(--mut)}
+  .foot{margin-top:42px;padding-top:20px;border-top:1px solid var(--line);color:var(--mut2);font-size:.88rem;display:flex;gap:18px;flex-wrap:wrap;align-items:center}
+  .foot a{color:var(--mut)}
+  .back{display:inline-block;color:var(--mut);text-decoration:none;font-size:.9rem;border:1px solid var(--line);border-radius:999px;padding:8px 16px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="brand" href="/">presu<span>.</span></a>
+  <div class="eb">Legal</div>
+  <h1>Política de privacidad</h1>
+  <p class="upd">Última actualización: 27 de junio de 2026</p>
+
+  <p class="lede">Presu es una aplicación de escritorio de finanzas personales que funciona <strong>principalmente en tu equipo</strong>. Tus <strong>datos financieros</strong> —cuentas, transacciones, extractos, presupuestos, categorías— <strong>viven solo en tu dispositivo</strong> y no se envían a Presu ni a terceros.</p>
+  <p>Algunas funciones opcionales o del plan Pro usan servicios en la nube operados por Presu / <strong>Asimétrica</strong> (Presu IA, licencias y pagos). En esos casos viaja únicamente el dato mínimo que se describe abajo —nunca tu base de datos completa— y siempre con cédula y números de cuenta <strong>enmascarados</strong> cuando aplica.</p>
+
+  <h2>Qué datos se guardan y dónde</h2>
+  <ul>
+    <li>Toda la información (cuentas, transacciones, extractos, presupuestos, categorías, configuración) se almacena en una base de datos SQLite local: <code>~/Library/Application Support/Presu/gastos.db</code> (macOS).</li>
+    <li>Las credenciales sensibles (API keys, credenciales de Gmail, clave de licencia) se guardan cifradas (AES-256-GCM) en tu equipo.</li>
+    <li>El texto de los extractos se procesa <strong>en tu equipo</strong>. La copia que se conserva para reprocesar/auditar se guarda <strong>localmente</strong> con cédula y números de cuenta <strong>enmascarados</strong>, y puedes borrar todos tus datos cuando quieras desde <strong>Ajustes » Resetear datos</strong>.</li>
+  </ul>
+  <div class="callout"><strong>Importante:</strong> la base de datos <code>gastos.db</code> y sus backups se guardan <strong>sin cifrar</strong> en disco (solo las credenciales se cifran). Si te preocupa el acceso físico a tu equipo, activa el cifrado de disco del sistema (FileVault en macOS, BitLocker en Windows). Está en evaluación cifrar también la base de datos en una versión futura.</div>
+
+  <h2>Integraciones opcionales (las activas tú)</h2>
+  <ul>
+    <li><strong>Gmail (opcional):</strong> si la conectas, Presu lee tus correos con permiso de solo lectura (<code>gmail.readonly</code>) únicamente para detectar notificaciones de transacciones y extractos bancarios. Los datos se procesan en tu equipo. Cumple la política de <strong>Limited Use</strong> de Google: no se transfieren ni se usan para publicidad; al desconectar, se revoca el token.</li>
+    <li><strong>TRM (tasa de cambio):</strong> se consulta el portal público de datos del gobierno de Colombia para convertir USD→COP. No se envía información personal.</li>
+  </ul>
+
+  <h2>Presu IA (categorización y lectura en la nube)</h2>
+  <p>Presu IA es opcional (es parte del plan Pro; el plan gratis usa un modelo local en tu equipo). Cuando está activa:</p>
+  <ul>
+    <li>Solo se envía a nuestro servidor el <strong>texto enmascarado</strong> del movimiento o del extracto/correo (con cédula y números de cuenta ocultos) para sugerir categorías o extraer movimientos. <strong>No guardamos ese texto</strong>; se usa para responder y se descarta.</li>
+    <li>Para controlar costos y abuso llevamos <strong>contadores por dispositivo</strong> identificados por un <strong>id aleatorio</strong> (no por tu nombre ni tu correo).</li>
+    <li>También puedes usar <strong>tu propia API key</strong> (OpenAI/OpenRouter), en cuyo caso aplica la política de privacidad del proveedor que elijas.</li>
+    <li>El procesamiento se realiza a través de proveedores de IA; solo reciben el texto enmascarado descrito arriba.</li>
+  </ul>
+
+  <h2>Licencias y pagos</h2>
+  <p>Si compras el plan Pro:</p>
+  <ul>
+    <li>Guardamos en nuestro backend (Cloudflare) los <strong>datos mínimos de tu cuenta y suscripción</strong>: tu <strong>correo</strong>, un <strong>id de dispositivo</strong> aleatorio, y el <strong>estado</strong> de tu licencia/suscripción (plan, vigencia, pagos). Sirve para emitir, renovar y restaurar tu licencia.</li>
+    <li>El <strong>pago lo procesa Wompi</strong> (pasarela colombiana). Los datos de tu tarjeta o medio de pago los maneja Wompi bajo sus estándares de seguridad (PCI); <strong>Presu no ve ni almacena el número completo de tu tarjeta</strong>. Aplica la política de privacidad de Wompi.</li>
+    <li>Tu <strong>licencia</strong> es una clave firmada que se verifica sin conexión en tu equipo.</li>
+    <li><strong>Señal de uso (mínima):</strong> al abrir la app, esta ya consulta tu licencia/actualizaciones; en esa misma llamada registramos un <strong>id de dispositivo aleatorio + la fecha</strong> para saber cuándo se usó Presu (entender el uso y poder avisarte/mejorar). <strong>No</strong> incluye datos financieros ni personales.</li>
+  </ul>
+
+  <h2>Diagnóstico y reporte de errores</h2>
+  <p>El reporte de errores es <strong>manual</strong>: al exportar un diagnóstico, el archivo enmascara cédula y números de cuenta. Tú decides si compartirlo. No hay envío automático de telemetría ni de errores a ningún servidor. Los aportes opcionales para mejorar la lectura de formatos (muestras enmascaradas / señal anónima de salud de parseo) están <strong>apagados por defecto</strong> y solo se envían si tú los activas.</p>
+
+  <h2>Tus controles</h2>
+  <ul>
+    <li>Puedes desconectar Gmail, borrar tus API keys y quitar tu licencia en cualquier momento (Ajustes).</li>
+    <li>Puedes resetear datos o borrar todo desde Ajustes → Avanzado.</li>
+    <li>Para dar de baja tu suscripción o solicitar borrado de los datos de tu cuenta, escríbenos (ver Contacto).</li>
+    <li>Al desinstalar, elimina también <code>~/Library/Application Support/Presu/</code> para borrar tus datos locales.</li>
+  </ul>
+
+  <h2>Contacto</h2>
+  <p>Para dudas de privacidad o para ejercer tus derechos (acceso, actualización, supresión) conforme a la Ley 1581 de 2012, escribe a <a href="mailto:soporte@asimetrica.co">soporte@asimetrica.co</a>.</p>
+
+  <div class="foot">
+    <a class="back" href="/">← Volver a presu.</a>
+    <a href="/terminos">Términos y condiciones</a>
+    <a href="mailto:soporte@asimetrica.co">soporte@asimetrica.co</a>
+  </div>
+</div>
+</body>
+</html>
