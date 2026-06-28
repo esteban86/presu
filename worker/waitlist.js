@@ -350,7 +350,8 @@ async function roadmapVote(request, env, cors) {
 }
 
 // ── Encuesta de perfil (buyer persona) ───────────────────────
-const SURVEY_FIELDS = ['edad', 'ciudad', 'metodo', 'bancos', 'dolor', 'pago', 'ingreso'];
+const SURVEY_FIELDS = ['nombre', 'edad', 'ciudad', 'ocupacion', 'ingreso_tipo', 'metodo', 'metas', 'bancos', 'bancos_otra', 'dispositivo', 'dolor', 'pago', 'ingreso'];
+const SURVEY_ARRAY_FIELDS = ['bancos', 'metas'];
 const SURVEY_SUBJECT = 'Ayúdanos a construir Presu a tu medida (2 min) 🌿';
 
 // GET /survey?e=correo → ¿está en la lista?, ¿ya respondió?, nombre (para precargar la UX)
@@ -375,8 +376,12 @@ async function surveySubmit(request, env, cors) {
   const clean = {};
   for (const k of SURVEY_FIELDS) {
     if (ans[k] == null || ans[k] === '') continue;
-    if (k === 'bancos') clean[k] = (Array.isArray(ans[k]) ? ans[k] : []).map(function (s) { return String(s).slice(0, 40); }).slice(0, 12);
+    if (SURVEY_ARRAY_FIELDS.indexOf(k) >= 0) clean[k] = (Array.isArray(ans[k]) ? ans[k] : []).map(function (s) { return String(s).slice(0, 40); }).slice(0, 25);
     else clean[k] = String(ans[k]).slice(0, 280);
+  }
+  // Si nos dieron nombre y no lo teníamos en la lista, lo guardamos en el registro.
+  if (clean.nombre) {
+    try { const wl = JSON.parse((await env.WAITLIST.get('email:' + email)) || '{}'); if (!wl.nombre) { wl.nombre = clean.nombre.slice(0, 80); await env.WAITLIST.put('email:' + email, JSON.stringify(wl)); } } catch (e) {}
   }
   const prev = await env.WAITLIST.get('survey:' + email);
   await env.WAITLIST.put('survey:' + email, JSON.stringify({ email, answers: clean, ts: Date.now(), updated: !!prev }));
