@@ -19,7 +19,7 @@
  */
 
 const SITE = 'https://presu.asimetrica.co';
-const ALLOWED_ORIGINS = [SITE, 'http://localhost:4821'];
+const ALLOWED_ORIGINS = [SITE, 'http://localhost:4821', 'http://localhost:4796'];
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const FROM = 'Presu · de Asimétrica <presu@asimetrica.co>';
 const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
@@ -84,6 +84,12 @@ export default {
     if (request.method === 'GET' && path === '/roadmap') return roadmapList(request, env, pub, url);
     if (path === '/roadmap/propose') return roadmapPropose(request, env, cors);
     if (path === '/roadmap/vote') return roadmapVote(request, env, cors);
+
+    if (request.method === 'GET' && path === '/survey') return surveyCheck(request, env, pub, url);
+    if (request.method === 'POST' && path === '/survey') return surveySubmit(request, env, cors);
+    if (request.method === 'GET' && path === '/admin/survey') return adminSurvey(request, env, cors);
+    if (path === '/admin/survey-batch') return adminSurveyBatch(request, env, cors);
+    if (path === '/admin/survey-one') return adminSurveyOne(request, env, cors);
 
     if (request.method !== 'POST') return json({ status: 'error', reason: 'method' }, 405, cors);
 
@@ -343,6 +349,95 @@ async function roadmapVote(request, env, cors) {
   return json({ ok: true, votes: f.votes, voted: !has }, 200, cors);
 }
 
+// ── Encuesta de perfil (buyer persona) ───────────────────────
+const SURVEY_FIELDS = ['edad', 'ciudad', 'metodo', 'bancos', 'dolor', 'pago', 'ingreso'];
+const SURVEY_SUBJECT = 'Ayúdanos a construir Presu a tu medida (2 min) 🌿';
+
+// GET /survey?e=correo → ¿está en la lista?, ¿ya respondió?, nombre (para precargar la UX)
+async function surveyCheck(request, env, pub, url) {
+  const email = String(url.searchParams.get('e') || '').trim().toLowerCase();
+  if (!EMAIL_RE.test(email)) return json({ found: false }, 200, pub);
+  const raw = await env.WAITLIST.get('email:' + email);
+  if (!raw) return json({ found: false }, 200, pub);
+  let rec = {}; try { rec = JSON.parse(raw); } catch (e) {}
+  const answered = !!(await env.WAITLIST.get('survey:' + email));
+  return json({ found: true, answered, nombre: rec.nombre || '' }, 200, pub);
+}
+
+// POST /survey {email, answers} → guarda (solo si el correo ya está en la waitlist)
+async function surveySubmit(request, env, cors) {
+  let body; try { body = await request.json(); } catch (e) { return json({ status: 'error', reason: 'json' }, 400, cors); }
+  if (body.botcheck) return json({ status: 'ok' }, 200, cors); // honeypot
+  const email = String(body.email || '').trim().toLowerCase();
+  if (!EMAIL_RE.test(email)) return json({ status: 'error', reason: 'email' }, 400, cors);
+  if (!(await env.WAITLIST.get('email:' + email))) return json({ status: 'error', reason: 'not_in_list' }, 403, cors);
+  const ans = body.answers || {};
+  const clean = {};
+  for (const k of SURVEY_FIELDS) {
+    if (ans[k] == null || ans[k] === '') continue;
+    if (k === 'bancos') clean[k] = (Array.isArray(ans[k]) ? ans[k] : []).map(function (s) { return String(s).slice(0, 40); }).slice(0, 12);
+    else clean[k] = String(ans[k]).slice(0, 280);
+  }
+  const prev = await env.WAITLIST.get('survey:' + email);
+  await env.WAITLIST.put('survey:' + email, JSON.stringify({ email, answers: clean, ts: Date.now(), updated: !!prev }));
+  if (!prev) await env.WAITLIST.put('meta:surveys', String(parseInt((await env.WAITLIST.get('meta:surveys')) || '0', 10) + 1));
+  return json({ status: prev ? 'updated' : 'ok' }, 200, cors);
+}
+
+// GET /admin/survey → todas las respuestas cruzadas con datos de la waitlist (token)
+async function adminSurvey(request, env, cors) {
+  if (!authed(request, env)) return json({ error: 'unauthorized' }, 401, cors);
+  const list = await env.WAITLIST.list({ prefix: 'survey:', limit: 1000 });
+  const rows = [];
+  for (const k of list.keys) {
+    let s = {}; try { s = JSON.parse(await env.WAITLIST.get(k.name)); } catch (e) { continue; }
+    const email = s.email || k.name.slice(7);
+    let wl = {}; try { wl = JSON.parse((await env.WAITLIST.get('email:' + email)) || '{}'); } catch (e) {}
+    const referrals = parseInt((await env.WAITLIST.get('referrals:' + email)) || '0', 10);
+    rows.push(Object.assign({ email, ts: s.ts || 0, referrals, origen: wl.origen || '', perfil: wl.perfil || '', signup: wl.ts || 0 }, s.answers));
+  }
+  rows.sort(function (a, b) { return (b.ts || 0) - (a.ts || 0); });
+  return json({ total: rows.length, rows }, 200, cors);
+}
+
+// Envío de la invitación a la encuesta (manual o por lotes) — flag aparte: survey_sent:
+async function runSurveyBatch(env, limit) {
+  const list = await env.WAITLIST.list({ prefix: 'email:', limit: 1000 });
+  let sent = 0, skipped = 0, errors = 0;
+  for (const k of list.keys) {
+    if (sent >= limit) break;
+    const email = k.name.slice(6);
+    if (await env.WAITLIST.get('survey_sent:' + email)) { skipped++; continue; }
+    if (isTestEmail(email) || isDisposable(email)) { await env.WAITLIST.put('survey_sent:' + email, 'skip'); skipped++; continue; }
+    let rec = {}; try { rec = JSON.parse((await env.WAITLIST.get('email:' + email)) || '{}'); } catch (e) {}
+    rec.email = email;
+    if (!env.RESEND_API_KEY) { errors++; continue; }
+    const res = await sendResend(env, { to: email, reply_to: env.NOTIFY_EMAIL || undefined, subject: SURVEY_SUBJECT, html: surveyEmailHtml(rec) });
+    if (res.ok) { await env.WAITLIST.put('survey_sent:' + email, String(Date.now())); sent++; } else errors++;
+  }
+  return { sent, skipped, errors, scanned: list.keys.length };
+}
+async function adminSurveyBatch(request, env, cors) {
+  if (request.method !== 'POST') return json({ error: 'method' }, 405, cors);
+  if (!authed(request, env)) return json({ error: 'unauthorized' }, 401, cors);
+  let body = {}; try { body = await request.json(); } catch (e) {}
+  const limit = Math.min(Number(body.limit) || 30, 40);
+  return json(await runSurveyBatch(env, limit), 200, cors);
+}
+async function adminSurveyOne(request, env, cors) {
+  if (request.method !== 'POST') return json({ error: 'method' }, 405, cors);
+  if (!authed(request, env)) return json({ error: 'unauthorized' }, 401, cors);
+  let body; try { body = await request.json(); } catch (e) { return json({ error: 'json' }, 400, cors); }
+  const email = String(body.email || '').trim().toLowerCase();
+  if (!EMAIL_RE.test(email)) return json({ status: 'error', reason: 'email' }, 400, cors);
+  let rec = {}; const raw = await env.WAITLIST.get('email:' + email);
+  if (raw) { try { rec = JSON.parse(raw); } catch (e) {} }
+  rec.email = email;
+  const res = await sendResend(env, { to: email, reply_to: env.NOTIFY_EMAIL || undefined, subject: SURVEY_SUBJECT, html: surveyEmailHtml(rec) });
+  if (res.ok) { await env.WAITLIST.put('survey_sent:' + email, String(Date.now())); return json({ status: 'sent', id: res.id }, 200, cors); }
+  return json({ status: 'error', detail: res }, 502, cors);
+}
+
 // ── Resend ───────────────────────────────────────────────────
 async function sendResend(env, { to, subject, html, reply_to }) {
   try {
@@ -428,6 +523,23 @@ function tierEmailHtml(t, rec, env) {
       + '<p style="' + c + '">Y estás peleando de frente por el <b style="color:#34D399">Top 3</b>: acompañamiento 1:1 en finanzas (3 meses) + libro (valor $1.500.000), gratis. <a href="' + panel + '" style="color:#5EEAB8">Ver el ranking →</a></p>';
   }
   return '<!doctype html><html><head><meta charset="utf-8"></head><body style="margin:0;background:#08080A;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#F4F4F3"><div style="max-width:520px;margin:0 auto;padding:36px 28px"><div style="font-size:26px;font-weight:700;letter-spacing:-.02em;margin-bottom:22px">presu<span style="color:#34D399">.</span></div><p style="font-size:18px;margin:0 0 16px">' + hola + '</p>' + body + '<p style="font-size:13px;color:#8A8A90;margin:18px 0 0">Tu plata, clara.</p></div></body></html>';
+}
+
+function surveyEmailHtml(r) {
+  const hola = r.nombre ? 'Hola, ' + esc(r.nombre) + ' 👋' : 'Hola 👋';
+  const link = SITE + '/encuesta.html?e=' + encodeURIComponent(r.email || '');
+  return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;background:#08080A;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#F4F4F3">
+  <div style="max-width:540px;margin:0 auto;padding:32px 24px">
+    <div style="font-size:24px;font-weight:800;letter-spacing:-.02em;margin-bottom:18px">presu<span style="color:#34D399">.</span></div>
+    <p style="font-size:16px;color:#A1A1A6;margin:0 0 6px">${hola}</p>
+    <h1 style="font-size:28px;line-height:1.15;font-weight:800;letter-spacing:-.02em;margin:0 0 14px;color:#fff">Construyamos Presu <span style="color:#34D399">a tu medida</span></h1>
+    <p style="font-size:16px;line-height:1.55;color:#D4D4D6;margin:0 0 14px">Eres de los primeros en sumarte, así que queremos construir esto <b style="color:#fff">contigo</b>. Cuéntanos quién eres y qué necesitas: son <b style="color:#34D399">7 preguntas, menos de 2 minutos</b>.</p>
+    <p style="font-size:15px;line-height:1.5;color:#5EEAB8;font-weight:600;margin:0 0 22px">🎟️ Quien responda entra en las <b>primeras invitaciones</b> cuando abramos la beta.</p>
+    <div style="text-align:center;margin:0 0 24px">
+      <a href="${link}" style="display:inline-block;background:#34D399;color:#08231A;font-weight:800;font-size:17px;text-decoration:none;padding:16px 30px;border-radius:14px">Responder la encuesta →</a>
+    </div>
+    <p style="font-size:12px;line-height:1.6;color:#6B6B72;margin:0;text-align:center">Solo lo usamos para mejorar Presu. No compartimos tus datos. <span style="color:#34D399">Tu plata, clara.</span></p>
+  </div></body></html>`;
 }
 
 function notifyHtml(r, total) {
