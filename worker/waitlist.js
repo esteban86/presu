@@ -38,7 +38,7 @@ function isTestEmail(e) { return TEST_EMAILS.indexOf(e) !== -1 || e.indexOf('+')
 export default {
   async fetch(request, env) {
     const origin = request.headers.get('Origin') || '';
-    const allowOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+    const allowOrigin = (ALLOWED_ORIGINS.includes(origin) || /\.presu-staging\.pages\.dev$/.test(origin)) ? origin : ALLOWED_ORIGINS[0];
     const cors = {
       'Access-Control-Allow-Origin': allowOrigin,
       'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
