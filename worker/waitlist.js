@@ -350,7 +350,7 @@ async function roadmapVote(request, env, cors) {
 }
 
 // ── Encuesta de perfil (buyer persona) ───────────────────────
-const SURVEY_FIELDS = ['nombre', 'edad', 'ciudad', 'ocupacion', 'ingreso_tipo', 'metodo', 'metas', 'bancos', 'bancos_otra', 'dispositivo', 'dolor', 'pago', 'ingreso', 'ayuda'];
+const SURVEY_FIELDS = ['nombre', 'edad', 'ciudad', 'ocupacion', 'ingreso_tipo', 'metodo', 'metas', 'bancos', 'bancos_otra', 'dispositivo', 'dolor', 'pago', 'ingreso', 'ayuda', 'celular'];
 const SURVEY_ARRAY_FIELDS = ['bancos', 'metas', 'ayuda'];
 const SURVEY_SUBJECT = 'Ayúdanos a construir Presu a tu medida (2 min) 🌿';
 
