@@ -376,7 +376,7 @@ async function surveySubmit(request, env, cors) {
   const clean = {};
   for (const k of SURVEY_FIELDS) {
     if (ans[k] == null || ans[k] === '') continue;
-    if (SURVEY_ARRAY_FIELDS.indexOf(k) >= 0) clean[k] = (Array.isArray(ans[k]) ? ans[k] : []).map(function (s) { return String(s).slice(0, 40); }).slice(0, 25);
+    if (SURVEY_ARRAY_FIELDS.indexOf(k) >= 0) clean[k] = (Array.isArray(ans[k]) ? ans[k] : []).map(function (s) { return String(s).slice(0, 80); }).slice(0, 25);
     else clean[k] = String(ans[k]).slice(0, 280);
   }
   // Si nos dieron nombre y no lo teníamos en la lista, lo guardamos en el registro.
