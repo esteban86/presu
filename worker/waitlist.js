@@ -56,6 +56,7 @@ export default {
     if (path === '/admin/campaign-batch') return adminCampaignBatch(request, env, cors);
     if (path === '/admin/campaign-one') return adminCampaignOne(request, env, cors);
     if (request.method === 'GET' && path === '/admin/stats') return adminStats(request, env, cors);
+    if (request.method === 'GET' && path === '/admin/waitlist') return adminWaitlist(request, env, cors, url);
 
     if (request.method === 'GET' && path === '/count') {
       const count = parseInt((await env.WAITLIST.get('meta:count')) || '0', 10);
@@ -248,6 +249,49 @@ async function adminStats(request, env, cors) {
   const total = parseInt((await env.WAITLIST.get('meta:count')) || '0', 10);
   let lb = []; try { lb = JSON.parse((await env.WAITLIST.get('leaderboard')) || '[]'); } catch (e) {}
   return json({ total, leaderboard: lb }, 200, cors);
+}
+
+// GET /admin/waitlist — exporta TODA la waitlist (JSON, o ?format=csv). Token.
+// Pensado para conectar la app: email + nombre + perfil + cohort (pionero/tanda2) + código + fecha.
+async function adminWaitlist(request, env, cors, url) {
+  if (!authed(request, env)) return json({ error: 'unauthorized' }, 401, cors);
+  // 1) recolecta todas las keys (paginado)
+  const names = [];
+  let cursor = undefined, done = false;
+  while (!done) {
+    const list = await env.WAITLIST.list({ prefix: 'email:', limit: 1000, cursor });
+    for (const k of list.keys) names.push(k.name);
+    if (list.list_complete) { done = true; } else { cursor = list.cursor; }
+  }
+  // 2) lee los registros en PARALELO, por lotes (rápido)
+  const rows = [];
+  const BATCH = 50;
+  for (let i = 0; i < names.length; i += BATCH) {
+    const recs = await Promise.all(names.slice(i, i + BATCH).map(function (name) {
+      return env.WAITLIST.get(name).then(function (v) { let r = {}; try { r = JSON.parse(v || '{}'); } catch (e) {} return { name, r }; });
+    }));
+    for (const { name, r } of recs) {
+      rows.push({
+        email: name.slice(6),
+        nombre: r.nombre || '',
+        perfil: r.perfil || '',
+        empresa: r.empresa || '',
+        origen: r.origen || '',
+        cohort: r.origen === 'tanda2' ? 'tanda2' : 'pionero',
+        ref: r.ref || '',
+        referredBy: r.referredBy || '',
+        ts: r.ts || 0,
+      });
+    }
+  }
+  rows.sort(function (a, b) { return (a.ts || 0) - (b.ts || 0); });
+  if ((url.searchParams.get('format') || '') === 'csv') {
+    const cols = ['email', 'nombre', 'perfil', 'empresa', 'origen', 'cohort', 'ref', 'referredBy', 'ts'];
+    const q = function (s) { return '"' + String(s == null ? '' : s).replace(/"/g, '""') + '"'; };
+    const lines = [cols.join(',')].concat(rows.map(function (r) { return cols.map(function (c) { return q(r[c]); }).join(','); }));
+    return new Response(lines.join('\n'), { status: 200, headers: { 'Content-Type': 'text/csv; charset=utf-8', 'Content-Disposition': 'attachment; filename="presu-waitlist.csv"', ...cors } });
+  }
+  return json({ total: rows.length, rows }, 200, cors);
 }
 function authed(request, env) { return env.ADMIN_TOKEN && (request.headers.get('X-Admin-Token') || '') === env.ADMIN_TOKEN; }
 
@@ -587,7 +631,7 @@ async function adminDoc(request, env, url) {
   let key = null; try { key = JSON.parse(raw).key; } catch (e) {}
   const obj = key && await env.DOCS.get(key);
   if (!obj) return new Response('not found', { status: 404 });
-  return new Response(obj.body, { status: 200, headers: { 'Content-Type': 'image/jpeg', 'Cache-Control': 'no-store' } });
+  return new Response(obj.body, { status: 200, headers: { 'Content-Type': 'image/jpeg', 'Cache-Control': 'no-store', 'Access-Control-Allow-Origin': '*' } });
 }
 
 // ── Resend ───────────────────────────────────────────────────

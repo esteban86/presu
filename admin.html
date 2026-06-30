@@ -46,7 +46,32 @@
     : 'https://presu-waitlist-staging.asimetrica.workers.dev';
   var app = document.getElementById('app');
   var tok = sessionStorage.getItem('presu_admin_tok') || '';
+  var GROUPS = {};
   function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c];});}
+
+  // Junta las páginas de un envío en UN solo PDF (en el navegador).
+  function loadJsPDF(){ if(window.jspdf&&window.jspdf.jsPDF) return Promise.resolve(); if(loadJsPDF._p) return loadJsPDF._p; loadJsPDF._p=new Promise(function(res,rej){ var s=document.createElement('script'); s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'; s.onload=res; s.onerror=rej; document.head.appendChild(s); }); return loadJsPDF._p; }
+  function downloadPdf(sid, banco, btn){
+    var g=(GROUPS[sid]||[]).slice().sort(function(a,b){return (a.page||0)-(b.page||0);});
+    if(!g.length) return;
+    var orig=btn.textContent; btn.disabled=true; btn.textContent='Generando…';
+    loadJsPDF().then(function(){
+      var JsPDF=(window.jspdf&&window.jspdf.jsPDF)||window.jsPDF;
+      return Promise.all(g.map(function(r){ return new Promise(function(res,rej){
+        var im=new Image(); im.crossOrigin='anonymous';
+        im.onload=function(){res(im);}; im.onerror=function(){rej(new Error('img'));};
+        im.src=API+'/admin/doc?id='+encodeURIComponent(r.id)+'&t='+encodeURIComponent(tok)+'&c=1';
+      });})).then(function(imgs){
+        var doc;
+        imgs.forEach(function(im,i){ var w=im.naturalWidth,h=im.naturalHeight,o=w>h?'l':'p';
+          if(i===0){ doc=new JsPDF({unit:'px',format:[w,h],orientation:o}); } else { doc.addPage([w,h],o); }
+          doc.addImage(im,'JPEG',0,0,w,h);
+        });
+        doc.save((banco||'doc').toLowerCase().replace(/[^a-z0-9]+/g,'-')+'_'+String(sid).slice(0,8)+'.pdf');
+      });
+    }).then(function(){ btn.disabled=false; btn.textContent=orig; })
+      .catch(function(e){ btn.disabled=false; btn.textContent=orig; alert('No se pudo generar el PDF: '+(e&&e.message||e)); });
+  }
 
   function gate(msg){
     app.innerHTML = '<h1>Entrar</h1><p class="muted">Pega el token de admin para ver los aportes.</p>'+
@@ -67,7 +92,7 @@
 
   function render(rows){
     // agrupar por submissionId
-    var groups={}, order=[];
+    GROUPS={}; var groups=GROUPS, order=[];
     rows.forEach(function(r){ var k=r.submissionId||r.id; if(!groups[k]){ groups[k]=[]; order.push(k); } groups[k].push(r); });
     var exportUrl = API+'/admin/contrib/export';
     var head = '<h1>Aportes <span class="stat">'+rows.length+' docs · '+order.length+' envíos</span></h1>'+
@@ -80,7 +105,7 @@
       var g=groups[k].sort(function(a,b){return (a.page||0)-(b.page||0);});
       var f=g[0];
       html+='<div class="group"><div class="ghead"><b>'+esc(f.banco||'?')+'</b>'+
-        '<span><span class="tag">'+esc(f.pais||'')+'</span> <span class="tag">'+esc(f.moneda||'')+'</span> <span class="tag">'+esc(f.tipo||'')+'</span> <span class="tag">'+g.length+' pág</span></span></div><div class="pages">';
+        '<span><span class="tag">'+esc(f.pais||'')+'</span> <span class="tag">'+esc(f.moneda||'')+'</span> <span class="tag">'+esc(f.tipo||'')+'</span> <span class="tag">'+g.length+' pág</span> <button class="btn pdf-btn" style="padding:7px 13px;font-size:.85rem" data-sid="'+esc(k)+'" data-banco="'+esc(f.banco||'doc')+'">📄 Descargar PDF</button></span></div><div class="pages">';
       g.forEach(function(r){
         var img=API+'/admin/doc?id='+encodeURIComponent(r.id)+'&t='+encodeURIComponent(tok);
         html+='<div class="pg"><a href="'+img+'" target="_blank" rel="noopener"><img loading="lazy" src="'+img+'"></a>'+
@@ -101,6 +126,7 @@
     };
     var rl=document.getElementById('reload'); if(rl) rl.onclick=load;
     var lo=document.getElementById('logout'); if(lo) lo.onclick=function(){ sessionStorage.removeItem('presu_admin_tok'); tok=''; gate(); };
+    Array.prototype.forEach.call(document.querySelectorAll('.pdf-btn'), function(b){ b.onclick=function(){ downloadPdf(b.getAttribute('data-sid'), b.getAttribute('data-banco'), b); }; });
   }
 
   load();
