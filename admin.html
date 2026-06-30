@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Aportes · Admin · Presu</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{--mint:#34D399;--mint-bright:#5EEAB8;--ink:#08231A;--tx:#F4F4F3;--mut:#A1A1A6;--mut2:#6B6B72;--bg:#08080A;--bg2:#101014;--bg3:#16161A;--line:rgba(255,255,255,.1);--line2:rgba(255,255,255,.16);--head:"Space Grotesk",sans-serif;--mono:"JetBrains Mono",monospace}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--tx);font-family:"Hanken Grotesk",sans-serif;line-height:1.5;padding:28px 20px;max-width:1100px;margin:0 auto}
+  .brand{font-family:var(--head);font-weight:700;font-size:22px;letter-spacing:-.02em}.brand span{color:var(--mint)}
+  .eb{font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mint);margin:6px 0 18px}
+  h1{font-family:var(--head);font-weight:700;font-size:1.7rem;letter-spacing:-.02em;margin:0 0 4px}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  input{background:var(--bg2);border:1.5px solid var(--line);border-radius:11px;color:#fff;font-family:inherit;font-size:1rem;padding:11px 13px;outline:none;min-width:280px}
+  input:focus{border-color:var(--mint)}
+  .btn{border:0;border-radius:11px;padding:11px 18px;font-weight:700;font-size:.95rem;cursor:pointer;font-family:inherit;background:var(--mint);color:var(--ink);text-decoration:none;display:inline-block}
+  .btn:hover{background:var(--mint-bright)}
+  .btn.ghost{background:rgba(255,255,255,.05);border:1px solid var(--line2);color:#fff}
+  .muted{color:var(--mut)}
+  .stat{font-family:var(--mono);color:var(--mint-bright)}
+  .group{background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin:14px 0}
+  .ghead{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+  .ghead b{font-family:var(--head);font-size:1.05rem}
+  .tag{font-family:var(--mono);font-size:.72rem;color:var(--mut);background:var(--bg3);border:1px solid var(--line);border-radius:7px;padding:3px 8px}
+  .pages{display:flex;gap:12px;flex-wrap:wrap}
+  .pg{width:180px}
+  .pg a{display:block;border:1px solid var(--line2);border-radius:10px;overflow:hidden;background:#000}
+  .pg img{width:100%;height:230px;object-fit:cover;display:block}
+  .pmeta{font-size:.78rem;color:var(--mut2);margin-top:5px;display:flex;justify-content:space-between;gap:6px;font-family:var(--mono)}
+  .pmeta a{color:var(--mint-bright);text-decoration:none}
+  .err{color:#FCA5A5;margin-top:10px}
+  .empty{color:var(--mut2);margin-top:24px}
+</style>
+</head>
+<body>
+  <div class="brand">presu<span>.</span></div>
+  <div class="eb">Admin · Aportes</div>
+  <div id="app"></div>
+<script>
+(function(){
+  var API = location.hostname === 'presu.asimetrica.co'
+    ? 'https://presu-waitlist.asimetrica.workers.dev'
+    : 'https://presu-waitlist-staging.asimetrica.workers.dev';
+  var app = document.getElementById('app');
+  var tok = sessionStorage.getItem('presu_admin_tok') || '';
+  function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c];});}
+
+  function gate(msg){
+    app.innerHTML = '<h1>Entrar</h1><p class="muted">Pega el token de admin para ver los aportes.</p>'+
+      '<div class="row"><input id="tk" type="password" placeholder="X-Admin-Token" value="'+esc(tok)+'"><button class="btn" id="go">Entrar</button></div>'+
+      (msg?'<p class="err">'+esc(msg)+'</p>':'');
+    document.getElementById('go').onclick=function(){ tok=document.getElementById('tk').value.trim(); sessionStorage.setItem('presu_admin_tok',tok); load(); };
+    document.getElementById('tk').addEventListener('keydown',function(e){ if(e.key==='Enter') document.getElementById('go').click(); });
+  }
+
+  function load(){
+    if(!tok){ return gate(); }
+    app.innerHTML='<p class="muted">Cargando…</p>';
+    fetch(API+'/admin/contrib',{headers:{'X-Admin-Token':tok},cache:'no-store'})
+      .then(function(r){ if(r.status===401) throw new Error('Token inválido'); return r.json(); })
+      .then(function(d){ render(d.rows||[]); })
+      .catch(function(e){ gate(e.message||'No se pudo cargar'); });
+  }
+
+  function render(rows){
+    // agrupar por submissionId
+    var groups={}, order=[];
+    rows.forEach(function(r){ var k=r.submissionId||r.id; if(!groups[k]){ groups[k]=[]; order.push(k); } groups[k].push(r); });
+    var exportUrl = API+'/admin/contrib/export';
+    var head = '<h1>Aportes <span class="stat">'+rows.length+' docs · '+order.length+' envíos</span></h1>'+
+      '<div class="row" style="margin:10px 0 6px"><button class="btn" id="exp">⬇ Descargar dataset (JSONL)</button> '+
+      '<button class="btn ghost" id="reload">Recargar</button> '+
+      '<button class="btn ghost" id="logout">Salir</button></div>';
+    if(!rows.length){ app.innerHTML=head+'<p class="empty">Aún no hay aportes.</p>'; wire(); return; }
+    var html=head;
+    order.forEach(function(k){
+      var g=groups[k].sort(function(a,b){return (a.page||0)-(b.page||0);});
+      var f=g[0];
+      html+='<div class="group"><div class="ghead"><b>'+esc(f.banco||'?')+'</b>'+
+        '<span><span class="tag">'+esc(f.pais||'')+'</span> <span class="tag">'+esc(f.moneda||'')+'</span> <span class="tag">'+esc(f.tipo||'')+'</span> <span class="tag">'+g.length+' pág</span></span></div><div class="pages">';
+      g.forEach(function(r){
+        var img=API+'/admin/doc?id='+encodeURIComponent(r.id)+'&t='+encodeURIComponent(tok);
+        html+='<div class="pg"><a href="'+img+'" target="_blank" rel="noopener"><img loading="lazy" src="'+img+'"></a>'+
+          '<div class="pmeta"><span>'+(r.source||'')+' · '+(r.tokenCount||0)+' tok</span></div></div>';
+      });
+      html+='</div></div>';
+    });
+    app.innerHTML=html; wire();
+  }
+
+  function wire(){
+    var ex=document.getElementById('exp'); if(ex) ex.onclick=function(){
+      fetch(API+'/admin/contrib/export',{headers:{'X-Admin-Token':tok},cache:'no-store'})
+        .then(function(r){return r.text();}).then(function(t){
+          var b=new Blob([t],{type:'application/x-ndjson'}); var u=URL.createObjectURL(b);
+          var a=document.createElement('a'); a.href=u; a.download='presu-aportes.jsonl'; a.click(); URL.revokeObjectURL(u);
+        });
+    };
+    var rl=document.getElementById('reload'); if(rl) rl.onclick=load;
+    var lo=document.getElementById('logout'); if(lo) lo.onclick=function(){ sessionStorage.removeItem('presu_admin_tok'); tok=''; gate(); };
+  }
+
+  load();
+})();
+</script>
+</body>
+</html>

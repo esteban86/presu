@@ -95,6 +95,8 @@ export default {
     if (request.method === 'GET' && path === '/contrib/progress') return contribProgress(request, env, pub);
     if (request.method === 'GET' && path === '/contrib/wall') return contribWall(request, env, pub);
     if (request.method === 'GET' && path === '/admin/contrib') return adminContrib(request, env, cors);
+    if (request.method === 'GET' && path === '/admin/contrib/export') return adminContribExport(request, env, cors);
+    if (request.method === 'GET' && path === '/admin/doc') return adminDoc(request, env, url);
 
     if (request.method !== 'POST') return json({ status: 'error', reason: 'method' }, 405, cors);
 
@@ -474,6 +476,7 @@ async function contribSubmit(request, env, cors) {
   const tipo = String(form.get('tipo') || '').trim().slice(0, 20);
   const nombre = String(form.get('nombre') || '').trim().slice(0, 80);
   const ref = String(form.get('ref') || '').trim().slice(0, 80);
+  const sid = String(form.get('sid') || '').trim().slice(0, 48) || crypto.randomUUID(); // agrupa páginas del mismo extracto
   if (!banco || !tipo) return json({ status: 'error', reason: 'fields' }, 400, cors);
   const docs = [];
   for (const entry of form.entries()) {
@@ -491,11 +494,19 @@ async function contribSubmit(request, env, cors) {
     const base = 'doc/' + pais + '/' + slug(banco) + '/' + id;
     const key = base + '.jpg';
     await env.DOCS.put(key, await f.arrayBuffer(), { httpMetadata: { contentType: 'image/jpeg' } });
-    // Texto anónimo estructurado (lo NO tapado) para entrenar el parser — sin PDF, sin PII.
-    const txt = String(form.get('text' + d.idx) || '').slice(0, 80000);
-    let txtKey = null;
-    if (txt) { txtKey = base + '.txt'; await env.DOCS.put(txtKey, txt, { httpMetadata: { contentType: 'text/plain; charset=utf-8' } }); }
-    await env.WAITLIST.put('contrib:' + id, JSON.stringify({ id, key, txtKey, hasText: !!txt, pais, banco, moneda, tipo, size: f.size, ts: Date.now() }));
+    // Tokens con posición (x,y,w,h) anónimos → JSON estructurado para el parser. Sin PDF, sin PII.
+    let parsed = null; try { parsed = JSON.parse(String(form.get('tokens' + d.idx) || 'null')); } catch (e) {}
+    let jsonKey = null, txtKey = null, tokenCount = 0, source = '';
+    if (parsed && Array.isArray(parsed.tokens)) {
+      tokenCount = parsed.tokens.length;
+      source = String(parsed.source || '').slice(0, 12);
+      const layout = { id, submissionId: sid, page: d.idx, source, pais, banco, moneda, tipo, w: parsed.w || 0, h: parsed.h || 0, tokens: parsed.tokens.slice(0, 5000), ts: Date.now() };
+      jsonKey = base + '.json';
+      await env.DOCS.put(jsonKey, JSON.stringify(layout), { httpMetadata: { contentType: 'application/json; charset=utf-8' } });
+      const flat = parsed.tokens.map(function (t) { return t.t; }).join(' ').slice(0, 80000);
+      if (flat) { txtKey = base + '.txt'; await env.DOCS.put(txtKey, flat, { httpMetadata: { contentType: 'text/plain; charset=utf-8' } }); }
+    }
+    await env.WAITLIST.put('contrib:' + id, JSON.stringify({ id, submissionId: sid, page: d.idx, source, key, jsonKey, txtKey, tokenCount, pais, banco, moneda, tipo, size: f.size, ts: Date.now() }));
     ids.push(id);
   }
   const total = parseInt((await env.WAITLIST.get('meta:contribs')) || '0', 10) + ids.length;
@@ -547,6 +558,35 @@ async function adminContrib(request, env, cors) {
   for (const k of list.keys) { try { rows.push(JSON.parse(await env.WAITLIST.get(k.name))); } catch (e) {} }
   rows.sort(function (a, b) { return (b.ts || 0) - (a.ts || 0); });
   return json({ total: rows.length, rows }, 200, cors);
+}
+
+// GET /admin/contrib/export — JSONL: una línea por documento con banco/moneda/tipo + tokens posicionados.
+// Es el archivo "parser-ready" para el desarrollo del parser de Presu.
+async function adminContribExport(request, env, cors) {
+  if (!authed(request, env)) return json({ error: 'unauthorized' }, 401, cors);
+  const list = await env.WAITLIST.list({ prefix: 'contrib:', limit: 1000 });
+  const lines = [];
+  for (const k of list.keys) {
+    let rec = null; try { rec = JSON.parse(await env.WAITLIST.get(k.name)); } catch (e) { continue; }
+    let w = 0, h = 0, tokens = [];
+    if (rec.jsonKey) { try { const o = await env.DOCS.get(rec.jsonKey); if (o) { const j = JSON.parse(await o.text()); w = j.w || 0; h = j.h || 0; tokens = j.tokens || []; } } catch (e) {} }
+    lines.push(JSON.stringify({ submissionId: rec.submissionId, page: rec.page, bank: rec.banco, country: rec.pais, currency: rec.moneda, type: rec.tipo, source: rec.source, image: rec.key, w, h, tokens }));
+  }
+  return new Response(lines.join('\n'), { status: 200, headers: { 'Content-Type': 'application/x-ndjson; charset=utf-8', ...cors } });
+}
+
+// GET /admin/doc?id=&t= — sirve la imagen redactada desde R2 (para la galería admin).
+// Token por query (?t=) porque <img> no puede mandar headers.
+async function adminDoc(request, env, url) {
+  const t = url.searchParams.get('t') || '';
+  if (!env.ADMIN_TOKEN || t !== env.ADMIN_TOKEN) return new Response('unauthorized', { status: 401 });
+  const id = (url.searchParams.get('id') || '').replace(/[^a-z0-9-]/gi, '');
+  const raw = id && await env.WAITLIST.get('contrib:' + id);
+  if (!raw) return new Response('not found', { status: 404 });
+  let key = null; try { key = JSON.parse(raw).key; } catch (e) {}
+  const obj = key && await env.DOCS.get(key);
+  if (!obj) return new Response('not found', { status: 404 });
+  return new Response(obj.body, { status: 200, headers: { 'Content-Type': 'image/jpeg', 'Cache-Control': 'no-store' } });
 }
 
 // ── Resend ───────────────────────────────────────────────────

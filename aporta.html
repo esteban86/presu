@@ -328,7 +328,7 @@
       img.onload = function(){
         var c = fitCanvas(img.naturalWidth, img.naturalHeight);
         c.getContext('2d').drawImage(img,0,0,c.width,c.height);
-        items.push({ canvas:c, boxes:[], textItems:[], done:false, blob:null });
+        items.push({ canvas:c, boxes:[], textItems:[], source:'imagen', done:false, blob:null });
         URL.revokeObjectURL(img.src); res();
       };
       img.onerror = rej;
@@ -367,7 +367,7 @@
                     var fh=Math.hypot(m[2],m[3]); var w=(t.width||0)*scale;
                     tItems.push({ str:s, x:m[4], y:m[5]-fh, w:Math.max(w, fh*0.4), h:fh*1.25 });
                   });
-                  var item={ canvas:c, boxes:[], textItems:tItems, done:false, blob:null };
+                  var item={ canvas:c, boxes:[], textItems:tItems, source:'pdf', done:false, blob:null };
                   // Auto-redacta lo sensible usando el texto real del PDF (cuenta, tarjeta, correo, nombre, dirección…)
                   var pad=Math.max(2, c.width/450);
                   tItems.forEach(function(t){ if(classifyPII(t.str)) item.boxes.push({ x:t.x-pad, y:t.y-pad, w:t.w+pad*2, h:t.h+pad*2 }); });
@@ -481,6 +481,15 @@
   function extractAnonText(it){ return textNotRedacted(it).map(function(t){return t.str;}).join(' ').replace(/\s+/g,' ').trim().slice(0,60000); }
   // ¿Quedó PII sin tapar? (red de seguridad antes de enviar)
   function remainingHasPII(it){ return textNotRedacted(it).some(function(t){ return classifyPII(t.str); }); }
+  // Tokens con posición (x,y,w,h) para que el parser entienda columnas/filas. Solo lo NO tapado.
+  function tokensOf(it){
+    return {
+      w: it.canvas.width, h: it.canvas.height, source: it.source || 'imagen',
+      tokens: textNotRedacted(it).map(function(t){
+        return { t:t.str, x:Math.round(t.x), y:Math.round(t.y), w:Math.round(t.w), h:Math.round(t.h) };
+      }).slice(0, 4000)
+    };
+  }
   function runOCR(it, btn){
     var errEl=document.getElementById('editErr'); if(errEl) errEl.textContent='';
     btn.classList.add('busy'); var orig=btn.innerHTML; btn.innerHTML='Analizando…';
@@ -591,11 +600,12 @@
     phase='sending'; render();
     // Exporta todos los blobs (aplanados) y envía
     Promise.all(items.map(exportItem)).then(function(){
+      var sid = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : (''+Date.now()+'-'+Math.round(Math.random()*1e9));
       var fd=new FormData();
       fd.append('pais',meta.pais); fd.append('banco',meta.banco); fd.append('moneda',meta.moneda);
       fd.append('tipo',meta.tipo); fd.append('nombre',meta.nombre); fd.append('ref',meta.correo);
-      fd.append('botcheck',''); fd.append('n',String(items.length));
-      items.forEach(function(it,i){ fd.append('doc'+i, it.blob, 'doc'+i+'.jpg'); fd.append('text'+i, extractAnonText(it)); });
+      fd.append('botcheck',''); fd.append('n',String(items.length)); fd.append('sid',sid);
+      items.forEach(function(it,i){ fd.append('doc'+i, it.blob, 'doc'+i+'.jpg'); fd.append('tokens'+i, JSON.stringify(tokensOf(it))); });
       return fetch(API+'/contrib',{method:'POST',body:fd});
     }).then(function(r){ return r.json().catch(function(){return {};}); })
       .then(function(d){ if(d && (d.status==='ok')){ if(d.progress) progress=d.progress; phase='done'; render(); } else { failSend(d && d.reason); } })
