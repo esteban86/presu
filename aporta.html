@@ -328,7 +328,7 @@
       img.onload = function(){
         var c = fitCanvas(img.naturalWidth, img.naturalHeight);
         c.getContext('2d').drawImage(img,0,0,c.width,c.height);
-        items.push({ canvas:c, boxes:[], done:false, blob:null });
+        items.push({ canvas:c, boxes:[], textItems:[], done:false, blob:null });
         URL.revokeObjectURL(img.src); res();
       };
       img.onerror = rej;
@@ -359,7 +359,20 @@
               var c = document.createElement('canvas');
               c.width = Math.round(vp.width); c.height = Math.round(vp.height);
               return page.render({canvasContext:c.getContext('2d'), viewport:vp}).promise.then(function(){
-                items.push({ canvas:c, boxes:[], done:false, blob:null });
+                return page.getTextContent().then(function(tc){
+                  var tItems=[];
+                  (tc.items||[]).forEach(function(t){
+                    var s=(t.str||'').trim(); if(!s) return;
+                    var m=pdfjsLib.Util.transform(vp.transform, t.transform);
+                    var fh=Math.hypot(m[2],m[3]); var w=(t.width||0)*scale;
+                    tItems.push({ str:s, x:m[4], y:m[5]-fh, w:Math.max(w, fh*0.4), h:fh*1.25 });
+                  });
+                  var item={ canvas:c, boxes:[], textItems:tItems, done:false, blob:null };
+                  // Auto-redacta lo sensible usando el texto real del PDF (cuenta, tarjeta, correo, nombre, dirección…)
+                  var pad=Math.max(2, c.width/450);
+                  tItems.forEach(function(t){ if(classifyPII(t.str)) item.boxes.push({ x:t.x-pad, y:t.y-pad, w:t.w+pad*2, h:t.h+pad*2 }); });
+                  items.push(item);
+                });
               });
             });
           });
@@ -446,16 +459,28 @@
     return tesseractLoading;
   }
   function luhn(num){ var s=0,alt=false; for(var i=num.length-1;i>=0;i--){ var d=+num[i]; if(alt){ d*=2; if(d>9)d-=9; } s+=d; alt=!alt; } return s%10===0; }
-  function isSensitive(t){
-    var s=(t||'').trim();
-    if(/\d{1,4}[-/.]\d{1,2}[-/.]\d{1,4}/.test(s)) return false;   // fecha (2026-06-01) → conservar
-    if(/^[-$]?[\d.,]+$/.test(s) && s.replace(/\D/g,'').length<=7) return false; // monto corto → conservar
+  // Palabras típicas de un extracto (NO son nombres) — evita auto-tapar encabezados útiles.
+  var KEEP_WORDS=/\b(extracto|tarjeta|credito|crédito|debito|débito|cuenta|saldo|pago|pagos|periodo|período|fecha|detalle|transacci|movimiento|interes|interés|cupo|total|minimo|mínimo|banco|estado|consumo|cuota|tasa|valor|capital|mora|abono|resumen|disponible|facturado|cobranza|gastos|nombre|titular|direccion|dirección|correo)\b/i;
+  function classifyPII(t){
+    var s=(t||'').trim(); if(!s) return false;
+    if(/\d{1,4}[-/.]\d{1,2}[-/.]\d{1,4}/.test(s)) return false;   // fecha → conservar
+    if(/^[-$]?[\d.,\s]+$/.test(s) && s.replace(/\D/g,'').length<=7) return false; // monto corto → conservar
     if(/[\w.+-]+@[\w-]+\.[\w.]+/.test(s)) return true;            // correo
     var digits=s.replace(/\D/g,'');
     if(digits.length>=13 && digits.length<=19 && luhn(digits)) return true; // tarjeta
     if(digits.length>=9) return true;                             // cuenta / cédula / teléfono largo
+    if(/\b(calle|carrera|cra|cll|kr|av|avenida|diagonal|transversal|manzana|apto|apartamento|barrio)\b/i.test(s) && /\d/.test(s)) return true; // dirección
+    // Nombre en MAYÚSCULAS (2-4 palabras, solo letras) que no sea texto típico de extracto
+    var words=s.split(/\s+/);
+    if(words.length>=2 && words.length<=4 && /^[A-ZÁÉÍÓÚÑ ]+$/.test(s) && s.replace(/\s/g,'').length>=6 && !KEEP_WORDS.test(s)) return true;
     return false;
   }
+  function rectsOverlap(a,b){ return !(a.x+a.w<b.x || b.x+b.w<a.x || a.y+a.h<b.y || b.y+b.h<a.y); }
+  function textNotRedacted(it){ return (it.textItems||[]).filter(function(t){ for(var i=0;i<it.boxes.length;i++){ if(rectsOverlap(it.boxes[i],t)) return false; } return true; }); }
+  // Texto anónimo (estructurado) para entrenar el parser: lo que NO quedó tapado.
+  function extractAnonText(it){ return textNotRedacted(it).map(function(t){return t.str;}).join(' ').replace(/\s+/g,' ').trim().slice(0,60000); }
+  // ¿Quedó PII sin tapar? (red de seguridad antes de enviar)
+  function remainingHasPII(it){ return textNotRedacted(it).some(function(t){ return classifyPII(t.str); }); }
   function runOCR(it, btn){
     var errEl=document.getElementById('editErr'); if(errEl) errEl.textContent='';
     btn.classList.add('busy'); var orig=btn.innerHTML; btn.innerHTML='Analizando…';
@@ -463,10 +488,13 @@
       return Tesseract.recognize(it.canvas, 'spa+eng');
     }).then(function(res){
       var words=(res && res.data && res.data.words)||[]; var added=0;
+      var fillText = !(it.textItems && it.textItems.length); // solo guardamos texto OCR si no vino del PDF
       words.forEach(function(w){
         if(w.confidence<35) return;
-        if(isSensitive(w.text)){
-          var b=w.bbox; var pad=Math.max(2, it.canvas.width/400);
+        var b=w.bbox;
+        if(fillText) it.textItems.push({ str:w.text, x:b.x0, y:b.y0, w:b.x1-b.x0, h:b.y1-b.y0 });
+        if(classifyPII(w.text)){
+          var pad=Math.max(2, it.canvas.width/400);
           it.boxes.push({ x:b.x0-pad, y:b.y0-pad, w:(b.x1-b.x0)+pad*2, h:(b.y1-b.y0)+pad*2 });
           added++;
         }
@@ -556,6 +584,10 @@
     if(!meta.banco){ errEl.textContent='Dinos de qué banco es.'; return; }
     if(!meta.tipo){ errEl.textContent='Elige el tipo de documento.'; return; }
     meta.nombre=nombre.trim(); meta.correo=correo.trim();
+    // Red de seguridad: si parece que quedó un dato personal sin tapar, avisa antes de enviar.
+    if(items.some(remainingHasPII)){
+      if(!window.confirm('⚠️ Parece que quedó algún dato personal sin tapar (tu nombre, número de cuenta o dirección). Revísalo antes de enviar.\n\n¿Enviar de todas formas?')) return;
+    }
     phase='sending'; render();
     // Exporta todos los blobs (aplanados) y envía
     Promise.all(items.map(exportItem)).then(function(){
@@ -563,7 +595,7 @@
       fd.append('pais',meta.pais); fd.append('banco',meta.banco); fd.append('moneda',meta.moneda);
       fd.append('tipo',meta.tipo); fd.append('nombre',meta.nombre); fd.append('ref',meta.correo);
       fd.append('botcheck',''); fd.append('n',String(items.length));
-      items.forEach(function(it,i){ fd.append('doc'+i, it.blob, 'doc'+i+'.jpg'); });
+      items.forEach(function(it,i){ fd.append('doc'+i, it.blob, 'doc'+i+'.jpg'); fd.append('text'+i, extractAnonText(it)); });
       return fetch(API+'/contrib',{method:'POST',body:fd});
     }).then(function(r){ return r.json().catch(function(){return {};}); })
       .then(function(d){ if(d && (d.status==='ok')){ if(d.progress) progress=d.progress; phase='done'; render(); } else { failSend(d && d.reason); } })

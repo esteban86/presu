@@ -475,19 +475,27 @@ async function contribSubmit(request, env, cors) {
   const nombre = String(form.get('nombre') || '').trim().slice(0, 80);
   const ref = String(form.get('ref') || '').trim().slice(0, 80);
   if (!banco || !tipo) return json({ status: 'error', reason: 'fields' }, 400, cors);
-  const files = [];
+  const docs = [];
   for (const entry of form.entries()) {
     const k = entry[0], v = entry[1];
-    if (k.indexOf('doc') === 0 && v && typeof v === 'object' && v.size) files.push(v);
+    const m = /^doc(\d+)$/.exec(k);
+    if (m && v && typeof v === 'object' && v.size) docs.push({ idx: parseInt(m[1], 10), file: v });
   }
-  if (!files.length) return json({ status: 'error', reason: 'no_files' }, 400, cors);
+  docs.sort(function (a, b) { return a.idx - b.idx; });
+  if (!docs.length) return json({ status: 'error', reason: 'no_files' }, 400, cors);
   const ids = [];
-  for (const f of files) {
+  for (const d of docs) {
+    const f = d.file;
     if (f.size > CONTRIB_MAXBYTES) return json({ status: 'error', reason: 'too_big' }, 413, cors);
     const id = crypto.randomUUID();
-    const key = 'doc/' + pais + '/' + slug(banco) + '/' + id + '.jpg';
+    const base = 'doc/' + pais + '/' + slug(banco) + '/' + id;
+    const key = base + '.jpg';
     await env.DOCS.put(key, await f.arrayBuffer(), { httpMetadata: { contentType: 'image/jpeg' } });
-    await env.WAITLIST.put('contrib:' + id, JSON.stringify({ id, key, pais, banco, moneda, tipo, size: f.size, ts: Date.now() }));
+    // Texto anónimo estructurado (lo NO tapado) para entrenar el parser — sin PDF, sin PII.
+    const txt = String(form.get('text' + d.idx) || '').slice(0, 80000);
+    let txtKey = null;
+    if (txt) { txtKey = base + '.txt'; await env.DOCS.put(txtKey, txt, { httpMetadata: { contentType: 'text/plain; charset=utf-8' } }); }
+    await env.WAITLIST.put('contrib:' + id, JSON.stringify({ id, key, txtKey, hasText: !!txt, pais, banco, moneda, tipo, size: f.size, ts: Date.now() }));
     ids.push(id);
   }
   const total = parseInt((await env.WAITLIST.get('meta:contribs')) || '0', 10) + ids.length;
