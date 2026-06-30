@@ -624,6 +624,7 @@
     <div class="nav-cta">
       <a href="#como" class="nav-link">Cómo funciona</a>
       <a href="#privacidad" class="nav-link">Privacidad</a>
+      <a href="/aporta" class="nav-link">Aporta 🌱</a>
       <a href="#waitlist" class="btn btn-primary" style="padding:10px 18px;font-size:.92rem;white-space:nowrap">Lista de espera</a>
     </div>
   </div>
@@ -972,7 +973,7 @@
       </div>
     </div>
     <div class="offer-stack reveal">
-      <span class="os-eb">¿Entras antes del 30 de junio? Eres pionero</span>
+      <span class="os-eb" id="os-eb-date">¿Entras antes del 30 de junio? Eres pionero</span>
       <p class="os-lead"><b>No pagas nada</b> por la beta —y además te llevas esto:</p>
       <ul>
         <li><span class="os-ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span><b>Presu completo, gratis</b> — todas las funciones de la beta, sin pagar nada.</span></li>
@@ -1005,7 +1006,7 @@
 <section id="waitlist">
   <div class="glow" style="width:480px;height:480px;background:#34D399;left:50%;transform:translateX(-50%);top:-140px;opacity:.14"></div>
   <div class="wrap">
-    <div class="sec-head reveal"><span class="eyebrow center-eb">Lista de espera</span><h2>Sé de los primeros en usar <span class="mintword">Presu</span></h2><p>La beta abre el <b style="color:var(--tx)">martes 30 de junio</b>. Los pioneros entran antes y usan Presu completo gratis —más unos bonos— a cambio de su feedback. Sin spam.</p><div class="proof hidden" id="proof-wait"><div class="avatars" aria-hidden="true"><span class="av" style="background:#818CF8"></span><span class="av" style="background:#34D399"></span><span class="av" style="background:#A855F7"></span><span class="av" style="background:#FB7185"></span></div><span class="pt"><b class="count">—</b> / 1.000 cupos antes del lanzamiento</span></div></div>
+    <div class="sec-head reveal"><span class="eyebrow center-eb">Lista de espera</span><h2>Sé de los primeros en usar <span class="mintword">Presu</span></h2><p id="waitlist-lede">La beta abre el <b style="color:var(--tx)">martes 30 de junio</b>. Los pioneros entran antes y usan Presu completo gratis —más unos bonos— a cambio de su feedback. Sin spam.</p><div class="proof hidden" id="proof-wait"><div class="avatars" aria-hidden="true"><span class="av" style="background:#818CF8"></span><span class="av" style="background:#34D399"></span><span class="av" style="background:#A855F7"></span><span class="av" style="background:#FB7185"></span></div><span class="pt"><b class="count">—</b> / 1.000 cupos antes del lanzamiento</span></div></div>
     <div class="formcard reveal">
       <form id="waitlist-form" novalidate>
         <fieldset class="segmented" id="perfil-group">
@@ -1138,6 +1139,8 @@
       var btn=q('#hero-form button'); if(btn && btn.firstChild){ btn.firstChild.nodeValue='Únete a la próxima tanda '; }
       var cd=q('#countdown'); if(cd){ cd.style.display='none'; }
       var ramps=q('#late-ramps'); if(ramps){ ramps.style.display='flex'; }
+      var ose=q('#os-eb-date'); if(ose){ ose.textContent='La beta ya abrió · acceso por correo'; }
+      var wl=q('#waitlist-lede'); if(wl){ wl.innerHTML='La beta de Presu <b style="color:var(--tx,#fff)">ya abrió</b>. Si fuiste pionero, te llegó el acceso a tu correo 📩 (revisa spam). ¿Llegaste tarde? Únete a la lista para la <b style="color:var(--tx,#fff)">próxima tanda</b> 👇'; }
     }
 
     // ── Countdown al lanzamiento de la beta ──
