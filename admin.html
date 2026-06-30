@@ -51,26 +51,48 @@
 
   // Junta las páginas de un envío en UN solo PDF (en el navegador).
   function loadJsPDF(){ if(window.jspdf&&window.jspdf.jsPDF) return Promise.resolve(); if(loadJsPDF._p) return loadJsPDF._p; loadJsPDF._p=new Promise(function(res,rej){ var s=document.createElement('script'); s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'; s.onload=res; s.onerror=rej; document.head.appendChild(s); }); return loadJsPDF._p; }
-  function downloadPdf(sid, banco, btn){
-    var g=(GROUPS[sid]||[]).slice().sort(function(a,b){return (a.page||0)-(b.page||0);});
-    if(!g.length) return;
-    var orig=btn.textContent; btn.disabled=true; btn.textContent='Generando…';
-    loadJsPDF().then(function(){
-      var JsPDF=(window.jspdf&&window.jspdf.jsPDF)||window.jsPDF;
-      return Promise.all(g.map(function(r){ return new Promise(function(res,rej){
-        var im=new Image(); im.crossOrigin='anonymous';
-        im.onload=function(){res(im);}; im.onerror=function(){rej(new Error('img'));};
-        im.src=API+'/admin/doc?id='+encodeURIComponent(r.id)+'&t='+encodeURIComponent(tok)+'&c=1';
-      });})).then(function(imgs){
-        var doc;
-        imgs.forEach(function(im,i){ var w=im.naturalWidth,h=im.naturalHeight,o=w>h?'l':'p';
-          if(i===0){ doc=new JsPDF({unit:'px',format:[w,h],orientation:o}); } else { doc.addPage([w,h],o); }
-          doc.addImage(im,'JPEG',0,0,w,h);
-        });
-        doc.save((banco||'doc').toLowerCase().replace(/[^a-z0-9]+/g,'-')+'_'+String(sid).slice(0,8)+'.pdf');
+  function loadJSZip(){ if(window.JSZip) return Promise.resolve(); if(loadJSZip._p) return loadJSZip._p; loadJSZip._p=new Promise(function(res,rej){ var s=document.createElement('script'); s.src='https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js'; s.onload=res; s.onerror=rej; document.head.appendChild(s); }); return loadJSZip._p; }
+  function pdfName(g){ var f=g[0]; return (f.banco||'doc').toLowerCase().replace(/[^a-z0-9]+/g,'-')+'_'+String(f.submissionId||f.id).slice(0,8)+'.pdf'; }
+  // Arma UN jsPDF con todas las páginas (imágenes) de un envío.
+  function buildPdf(g){
+    var JsPDF=(window.jspdf&&window.jspdf.jsPDF)||window.jsPDF;
+    return Promise.all(g.map(function(r){ return new Promise(function(res){
+      var im=new Image(); im.crossOrigin='anonymous';
+      im.onload=function(){res(im);}; im.onerror=function(){res(null);}; // imagen faltante → se omite, no tumba el resto
+      im.src=API+'/admin/doc?id='+encodeURIComponent(r.id)+'&t='+encodeURIComponent(tok)+'&c=1';
+    });})).then(function(imgs){
+      imgs=imgs.filter(Boolean);
+      if(!imgs.length) return null;
+      var doc;
+      imgs.forEach(function(im,i){ var w=im.naturalWidth,h=im.naturalHeight,o=w>h?'l':'p';
+        if(i===0){ doc=new JsPDF({unit:'px',format:[w,h],orientation:o}); } else { doc.addPage([w,h],o); }
+        doc.addImage(im,'JPEG',0,0,w,h);
       });
-    }).then(function(){ btn.disabled=false; btn.textContent=orig; })
+      return doc;
+    });
+  }
+  function sortPages(sid){ return (GROUPS[sid]||[]).slice().sort(function(a,b){return (a.page||0)-(b.page||0);}); }
+  function downloadPdf(sid, banco, btn){
+    var g=sortPages(sid); if(!g.length) return;
+    var orig=btn.textContent; btn.disabled=true; btn.textContent='Generando…';
+    loadJsPDF().then(function(){ return buildPdf(g); }).then(function(doc){ if(doc) doc.save(pdfName(g)); else alert('No hay imágenes disponibles para este documento.'); btn.disabled=false; btn.textContent=orig; })
       .catch(function(e){ btn.disabled=false; btn.textContent=orig; alert('No se pudo generar el PDF: '+(e&&e.message||e)); });
+  }
+  // Junta cada envío en su PDF y los mete todos en un .zip.
+  function downloadAll(btn){
+    var sids=Object.keys(GROUPS); if(!sids.length) return;
+    var orig=btn.textContent; btn.disabled=true;
+    Promise.all([loadJsPDF(), loadJSZip()]).then(function(){
+      var zip=new JSZip(), i=0;
+      function next(){
+        if(i>=sids.length){ btn.textContent='Comprimiendo…'; return zip.generateAsync({type:'blob'}).then(function(blob){ var u=URL.createObjectURL(blob); var a=document.createElement('a'); a.href=u; a.download='presu-aportes-pdfs.zip'; a.click(); URL.revokeObjectURL(u); }); }
+        btn.textContent='PDF '+(i+1)+'/'+sids.length+'…';
+        var g=sortPages(sids[i]);
+        return buildPdf(g).then(function(doc){ if(doc) zip.file(pdfName(g), doc.output('arraybuffer')); i++; return next(); }).catch(function(){ i++; return next(); });
+      }
+      return next();
+    }).then(function(){ btn.disabled=false; btn.textContent=orig; })
+      .catch(function(e){ btn.disabled=false; btn.textContent=orig; alert('No se pudo armar el zip: '+(e&&e.message||e)); });
   }
 
   function gate(msg){
@@ -96,7 +118,8 @@
     rows.forEach(function(r){ var k=r.submissionId||r.id; if(!groups[k]){ groups[k]=[]; order.push(k); } groups[k].push(r); });
     var exportUrl = API+'/admin/contrib/export';
     var head = '<h1>Aportes <span class="stat">'+rows.length+' docs · '+order.length+' envíos</span></h1>'+
-      '<div class="row" style="margin:10px 0 6px"><button class="btn" id="exp">⬇ Descargar dataset (JSONL)</button> '+
+      '<div class="row" style="margin:10px 0 6px"><button class="btn" id="dlall">📦 Descargar todo (PDFs .zip)</button> '+
+      '<button class="btn ghost" id="exp">⬇ Dataset (JSONL)</button> '+
       '<button class="btn ghost" id="reload">Recargar</button> '+
       '<button class="btn ghost" id="logout">Salir</button></div>';
     if(!rows.length){ app.innerHTML=head+'<p class="empty">Aún no hay aportes.</p>'; wire(); return; }
@@ -127,6 +150,7 @@
     var rl=document.getElementById('reload'); if(rl) rl.onclick=load;
     var lo=document.getElementById('logout'); if(lo) lo.onclick=function(){ sessionStorage.removeItem('presu_admin_tok'); tok=''; gate(); };
     Array.prototype.forEach.call(document.querySelectorAll('.pdf-btn'), function(b){ b.onclick=function(){ downloadPdf(b.getAttribute('data-sid'), b.getAttribute('data-banco'), b); }; });
+    var da=document.getElementById('dlall'); if(da) da.onclick=function(){ downloadAll(da); };
   }
 
   load();
