@@ -681,6 +681,11 @@
         </div>
         <span class="pt"><b class="count">—</b> / 1.000 cupos antes del lanzamiento</span>
       </div>
+
+      <div id="late-ramps" style="display:none;flex-direction:column;gap:11px;margin-top:22px;max-width:470px">
+        <div style="background:var(--bg-2,#101014);border:1px solid var(--line,rgba(255,255,255,.1));border-radius:14px;padding:14px 16px;font-size:.95rem;line-height:1.5;color:var(--mut,#D4D4D6)">🚀 <b style="color:var(--tx,#fff)">Salta la fila</b> — al unirte recibes tu link; cada amigo que invites te sube en la cola de la próxima tanda.</div>
+        <a href="/aporta" style="display:block;background:var(--bg-2,#101014);border:1px solid rgba(52,211,153,.4);border-radius:14px;padding:14px 16px;font-size:.95rem;line-height:1.5;color:var(--mut,#D4D4D6);text-decoration:none">🌱 <b style="color:var(--tx,#fff)">Gánate tu cupo</b> — aporta un documento (anónimo, en tu equipo) y te invitamos antes que al resto <span style="color:var(--mint,#34D399);font-weight:700">→</span></a>
+      </div>
     </div>
 
     <div class="heromock reveal">
@@ -1121,6 +1126,20 @@
         .catch(fail);
     }
 
+    // ── Cierre de pioneros: al pasar la hora, la landing cambia sola a "próxima tanda" ──
+    var LATE = false;
+    function closeRegistration(){
+      if (LATE) return; LATE = true;
+      var q=function(s){return document.querySelector(s);};
+      var badge=q('.hero-grid .pill-badge'); if(badge){ badge.innerHTML='<span class="ping"></span> Cupos de pioneros cerrados · la beta ya abrió'; }
+      var h1=q('.hero-grid h1'); if(h1){ h1.innerHTML='La beta de Presu <span class="mintword">ya abrió</span>.'; }
+      var pitch=q('.hero-grid .pitch'); if(pitch){ pitch.textContent='Los cupos de pioneros se cerraron — pero aún puedes entrar a la próxima tanda.'; }
+      var sub=q('.hero-grid .sub'); if(sub){ sub.innerHTML='Déjanos tu correo y eres de los primeros en la siguiente apertura. ¿Quieres entrar antes? Tienes dos formas de ganártelo 👇'; }
+      var btn=q('#hero-form button'); if(btn && btn.firstChild){ btn.firstChild.nodeValue='Únete a la próxima tanda '; }
+      var cd=q('#countdown'); if(cd){ cd.style.display='none'; }
+      var ramps=q('#late-ramps'); if(ramps){ ramps.style.display='flex'; }
+    }
+
     // ── Countdown al lanzamiento de la beta ──
     (function(){
       var cd = document.getElementById('countdown');
@@ -1130,7 +1149,7 @@
       function pad(n){ return (n<10?'0':'')+n; }
       function tick(){
         var diff = target - Date.now();
-        if (diff <= 0){ cd.classList.add('is-live'); dEl.textContent=hEl.textContent=mEl.textContent=sEl.textContent='00'; clearInterval(timer); return; }
+        if (diff <= 0){ cd.classList.add('is-live'); dEl.textContent=hEl.textContent=mEl.textContent=sEl.textContent='00'; clearInterval(timer); closeRegistration(); return; }
         var s = Math.floor(diff/1000);
         dEl.textContent = pad(Math.floor(s/86400));
         hEl.textContent = pad(Math.floor(s%86400/3600));
@@ -1151,8 +1170,8 @@
       var email = heroEmail.value.trim();
       if (!EMAIL_RE.test(email)) { heroErr.style.display='block'; heroEmail.focus(); return; }
       heroErr.style.display='none';
-      send({ perfil:'persona', correo:email, origen:'hero', ref:REF },
-        function(res){ heroForm.style.display='none'; heroOk.style.display='flex'; if(res&&res.ref) heroOk.insertAdjacentHTML('afterend', referralCTA(res.ref)); bumpCount(); if(typeof gtag==='function') gtag('event','generate_lead',{perfil:'persona',origen:'hero'}); if(window.plausible) window.plausible('Waitlist Signup',{props:{perfil:'persona',origen:'hero'}}); },
+      send({ perfil:'persona', correo:email, origen:(LATE?'tanda2':'hero'), ref:REF },
+        function(res){ heroForm.style.display='none'; if(LATE){ heroOk.querySelector('strong').textContent='¡Listo, vas para la próxima tanda! 🌱'; heroOk.querySelector('span').textContent='Comparte tu link para subir en la cola — y si quieres entrar antes, aporta un documento.'; } heroOk.style.display='flex'; if(res&&res.ref) heroOk.insertAdjacentHTML('afterend', referralCTA(res.ref)); bumpCount(); if(typeof gtag==='function') gtag('event','generate_lead',{perfil:'persona',origen:(LATE?'tanda2':'hero')}); if(window.plausible) window.plausible('Waitlist Signup',{props:{perfil:'persona',origen:(LATE?'tanda2':'hero')}}); },
         function(){ alert('Algo falló de nuestro lado. Reintenta en un momento.'); },
         function(){ heroForm.style.display='none'; heroOk.querySelector('strong').textContent='¡Ya estás en la lista! 🎉'; heroOk.querySelector('span').textContent='Ese correo ya está inscrito. Te avisamos primero cuando abramos.'; heroOk.style.display='flex'; });
     });

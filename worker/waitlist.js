@@ -143,7 +143,8 @@ export default {
     // Correos vía Resend (best-effort)
     let mail = { welcome: null, notify: null };
     if (env.RESEND_API_KEY) {
-      mail.welcome = await sendResend(env, { to: email, reply_to: env.NOTIFY_EMAIL || undefined, subject: '¡Ya eres pionero de Presu! 🎉', html: welcomeHtml(record) });
+      const isLate = record.origen === 'tanda2';
+      mail.welcome = await sendResend(env, { to: email, reply_to: env.NOTIFY_EMAIL || undefined, subject: isLate ? 'Estás en la lista para la próxima tanda de Presu 🌱' : '¡Ya eres pionero de Presu! 🎉', html: isLate ? lateWelcomeHtml(record) : welcomeHtml(record) });
       if (mail.welcome && mail.welcome.ok) { await env.WAITLIST.put('welcomed:' + email, String(Date.now())); await env.WAITLIST.put('campaign:' + email, 'welcome'); }
       if (env.NOTIFY_EMAIL) mail.notify = await sendResend(env, { to: env.NOTIFY_EMAIL, reply_to: email, subject: 'Nuevo registro en la waitlist de Presu (' + record.perfil + ')', html: notifyHtml(record, total) });
     }
@@ -634,6 +635,32 @@ function welcomeHtml(r) {
       <a href="${panel}" style="color:#5EEAB8;font-size:15px;font-weight:600;text-decoration:none">Ver mi panel y el ranking →</a>
     </div>
     <p style="font-size:12px;line-height:1.6;color:#6B6B72;margin:0;text-align:center">Solo cuentan los amigos que se inscriban de verdad. <span style="color:#34D399">Tu plata, clara.</span></p>
+  </div></body></html>`;
+}
+
+// Bienvenida para quien llega DESPUÉS del cierre de pioneros (origen tanda2).
+function lateWelcomeHtml(r) {
+  const hola = r.nombre ? 'Hola, ' + esc(r.nombre) + ' 👋' : 'Hola 👋';
+  const link = SITE + '/?ref=' + (r.ref || '');
+  const aporta = SITE + '/aporta';
+  const waMsg = encodeURIComponent('Me metí a la lista de Presu 🌿 — reúne tus gastos de todos tus bancos, privado y en tu equipo. Entra tú también: ' + link);
+  return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;background:#08080A;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#F4F4F3">
+  <div style="max-width:540px;margin:0 auto;padding:32px 24px">
+    <div style="font-size:24px;font-weight:800;letter-spacing:-.02em;margin-bottom:18px">presu<span style="color:#34D399">.</span></div>
+    <p style="font-size:16px;color:#A1A1A6;margin:0 0 6px">${hola}</p>
+    <h1 style="font-size:28px;line-height:1.14;font-weight:800;letter-spacing:-.02em;margin:0 0 12px;color:#fff">Estás en la lista para la <span style="color:#34D399">próxima tanda</span></h1>
+    <p style="font-size:16px;line-height:1.55;color:#D4D4D6;margin:0 0 14px">Los cupos de <b style="color:#fff">pioneros</b> ya se cerraron, pero te guardamos un lugar para la siguiente apertura. Y si quieres entrar <b style="color:#fff">antes que el resto</b>, tienes dos formas de ganártelo:</p>
+    <div style="background:#0E2A20;border:1px solid rgba(52,211,153,.5);border-radius:18px;padding:20px;margin:0 0 16px">
+      <div style="font-size:16px;color:#fff;font-weight:700;margin-bottom:6px">🚀 Salta la fila</div>
+      <p style="font-size:14px;line-height:1.5;color:#D4D4D6;margin:0 0 12px">Cada amigo que entre con tu link te sube en la cola.</p>
+      <a href="https://wa.me/?text=${waMsg}" style="display:block;background:#34D399;color:#08231A;font-weight:800;font-size:16px;text-decoration:none;padding:14px;border-radius:12px;text-align:center">📲 Compartir mi link</a>
+    </div>
+    <div style="border:1px solid rgba(52,211,153,.45);border-radius:18px;padding:20px;margin:0 0 22px">
+      <div style="font-size:16px;color:#fff;font-weight:700;margin-bottom:6px">🌱 Gánate tu cupo</div>
+      <p style="font-size:14px;line-height:1.5;color:#D4D4D6;margin:0 0 12px">Aporta un documento anónimo (se tapa en tu propio equipo) y nos ayudas a que Presu lea tu banco. Quien aporta, entra antes.</p>
+      <a href="${aporta}" style="display:block;background:#101014;border:1px solid rgba(255,255,255,.16);color:#fff;font-weight:700;font-size:16px;text-decoration:none;padding:14px;border-radius:12px;text-align:center">Aportar un documento →</a>
+    </div>
+    <p style="font-size:12px;line-height:1.6;color:#6B6B72;margin:0;text-align:center">Te avisamos apenas abramos la próxima tanda. <span style="color:#34D399">Tu plata, clara.</span></p>
   </div></body></html>`;
 }
 
