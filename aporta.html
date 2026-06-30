@@ -210,7 +210,11 @@
   var SHIELD = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex:none;vertical-align:middle"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>';
 
   // ── Arranque ──
-  function boot(){ render(); loadProgress(); }
+  function boot(){
+    // Evita que soltar el archivo fuera de la zona haga que el navegador lo abra/descargue.
+    ['dragover','drop'].forEach(function(ev){ window.addEventListener(ev, function(e){ e.preventDefault(); }, false); });
+    render(); loadProgress();
+  }
   function loadProgress(){
     fetch(API+'/contrib/progress',{cache:'no-store'}).then(function(r){return r.json();})
       .then(function(d){ if(d && typeof d.total==='number'){ progress=d; if(phase==='intro') renderIntro(); } })
@@ -295,7 +299,14 @@
     function maybeAdvance(){ if(pending===0){ if(items.length){ editIdx=0; phase='edit'; render(); } } }
     files.forEach(function(f){
       if(f.type==='application/pdf' || /\.pdf$/i.test(f.name)){
-        pending++; renderPdf(f).then(function(){ pending--; maybeAdvance(); }).catch(function(e){ pending--; hadErr=true; if(errEl) errEl.textContent='No pudimos abrir ese PDF. Prueba con un pantallazo.'; maybeAdvance(); });
+        pending++; renderPdf(f).then(function(){ pending--; maybeAdvance(); }).catch(function(e){
+          pending--; hadErr=true;
+          var locked = e && (e.name==='PasswordException' || /password/i.test(String(e && e.message)));
+          if(errEl) errEl.textContent = locked
+            ? 'Para abrir ese PDF necesitas su clave. Si no la tienes a mano, sube un pantallazo del extracto.'
+            : 'No pudimos abrir ese PDF (¿está dañado?). Prueba con un pantallazo.';
+          maybeAdvance();
+        });
       } else if(/^image\//.test(f.type) || /\.(png|jpe?g|webp|gif)$/i.test(f.name)){
         pending++; loadImage(f).then(function(){ pending--; maybeAdvance(); }).catch(function(){ pending--; hadErr=true; if(errEl) errEl.textContent='No pudimos abrir esa imagen.'; maybeAdvance(); });
       } else {
@@ -326,7 +337,17 @@
   }
   function renderPdf(file){
     return file.arrayBuffer().then(function(buf){
-      return pdfjsLib.getDocument({data:buf}).promise.then(function(pdf){
+      var task = pdfjsLib.getDocument({ data: buf });
+      // PDF con clave (común en extractos): la pedimos aquí; NO se sube ni se guarda,
+      // solo descifra localmente para poder rasterizarlo.
+      task.onPassword = function(updatePassword, reason){
+        var msg = reason === 2
+          ? '🔒 Clave incorrecta. Escribe la clave del PDF (no se sube ni se guarda):'
+          : '🔒 Este PDF tiene clave. Escríbela para abrirlo aquí mismo —no se sube ni se guarda, solo abre el documento en tu equipo:';
+        var pw = window.prompt(msg);
+        if (pw === null) { task.destroy(); } else { updatePassword(pw); }
+      };
+      return task.promise.then(function(pdf){
         var chain = Promise.resolve();
         var n = Math.min(pdf.numPages, 8); // tope de páginas
         for(var p=1;p<=n;p++){ (function(pg){
