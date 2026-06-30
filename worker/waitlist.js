@@ -91,6 +91,11 @@ export default {
     if (path === '/admin/survey-batch') return adminSurveyBatch(request, env, cors);
     if (path === '/admin/survey-one') return adminSurveyOne(request, env, cors);
 
+    if (request.method === 'POST' && path === '/contrib') return contribSubmit(request, env, cors);
+    if (request.method === 'GET' && path === '/contrib/progress') return contribProgress(request, env, pub);
+    if (request.method === 'GET' && path === '/contrib/wall') return contribWall(request, env, pub);
+    if (request.method === 'GET' && path === '/admin/contrib') return adminContrib(request, env, cors);
+
     if (request.method !== 'POST') return json({ status: 'error', reason: 'method' }, 405, cors);
 
     let data;
@@ -350,9 +355,9 @@ async function roadmapVote(request, env, cors) {
 }
 
 // ── Encuesta de perfil (buyer persona) ───────────────────────
-const SURVEY_FIELDS = ['nombre', 'edad', 'ciudad', 'ocupacion', 'ingreso_tipo', 'metodo', 'metas', 'bancos', 'bancos_otra', 'dispositivo', 'dolor', 'pago', 'ingreso', 'ayuda', 'celular'];
-const SURVEY_ARRAY_FIELDS = ['bancos', 'metas', 'ayuda'];
-const SURVEY_SUBJECT = 'Ayúdanos a construir Presu a tu medida (2 min) 🌿';
+const SURVEY_FIELDS = ['nombre', 'uso', 'features', 'valor', 'falta', 'freno', 'ayuda_config', 'edad', 'ciudad', 'ocupacion', 'ingreso_tipo', 'metodo', 'metas', 'bancos', 'bancos_otra', 'dispositivo', 'dolor', 'pago', 'ingreso', 'ayuda', 'celular'];
+const SURVEY_ARRAY_FIELDS = ['bancos', 'metas', 'ayuda', 'features'];
+const SURVEY_SUBJECT = 'Llevas unos días con Presu — cuéntanos cómo te va 🌿';
 
 // GET /survey?e=correo → ¿está en la lista?, ¿ya respondió?, nombre (para precargar la UX)
 async function surveyCheck(request, env, pub, url) {
@@ -441,6 +446,99 @@ async function adminSurveyOne(request, env, cors) {
   const res = await sendResend(env, { to: email, reply_to: env.NOTIFY_EMAIL || undefined, subject: SURVEY_SUBJECT, html: surveyEmailHtml(rec) });
   if (res.ok) { await env.WAITLIST.put('survey_sent:' + email, String(Date.now())); return json({ status: 'sent', id: res.id }, 200, cors); }
   return json({ status: 'error', detail: res }, 502, cors);
+}
+
+// ── Aportes de documentos anonimizados (página /aporta) ──────
+const CONTRIB_GOAL = 500;
+const CONTRIB_MAXBYTES = 6 * 1024 * 1024; // 6MB por imagen (llegan ya comprimidas del cliente)
+function slug(s) {
+  return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'x';
+}
+async function contribBumpWall(env, key, name, count) {
+  let lb = []; try { lb = JSON.parse((await env.WAITLIST.get('contrib_wall')) || '[]'); } catch (e) {}
+  const i = lb.findIndex(function (x) { return x.key === key; });
+  if (i >= 0) lb[i] = { key, name, count }; else lb.push({ key, name, count });
+  lb.sort(function (a, b) { return b.count - a.count; });
+  await env.WAITLIST.put('contrib_wall', JSON.stringify(lb.slice(0, 100)));
+}
+
+// POST /contrib — recibe imágenes YA anonimizadas (multipart) + metadatos; las guarda en R2.
+async function contribSubmit(request, env, cors) {
+  if (!env.DOCS) return json({ status: 'error', reason: 'no_storage' }, 500, cors);
+  let form; try { form = await request.formData(); } catch (e) { return json({ status: 'error', reason: 'form' }, 400, cors); }
+  if (form.get('botcheck')) return json({ status: 'ok' }, 200, cors); // honeypot
+  const pais = (String(form.get('pais') || '').trim().slice(0, 4)) || 'XX';
+  const banco = String(form.get('banco') || '').trim().slice(0, 60);
+  const moneda = String(form.get('moneda') || '').trim().slice(0, 8);
+  const tipo = String(form.get('tipo') || '').trim().slice(0, 20);
+  const nombre = String(form.get('nombre') || '').trim().slice(0, 80);
+  const ref = String(form.get('ref') || '').trim().slice(0, 80);
+  if (!banco || !tipo) return json({ status: 'error', reason: 'fields' }, 400, cors);
+  const files = [];
+  for (const entry of form.entries()) {
+    const k = entry[0], v = entry[1];
+    if (k.indexOf('doc') === 0 && v && typeof v === 'object' && v.size) files.push(v);
+  }
+  if (!files.length) return json({ status: 'error', reason: 'no_files' }, 400, cors);
+  const ids = [];
+  for (const f of files) {
+    if (f.size > CONTRIB_MAXBYTES) return json({ status: 'error', reason: 'too_big' }, 413, cors);
+    const id = crypto.randomUUID();
+    const key = 'doc/' + pais + '/' + slug(banco) + '/' + id + '.jpg';
+    await env.DOCS.put(key, await f.arrayBuffer(), { httpMetadata: { contentType: 'image/jpeg' } });
+    await env.WAITLIST.put('contrib:' + id, JSON.stringify({ id, key, pais, banco, moneda, tipo, size: f.size, ts: Date.now() }));
+    ids.push(id);
+  }
+  const total = parseInt((await env.WAITLIST.get('meta:contribs')) || '0', 10) + ids.length;
+  await env.WAITLIST.put('meta:contribs', String(total));
+  const bankKey = 'contrib_bank:' + pais + ':' + slug(banco);
+  await env.WAITLIST.put(bankKey, String(parseInt((await env.WAITLIST.get(bankKey)) || '0', 10) + ids.length));
+  // Crédito opcional al colaborador: por correo o por código de Fundador
+  let contributor = null;
+  let email = EMAIL_RE.test(ref) ? ref.toLowerCase() : null;
+  if (!email && /^[A-Z0-9]{5,9}$/.test(ref.toUpperCase())) email = await env.WAITLIST.get('code:' + ref.toUpperCase());
+  if (email) {
+    const n = parseInt((await env.WAITLIST.get('contrib_by:' + email)) || '0', 10) + ids.length;
+    await env.WAITLIST.put('contrib_by:' + email, String(n));
+    await contribBumpWall(env, email, nombre || maskEmail(email), n);
+    contributor = { n };
+  } else if (nombre) {
+    await contribBumpWall(env, 'anon:' + slug(nombre), nombre, ids.length);
+  }
+  if (env.RESEND_API_KEY && env.NOTIFY_EMAIL) {
+    try { await sendResend(env, { to: env.NOTIFY_EMAIL, subject: 'Nuevo aporte de documento (' + banco + ')', html: '<p>' + ids.length + ' documento(s) · <b>' + esc(banco) + '</b> · ' + esc(pais) + ' · ' + esc(tipo) + (email ? (' · por ' + esc(email)) : '') + '</p>' }); } catch (e) {}
+  }
+  return json({ status: 'ok', n: ids.length, progress: { total, goal: CONTRIB_GOAL }, contributor }, 200, cors);
+}
+
+// GET /contrib/progress — contador público para la barra colectiva
+async function contribProgress(request, env, pub) {
+  const total = parseInt((await env.WAITLIST.get('meta:contribs')) || '0', 10);
+  const list = await env.WAITLIST.list({ prefix: 'contrib_bank:', limit: 1000 });
+  const banks = [];
+  for (const k of list.keys) {
+    const parts = k.name.split(':');
+    banks.push({ pais: parts[1], banco: parts[2], count: parseInt((await env.WAITLIST.get(k.name)) || '0', 10) });
+  }
+  banks.sort(function (a, b) { return b.count - a.count; });
+  return json({ total, goal: CONTRIB_GOAL, banks }, 200, pub);
+}
+
+// GET /contrib/wall — muro público de colaboradores (anonimizado)
+async function contribWall(request, env, pub) {
+  let lb = []; try { lb = JSON.parse((await env.WAITLIST.get('contrib_wall')) || '[]'); } catch (e) {}
+  return json({ wall: lb.slice(0, 60).map(function (x) { return { name: x.name, count: x.count }; }) }, 200, pub);
+}
+
+// GET /admin/contrib — export de metadatos + keys R2 para construir el dataset (token)
+async function adminContrib(request, env, cors) {
+  if (!authed(request, env)) return json({ error: 'unauthorized' }, 401, cors);
+  const list = await env.WAITLIST.list({ prefix: 'contrib:', limit: 1000 });
+  const rows = [];
+  for (const k of list.keys) { try { rows.push(JSON.parse(await env.WAITLIST.get(k.name))); } catch (e) {} }
+  rows.sort(function (a, b) { return (b.ts || 0) - (a.ts || 0); });
+  return json({ total: rows.length, rows }, 200, cors);
 }
 
 // ── Resend ───────────────────────────────────────────────────
@@ -538,8 +636,8 @@ function surveyEmailHtml(r) {
     <div style="font-size:24px;font-weight:800;letter-spacing:-.02em;margin-bottom:18px">presu<span style="color:#34D399">.</span></div>
     <p style="font-size:16px;color:#A1A1A6;margin:0 0 6px">${hola}</p>
     <h1 style="font-size:28px;line-height:1.15;font-weight:800;letter-spacing:-.02em;margin:0 0 14px;color:#fff">Construyamos Presu <span style="color:#34D399">a tu medida</span></h1>
-    <p style="font-size:16px;line-height:1.55;color:#D4D4D6;margin:0 0 14px">Eres de los primeros en sumarte, así que queremos construir esto <b style="color:#fff">contigo</b>. Cuéntanos quién eres y qué necesitas: son <b style="color:#34D399">7 preguntas, menos de 2 minutos</b>.</p>
-    <p style="font-size:15px;line-height:1.5;color:#5EEAB8;font-weight:600;margin:0 0 22px">🎟️ Quien responda entra en las <b>primeras invitaciones</b> cuando abramos la beta.</p>
+    <p style="font-size:16px;line-height:1.55;color:#D4D4D6;margin:0 0 14px">Llevas unos días con la beta, así que queremos oírte. Cuéntanos cómo te va con Presu —y si aún no la abres, qué te frenó: son <b style="color:#34D399">unas preguntas rápidas, menos de 3 minutos</b>.</p>
+    <p style="font-size:15px;line-height:1.5;color:#5EEAB8;font-weight:600;margin:0 0 22px">🎯 Con tu feedback decidimos <b>qué construir primero</b>.</p>
     <div style="text-align:center;margin:0 0 24px">
       <a href="${link}" style="display:inline-block;background:#34D399;color:#08231A;font-weight:800;font-size:17px;text-decoration:none;padding:16px 30px;border-radius:14px">Responder la encuesta →</a>
     </div>

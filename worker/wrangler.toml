@@ -8,6 +8,11 @@ compatibility_date = "2024-11-01"
 binding = "WAITLIST"
 id = "7aec6338c2e042e3acc5c03a592c0da7"
 
+# R2: almacén de imágenes de documentos anonimizados aportados (página /aporta).
+[[r2_buckets]]
+binding = "DOCS"
+bucket_name = "presu-docs"
+
 # Cron de LANZAMIENTO (solo prod): jue 25 jun, 17:00–17:19 UTC = 12:00pm (mediodía) Colombia.
 # Dispara cada minuto en esa ventana; cada disparo envía un lote (idempotente),
 # así drena toda la base en ~14 min. Pasada esa fecha no vuelve a dispararse.
@@ -26,6 +31,10 @@ name = "presu-waitlist-staging"
 [[env.staging.kv_namespaces]]
 binding = "WAITLIST"
 id = "14cae570f4024c458142cd264a3775e8"
+
+[[env.staging.r2_buckets]]
+binding = "DOCS"
+bucket_name = "presu-docs-staging"
 
 [env.staging.vars]
 NOTIFY_EMAIL = "esteban@aleph0.com.co"

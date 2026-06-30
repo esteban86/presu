@@ -14,7 +14,11 @@
   .brand span{color:var(--mint)}
   .eb{font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mint);margin-bottom:18px}
   h1{font-family:var(--head);font-weight:700;font-size:2.2rem;letter-spacing:-.02em;margin:0 0 10px}
+  h2{font-family:var(--head);font-weight:700;font-size:1.65rem;letter-spacing:-.02em;margin:0 0 10px}
   .sub{color:var(--mut);max-width:46ch;margin:0 auto 36px}
+  .sep{height:1px;background:var(--line);max-width:420px;margin:54px auto 40px}
+  .cta{display:inline-block;margin-top:22px;background:var(--mint);color:var(--ink);font-weight:700;text-decoration:none;border-radius:13px;padding:13px 24px}
+  .cta:hover{background:var(--mint-bright)}
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
   .f{background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:16px 14px;display:flex;flex-direction:column;align-items:center;gap:8px}
   .av{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--mint),var(--mint-bright));color:var(--ink);display:grid;place-items:center;font-family:var(--head);font-weight:700;font-size:1.1rem}
@@ -32,6 +36,15 @@
   <h1>Quienes están <span style="color:var(--mint)">construyendo</span> Presu</h1>
   <p class="sub">Pioneros que ya invitaron a 3+ amigos a la lista. Gracias por correr la voz 🌱</p>
   <div id="mount"><p class="loading">Cargando…</p></div>
+
+  <div class="sep"></div>
+
+  <div class="eb">Sembradores 🌱</div>
+  <h2>Quienes aportaron <span style="color:var(--mint)">documentos</span></h2>
+  <p class="sub">Compartieron un documento anónimo —tapado en su propio equipo— para que Presu aprenda a leer su banco.</p>
+  <div id="mountSemb"><p class="loading">Cargando…</p></div>
+  <div><a class="cta" href="/aporta">Aporta un documento →</a></div>
+
   <a class="back" href="/">← Volver a Presu</a>
 </div>
 <script>
@@ -48,6 +61,15 @@
       return '<div class="f"><div class="av">'+initials(f.name)+'</div><div class="nm">'+f.name+'</div><div class="ct">'+f.count+' invitados</div></div>';
     }).join('') + '</div>';
   }).catch(function(){ document.getElementById('mount').innerHTML = '<p class="empty">No pudimos cargar el muro.</p>'; });
+
+  fetch(API+'/contrib/wall').then(function(r){return r.json();}).then(function(d){
+    var ws = (d && d.wall) || [];
+    var m = document.getElementById('mountSemb');
+    if(!ws.length){ m.innerHTML = '<p class="empty">Aún no hay Sembradores. ¿Serás el primero en aportar?</p>'; return; }
+    m.innerHTML = '<div class="grid">' + ws.map(function(w){
+      return '<div class="f"><div class="av">'+initials(w.name)+'</div><div class="nm">'+w.name+'</div><div class="ct">'+w.count+' '+(w.count===1?'documento':'documentos')+'</div></div>';
+    }).join('') + '</div>';
+  }).catch(function(){ document.getElementById('mountSemb').innerHTML = '<p class="empty">No pudimos cargar los Sembradores.</p>'; });
 })();
 </script>
 </body>
