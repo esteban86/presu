@@ -628,8 +628,12 @@ async function adminDoc(request, env, url) {
   const id = (url.searchParams.get('id') || '').replace(/[^a-z0-9-]/gi, '');
   const raw = id && await env.WAITLIST.get('contrib:' + id);
   if (!raw) return new Response('not found', { status: 404 });
-  let key = null; try { key = JSON.parse(raw).key; } catch (e) {}
-  const obj = key && await env.DOCS.get(key);
+  let rec = {}; try { rec = JSON.parse(raw); } catch (e) {}
+  if ((url.searchParams.get('kind') || '') === 'json') { // tokens (para la capa de texto del PDF buscable)
+    const o = rec.jsonKey && await env.DOCS.get(rec.jsonKey);
+    return new Response(o ? o.body : '{}', { status: 200, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'Access-Control-Allow-Origin': '*' } });
+  }
+  const obj = rec.key && await env.DOCS.get(rec.key);
   if (!obj) return new Response('not found', { status: 404 });
   return new Response(obj.body, { status: 200, headers: { 'Content-Type': 'image/jpeg', 'Cache-Control': 'no-store', 'Access-Control-Allow-Origin': '*' } });
 }

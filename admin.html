@@ -56,17 +56,26 @@
   // Arma UN jsPDF con todas las páginas (imágenes) de un envío.
   function buildPdf(g){
     var JsPDF=(window.jspdf&&window.jspdf.jsPDF)||window.jsPDF;
-    return Promise.all(g.map(function(r){ return new Promise(function(res){
-      var im=new Image(); im.crossOrigin='anonymous';
-      im.onload=function(){res(im);}; im.onerror=function(){res(null);}; // imagen faltante → se omite, no tumba el resto
-      im.src=API+'/admin/doc?id='+encodeURIComponent(r.id)+'&t='+encodeURIComponent(tok)+'&c=1';
-    });})).then(function(imgs){
-      imgs=imgs.filter(Boolean);
-      if(!imgs.length) return null;
+    return Promise.all(g.map(function(r){
+      var pImg=new Promise(function(res){ var im=new Image(); im.crossOrigin='anonymous'; im.onload=function(){res(im);}; im.onerror=function(){res(null);}; im.src=API+'/admin/doc?id='+encodeURIComponent(r.id)+'&t='+encodeURIComponent(tok)+'&c=1'; });
+      var pTok=fetch(API+'/admin/doc?id='+encodeURIComponent(r.id)+'&t='+encodeURIComponent(tok)+'&kind=json').then(function(x){return x.json();}).catch(function(){return null;});
+      return Promise.all([pImg,pTok]).then(function(a){ return { img:a[0], lay:a[1] }; });
+    })).then(function(pages){
+      pages=pages.filter(function(p){return p.img;}); // imagen faltante → se omite
+      if(!pages.length) return null;
       var doc;
-      imgs.forEach(function(im,i){ var w=im.naturalWidth,h=im.naturalHeight,o=w>h?'l':'p';
+      pages.forEach(function(p,i){ var im=p.img, w=im.naturalWidth, h=im.naturalHeight, o=w>h?'l':'p';
         if(i===0){ doc=new JsPDF({unit:'px',format:[w,h],orientation:o}); } else { doc.addPage([w,h],o); }
         doc.addImage(im,'JPEG',0,0,w,h);
+        // Capa de texto INVISIBLE con los tokens anónimos (posicionados) → pdftotext/parsers lo leen.
+        var lay=p.lay;
+        if(lay && lay.tokens && lay.tokens.length){
+          var sx=lay.w?(w/lay.w):1, sy=lay.h?(h/lay.h):1;
+          lay.tokens.forEach(function(t){ if(!t.t) return;
+            var fs=Math.max(1,(t.h||10)*sy*0.72);
+            try{ doc.setFontSize(fs); doc.text(String(t.t), t.x*sx, (t.y+(t.h||fs)*0.8)*sy, {renderingMode:'invisible'}); }catch(e){}
+          });
+        }
       });
       return doc;
     });
