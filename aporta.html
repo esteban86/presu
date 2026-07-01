@@ -419,6 +419,9 @@
       if(editIdx>=items.length) editIdx=items.length-1;
       render();
     });
+    // Auto-OCR: si la página no trae capa de texto (imagen o PDF rasterizado), la analiza sola
+    // (no bloquea: puedes tapar a mano mientras corre; las marcas aparecen al terminar).
+    if(!(it.textItems && it.textItems.length) && !it.ocrTried){ runOCR(it, document.getElementById('ocrBtn'), true); }
   }
 
   var cv, cctx, viewScale;
@@ -490,8 +493,9 @@
       }).slice(0, 4000)
     };
   }
-  function runOCR(it, btn){
-    var errEl=document.getElementById('editErr'); if(errEl) errEl.textContent='';
+  function runOCR(it, btn, auto){
+    it.ocrTried = true;
+    var errEl=document.getElementById('editErr'); if(errEl) errEl.textContent = auto ? 'Esta página es una imagen — la analizamos sola para marcar tus datos…' : '';
     btn.classList.add('busy'); var orig=btn.innerHTML; btn.innerHTML='Analizando…';
     loadTesseract().then(function(){
       return Tesseract.recognize(it.canvas, 'spa+eng');
