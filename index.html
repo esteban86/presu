@@ -1127,40 +1127,48 @@
         .catch(fail);
     }
 
-    // ── Cierre de pioneros: al pasar la hora, la landing cambia sola a "próxima tanda" ──
-    var LATE = false;
-    function closeRegistration(){
-      if (LATE) return; LATE = true;
+    // ── Olas de lanzamiento: Beta/pioneros (30-jun 4pm) → Nueva Ola (15-jul 4pm) ──
+    var BETA = new Date('2026-06-30T16:00:00-05:00').getTime();
+    var OLA  = new Date('2026-07-15T16:00:00-05:00').getTime();
+    var LATE = false;       // true = inscribiéndose a la Nueva Ola (no a la beta de pioneros)
+    var cdTarget = BETA;
+    // La beta cerró → la landing pasa a modo "Nueva Ola" (cuenta regresiva al 15-jul).
+    function enterNuevaOla(){
+      if (LATE) return; LATE = true; cdTarget = OLA;
       var q=function(s){return document.querySelector(s);};
-      var badge=q('.hero-grid .pill-badge'); if(badge){ badge.innerHTML='<span class="ping"></span> Cupos de pioneros cerrados · la beta ya abrió'; }
-      var h1=q('.hero-grid h1'); if(h1){ h1.innerHTML='La beta de Presu <span class="mintword">ya abrió</span>.'; }
-      var pitch=q('.hero-grid .pitch'); if(pitch){ pitch.textContent='Los cupos de pioneros se cerraron — pero aún puedes entrar a la próxima tanda.'; }
-      var sub=q('.hero-grid .sub'); if(sub){ sub.innerHTML='Déjanos tu correo y eres de los primeros en la siguiente apertura. ¿Quieres entrar antes? Tienes dos formas de ganártelo 👇'; }
-      var btn=q('#hero-form button'); if(btn && btn.firstChild){ btn.firstChild.nodeValue='Únete a la próxima tanda '; }
-      var cd=q('#countdown'); if(cd){ cd.style.display='none'; }
+      var badge=q('.hero-grid .pill-badge'); if(badge){ badge.innerHTML='<span class="ping"></span> 🌊 Nueva Ola · abre el 15 de julio, 4pm'; }
+      var h1=q('.hero-grid h1'); if(h1){ h1.innerHTML='La <span class="mintword">Nueva Ola</span> de Presu abre el 15 de julio.'; }
+      var pitch=q('.hero-grid .pitch'); if(pitch){ pitch.textContent='La beta de pioneros ya está corriendo. La siguiente tanda —la Nueva Ola— abre el 15 de julio a las 4pm.'; }
+      var sub=q('.hero-grid .sub'); if(sub){ sub.innerHTML='Déjanos tu correo y entras en la <b>Nueva Ola</b>. ¿Quieres adelantarte? Tienes dos formas 👇'; }
+      var btn=q('#hero-form button'); if(btn && btn.firstChild){ btn.firstChild.nodeValue='Únete a la Nueva Ola '; }
+      var top=q('#countdown .cd-top'); if(top){ top.textContent='Falta para la Nueva Ola'; }
+      var note=q('#countdown .cd-note'); if(note){ note.innerHTML='Faltan para la <b>Nueva Ola</b>. <span style="opacity:.85">¿Ya eres pionero de la beta? Ya tienes acceso —revisa tu correo 📩.</span>'; }
+      var live=q('#countdown .cd-live'); if(live){ live.textContent='● La Nueva Ola ya abrió —entra y reclama tu acceso.'; }
       var ramps=q('#late-ramps'); if(ramps){ ramps.style.display='flex'; }
-      var ose=q('#os-eb-date'); if(ose){ ose.textContent='La beta ya abrió · acceso por correo'; }
-      var wl=q('#waitlist-lede'); if(wl){ wl.innerHTML='La beta de Presu <b style="color:var(--tx,#fff)">ya abrió</b>. Si fuiste pionero, te llegó el acceso a tu correo 📩 (revisa spam). ¿Llegaste tarde? Únete a la lista para la <b style="color:var(--tx,#fff)">próxima tanda</b> 👇'; }
+      var ose=q('#os-eb-date'); if(ose){ ose.textContent='Beta en curso · Nueva Ola abre el 15 de julio'; }
+      var wl=q('#waitlist-lede'); if(wl){ wl.innerHTML='La beta de pioneros ya está corriendo; la <b style="color:var(--tx,#fff)">Nueva Ola</b> abre el <b style="color:var(--tx,#fff)">15 de julio, 4pm</b>. Déjanos tu correo y entras. <br><span style="color:var(--mut2,#6B6B72)">¿Ya eres pionero? Ya tienes acceso — revisa tu correo 📩.</span>'; }
     }
 
-    // ── Countdown al lanzamiento de la beta ──
+    // ── Cuenta regresiva (Beta → Nueva Ola, transición automática) ──
     (function(){
       var cd = document.getElementById('countdown');
       if (!cd) return;
-      var target = new Date(cd.getAttribute('data-launch')).getTime();
       var dEl=document.getElementById('cd-d'), hEl=document.getElementById('cd-h'), mEl=document.getElementById('cd-m'), sEl=document.getElementById('cd-s');
       function pad(n){ return (n<10?'0':'')+n; }
+      var timer;
       function tick(){
-        var diff = target - Date.now();
-        if (diff <= 0){ cd.classList.add('is-live'); dEl.textContent=hEl.textContent=mEl.textContent=sEl.textContent='00'; clearInterval(timer); closeRegistration(); return; }
+        var diff = cdTarget - Date.now();
+        if (diff <= 0 && cdTarget === BETA){ enterNuevaOla(); diff = cdTarget - Date.now(); } // beta cerró → cuenta a la ola
+        if (diff <= 0){ cd.classList.add('is-live'); dEl.textContent=hEl.textContent=mEl.textContent=sEl.textContent='00'; clearInterval(timer); return; }
         var s = Math.floor(diff/1000);
         dEl.textContent = pad(Math.floor(s/86400));
         hEl.textContent = pad(Math.floor(s%86400/3600));
         mEl.textContent = pad(Math.floor(s%3600/60));
         sEl.textContent = pad(s%60);
       }
+      if (Date.now() >= BETA) enterNuevaOla(); // si la beta ya cerró, arranca en modo Nueva Ola
       tick();
-      var timer = setInterval(tick, 1000);
+      timer = setInterval(tick, 1000);
     })();
 
     // Hero capture
@@ -1174,9 +1182,9 @@
       if (!EMAIL_RE.test(email)) { heroErr.style.display='block'; heroEmail.focus(); return; }
       heroErr.style.display='none';
       send({ perfil:'persona', correo:email, origen:(LATE?'tanda2':'hero'), ref:REF },
-        function(res){ heroForm.style.display='none'; if(LATE){ heroOk.querySelector('strong').textContent='¡Listo, vas para la próxima tanda! 🌱'; heroOk.querySelector('span').textContent='Comparte tu link para subir en la cola — y si quieres entrar antes, aporta un documento.'; } heroOk.style.display='flex'; if(res&&res.ref) heroOk.insertAdjacentHTML('afterend', referralCTA(res.ref)); bumpCount(); if(typeof gtag==='function') gtag('event','generate_lead',{perfil:'persona',origen:(LATE?'tanda2':'hero')}); if(window.plausible) window.plausible('Waitlist Signup',{props:{perfil:'persona',origen:(LATE?'tanda2':'hero')}}); },
+        function(res){ heroForm.style.display='none'; if(LATE){ heroOk.querySelector('strong').textContent='¡Listo, estás en la Nueva Ola! 🌊'; heroOk.querySelector('span').textContent='Abre el 15 de julio a las 4pm. Comparte tu link para subir en la fila — o aporta un documento para entrar antes.'; } heroOk.style.display='flex'; if(res&&res.ref) heroOk.insertAdjacentHTML('afterend', referralCTA(res.ref)); bumpCount(); if(typeof gtag==='function') gtag('event','generate_lead',{perfil:'persona',origen:(LATE?'tanda2':'hero')}); if(window.plausible) window.plausible('Waitlist Signup',{props:{perfil:'persona',origen:(LATE?'tanda2':'hero')}}); },
         function(){ alert('Algo falló de nuestro lado. Reintenta en un momento.'); },
-        function(){ heroForm.style.display='none'; heroOk.querySelector('strong').textContent='¡Ya estás en la lista! 🎉'; heroOk.querySelector('span').textContent='Ese correo ya está inscrito. Te avisamos primero cuando abramos.'; heroOk.style.display='flex'; });
+        function(){ heroForm.style.display='none'; heroOk.querySelector('strong').textContent='¡Ya estás inscrito! 🎉'; heroOk.querySelector('span').textContent = LATE ? 'Si eres pionero de la beta, ya tienes acceso (revisa tu correo 📩). Si no, te avisamos cuando abra la Nueva Ola el 15 de julio.' : 'Ese correo ya está inscrito. Te avisamos primero cuando abramos.'; heroOk.style.display='flex'; });
     });
 
     // Full form
