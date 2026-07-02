@@ -37,7 +37,7 @@
   <a class="brand" href="/">presu<span>.</span></a>
   <div class="eb">Legal</div>
   <h1>Política de privacidad</h1>
-  <p class="upd">Última actualización: 27 de junio de 2026</p>
+  <p class="upd">Última actualización: 2 de julio de 2026</p>
 
   <p class="lede">Presu es una aplicación de escritorio de finanzas personales que funciona <strong>principalmente en tu equipo</strong>. Tus <strong>datos financieros</strong> —cuentas, transacciones, extractos, presupuestos, categorías— <strong>viven solo en tu dispositivo</strong> y no se envían a Presu ni a terceros.</p>
   <p>Algunas funciones opcionales o del plan Pro usan servicios en la nube operados por Presu / <strong>Asimétrica</strong> (Presu IA, licencias y pagos). En esos casos viaja únicamente el dato mínimo que se describe abajo —nunca tu base de datos completa— y siempre con cédula y números de cuenta <strong>enmascarados</strong> cuando aplica.</p>
@@ -52,7 +52,7 @@
 
   <h2>Integraciones opcionales (las activas tú)</h2>
   <ul>
-    <li><strong>Gmail (opcional):</strong> si la conectas, Presu lee tus correos con permiso de solo lectura (<code>gmail.readonly</code>) únicamente para detectar notificaciones de transacciones y extractos bancarios. Los datos se procesan en tu equipo. Cumple la política de <strong>Limited Use</strong> de Google: no se transfieren ni se usan para publicidad; al desconectar, se revoca el token.</li>
+    <li><strong>Gmail (opcional):</strong> si la conectas, Presu lee tus correos con permiso de solo lectura (<code>gmail.readonly</code>) únicamente para detectar notificaciones de transacciones y extractos bancarios. El contenido se procesa <strong>en tu equipo</strong> y no se usa para publicidad. <strong>Excepción:</strong> cuando un correo de transacción no se puede leer, Presu envía su <strong>texto enmascarado</strong> (sin cédula, números de cuenta ni nombres) a nuestro servidor para poder dar soporte a ese banco; esto viene <strong>activado por defecto</strong> y puedes <strong>desactivarlo en Ajustes</strong> cuando quieras. Ese texto se usa <strong>solo</strong> para mejorar la lectura de formatos (política de <strong>Limited Use</strong> de Google) y, al desconectar Gmail, se revoca el token.</li>
     <li><strong>TRM (tasa de cambio):</strong> se consulta el portal público de datos del gobierno de Colombia para convertir USD→COP. No se envía información personal.</li>
   </ul>
 
@@ -75,7 +75,7 @@
   </ul>
 
   <h2>Diagnóstico y reporte de errores</h2>
-  <p>El reporte de errores es <strong>manual</strong>: al exportar un diagnóstico, el archivo enmascara cédula y números de cuenta. Tú decides si compartirlo. No hay envío automático de telemetría ni de errores a ningún servidor. Los aportes opcionales para mejorar la lectura de formatos (muestras enmascaradas / señal anónima de salud de parseo) están <strong>apagados por defecto</strong> y solo se envían si tú los activas.</p>
+  <p>El reporte de errores es <strong>manual</strong>: al exportar un diagnóstico, el archivo enmascara cédula y números de cuenta. Tú decides si compartirlo. Aparte de eso, Presu envía dos señales <strong>anónimas y automáticas</strong> para mejorar la lectura de formatos bancarios — una alerta de salud de parseo (qué banco, si funcionó, sin montos ni descripciones) y, cuando un correo no se pudo leer, su texto enmascarado (sin cédula, cuentas ni nombres). <strong>Estas señales vienen activadas por defecto</strong>; puedes desactivarlas en Ajustes cuando quieras. Nunca incluyen datos financieros ni identificables.</p>
 
   <h2>Aportes de documentos (programa «Sembradores»)</h2>
   <p>En <a href="/aporta">presu.asimetrica.co/aporta</a> puedes aportar, de forma <strong>voluntaria y anónima</strong>, un extracto o un pantallazo de transacciones para ayudarnos a que Presu aprenda a leer más bancos. Cómo cuidamos tu privacidad:</p>
