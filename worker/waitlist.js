@@ -274,6 +274,7 @@ async function adminWaitlist(request, env, cors, url) {
       rows.push({
         email: name.slice(6),
         nombre: r.nombre || '',
+        celular: r.celular || '',
         perfil: r.perfil || '',
         empresa: r.empresa || '',
         origen: r.origen || '',
@@ -286,7 +287,7 @@ async function adminWaitlist(request, env, cors, url) {
   }
   rows.sort(function (a, b) { return (a.ts || 0) - (b.ts || 0); });
   if ((url.searchParams.get('format') || '') === 'csv') {
-    const cols = ['email', 'nombre', 'perfil', 'empresa', 'origen', 'cohort', 'ref', 'referredBy', 'ts'];
+    const cols = ['email', 'nombre', 'celular', 'perfil', 'empresa', 'origen', 'cohort', 'ref', 'referredBy', 'ts'];
     const q = function (s) { return '"' + String(s == null ? '' : s).replace(/"/g, '""') + '"'; };
     const lines = [cols.join(',')].concat(rows.map(function (r) { return cols.map(function (c) { return q(r[c]); }).join(','); }));
     return new Response(lines.join('\n'), { status: 200, headers: { 'Content-Type': 'text/csv; charset=utf-8', 'Content-Disposition': 'attachment; filename="presu-waitlist.csv"', ...cors } });
@@ -406,18 +407,20 @@ const SURVEY_FIELDS = ['nombre', 'uso', 'features', 'valor', 'falta', 'freno', '
 const SURVEY_ARRAY_FIELDS = ['bancos', 'metas', 'ayuda', 'features'];
 const SURVEY_SUBJECT = 'Llevas unos días con Presu — cuéntanos cómo te va 🌿';
 
-// GET /survey?e=correo → ¿está en la lista?, ¿ya respondió?, nombre (para precargar la UX)
+// GET /survey?e=correo → ¿está en la lista?, ¿ya respondió?, nombre + answers previos (para precargar/reanudar)
 async function surveyCheck(request, env, pub, url) {
   const email = String(url.searchParams.get('e') || '').trim().toLowerCase();
   if (!EMAIL_RE.test(email)) return json({ found: false }, 200, pub);
   const raw = await env.WAITLIST.get('email:' + email);
   if (!raw) return json({ found: false }, 200, pub);
   let rec = {}; try { rec = JSON.parse(raw); } catch (e) {}
-  const answered = !!(await env.WAITLIST.get('survey:' + email));
-  return json({ found: true, answered, nombre: rec.nombre || '' }, 200, pub);
+  let sv = {}; const svRaw = await env.WAITLIST.get('survey:' + email);
+  if (svRaw) { try { sv = JSON.parse(svRaw); } catch (e) {} }
+  return json({ found: true, answered: !!svRaw, completed: !!sv.completed, nombre: rec.nombre || '', celular: rec.celular || '', answers: sv.answers || {} }, 200, pub);
 }
 
-// POST /survey {email, answers} → guarda (solo si el correo ya está en la waitlist)
+// POST /survey {email, answers, complete?} → guarda de forma INCREMENTAL (merge), solo si el correo ya está en la waitlist.
+// Cada envío parcial fusiona sus campos con lo ya guardado, así no se pierde nada si abandonan a la mitad.
 async function surveySubmit(request, env, cors) {
   let body; try { body = await request.json(); } catch (e) { return json({ status: 'error', reason: 'json' }, 400, cors); }
   if (body.botcheck) return json({ status: 'ok' }, 200, cors); // honeypot
@@ -431,14 +434,24 @@ async function surveySubmit(request, env, cors) {
     if (SURVEY_ARRAY_FIELDS.indexOf(k) >= 0) clean[k] = (Array.isArray(ans[k]) ? ans[k] : []).map(function (s) { return String(s).slice(0, 80); }).slice(0, 25);
     else clean[k] = String(ans[k]).slice(0, 280);
   }
-  // Si nos dieron nombre y no lo teníamos en la lista, lo guardamos en el registro.
-  if (clean.nombre) {
-    try { const wl = JSON.parse((await env.WAITLIST.get('email:' + email)) || '{}'); if (!wl.nombre) { wl.nombre = clean.nombre.slice(0, 80); await env.WAITLIST.put('email:' + email, JSON.stringify(wl)); } } catch (e) {}
+  // Backfill al registro de la waitlist: nombre (si falta) y celular (para que salga en el export).
+  if (clean.nombre || clean.celular) {
+    try {
+      const wl = JSON.parse((await env.WAITLIST.get('email:' + email)) || '{}');
+      let changed = false;
+      if (clean.nombre && !wl.nombre) { wl.nombre = clean.nombre.slice(0, 80); changed = true; }
+      if (clean.celular && wl.celular !== clean.celular.slice(0, 40)) { wl.celular = clean.celular.slice(0, 40); changed = true; }
+      if (changed) await env.WAITLIST.put('email:' + email, JSON.stringify(wl));
+    } catch (e) {}
   }
-  const prev = await env.WAITLIST.get('survey:' + email);
-  await env.WAITLIST.put('survey:' + email, JSON.stringify({ email, answers: clean, ts: Date.now(), updated: !!prev }));
-  if (!prev) await env.WAITLIST.put('meta:surveys', String(parseInt((await env.WAITLIST.get('meta:surveys')) || '0', 10) + 1));
-  return json({ status: prev ? 'updated' : 'ok' }, 200, cors);
+  // Merge incremental: fusiona los campos entrantes con los ya guardados.
+  let prevObj = {}; const prevRaw = await env.WAITLIST.get('survey:' + email);
+  if (prevRaw) { try { prevObj = JSON.parse(prevRaw); } catch (e) {} }
+  const mergedAnswers = Object.assign({}, prevObj.answers || {}, clean);
+  const completed = !!body.complete || !!prevObj.completed;
+  await env.WAITLIST.put('survey:' + email, JSON.stringify({ email, answers: mergedAnswers, ts: Date.now(), updated: !!prevRaw, completed: completed }));
+  if (!prevRaw) await env.WAITLIST.put('meta:surveys', String(parseInt((await env.WAITLIST.get('meta:surveys')) || '0', 10) + 1));
+  return json({ status: prevRaw ? 'updated' : 'ok' }, 200, cors);
 }
 
 // GET /admin/survey → todas las respuestas cruzadas con datos de la waitlist (token)
