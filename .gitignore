@@ -1,3 +1,2 @@
-# La encuesta se queda en STAGING hasta afinarla y dar el OK de lanzamiento.
-# No publicar en prod (presu.asimetrica.co) todavia. Quitar esta linea para lanzar.
-encuesta.html
+# (encuesta.html ya está en producción)
+.DS_Store
