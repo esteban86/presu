@@ -46,7 +46,10 @@
   .st-ok{color:var(--mint-bright)} .st-part{color:#FCD34D}
   a.wa{color:var(--mint-bright);text-decoration:none}
   .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:14px 0}
-  .scard{background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:16px 18px}
+  .scard{background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:16px 18px;cursor:pointer;transition:border-color .15s,background .15s}
+  .scard:hover{border-color:var(--line2)}
+  .scard.sel{border-color:var(--mint-bright);background:var(--bg3)}
+  .scard[data-f="t"].sel{border-color:#7DD3FC}
   .scard .n{font-family:var(--head);font-weight:700;font-size:2.1rem;letter-spacing:-.02em}
   .scard .l{font-family:var(--mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--mut2);margin-top:2px}
   .c-mint{color:var(--mint-bright)} .c-sky{color:#7DD3FC}
@@ -237,9 +240,9 @@
       '<div class="row" style="margin:10px 0 6px"><button class="btn ghost" id="wcsv">⬇ CSV</button> '+
       '<button class="btn ghost" id="reload">Recargar</button> <button class="btn ghost" id="logout">Salir</button></div>'+
       '<div class="stats">'+
-      '<div class="scard"><div class="n c-mint">'+pio+'</div><div class="l">Pioneros 🌱</div></div>'+
-      '<div class="scard"><div class="n c-sky">'+ola+'</div><div class="l">Nueva Ola 🌊</div></div>'+
-      '<div class="scard"><div class="n">'+(pio+ola)+'</div><div class="l">Total consolidado</div></div></div>';
+      '<div class="scard" data-f="p" title="Filtrar el gráfico: solo Pioneros"><div class="n c-mint">'+pio+'</div><div class="l">Pioneros 🌱</div></div>'+
+      '<div class="scard" data-f="t" title="Filtrar el gráfico: solo Nueva Ola"><div class="n c-sky">'+ola+'</div><div class="l">Nueva Ola 🌊</div></div>'+
+      '<div class="scard sel" data-f="all" title="Ver todo el consolidado"><div class="n">'+(pio+ola)+'</div><div class="l">Total consolidado</div></div></div>';
     var days=Object.keys(byDay).sort();
     if(days.length){
       // relleno de días vacíos para continuidad del eje
@@ -251,20 +254,32 @@
         '<span><span class="dot" style="background:#F4F4F3;height:3px;border-radius:2px"></span>Acumulado</span></span></div>'+
         '<canvas id="regChart" style="width:100%;height:280px;display:block"></canvas>'+
         (sinFecha?'<p class="muted" style="font-size:.82rem;margin:10px 0 0">'+sinFecha+' registros del import inicial no tienen fecha y no aparecen en el gráfico (sí cuentan arriba).</p>':'')+'</div>';
-      app.innerHTML=html; regChart(all, byDay);
+      app.innerHTML=html; regChart(all, byDay, 'all');
     } else {
       app.innerHTML=html+'<p class="empty">Aún no hay registros.</p>';
     }
-    wireRegistros();
+    wireRegistros(byDay);
   }
-  function regChart(days, byDay){
+  // Rango de días con datos para un filtro (rellena huecos intermedios)
+  function regSpan(byDay, f){
+    var ds=Object.keys(byDay).filter(function(d){ var v=byDay[d];
+      return f==='p' ? v.p>0 : (f==='t' ? v.t>0 : (v.p+v.t)>0); }).sort();
+    if(!ds.length) return [];
+    var all=[], d0=new Date(ds[0]+'T12:00:00Z'), d1=new Date(ds[ds.length-1]+'T12:00:00Z');
+    for(var d=new Date(d0); d<=d1; d.setUTCDate(d.getUTCDate()+1)) all.push(d.toISOString().slice(0,10));
+    return all;
+  }
+  // filtro: 'all' (apiladas) | 'p' (solo Pioneros) | 't' (solo Nueva Ola)
+  function regChart(days, byDay, filter){
     var cv=document.getElementById('regChart'); if(!cv) return;
     var dpr=window.devicePixelRatio||1, W=cv.clientWidth, H=cv.clientHeight;
+    if(!W){ requestAnimationFrame(function(){ regChart(days, byDay, filter); }); return; } // layout aún no listo
     cv.width=W*dpr; cv.height=H*dpr;
-    var x=cv.getContext('2d'); x.scale(dpr,dpr);
+    var x=cv.getContext('2d'); x.clearRect(0,0,W,H); x.scale(dpr,dpr);
     var L=36,R=44,T=12,B=30, pw=W-L-R, ph=H-T-B;
+    var val=function(v){ return filter==='p'?v.p : filter==='t'?v.t : (v.p+v.t); };
     var maxBar=1, cum=0, cums=[];
-    days.forEach(function(d){ var v=byDay[d]||{p:0,t:0}; maxBar=Math.max(maxBar,v.p+v.t); cum+=v.p+v.t; cums.push(cum); });
+    days.forEach(function(d){ var v=byDay[d]||{p:0,t:0}; maxBar=Math.max(maxBar,val(v)); cum+=val(v); cums.push(cum); });
     var maxCum=Math.max(1,cum);
     x.font='10px "JetBrains Mono",monospace'; x.textBaseline='middle';
     // grid + ejes (izq: diario, der: acumulado)
@@ -272,12 +287,12 @@
       x.strokeStyle='rgba(255,255,255,.07)'; x.beginPath(); x.moveTo(L,gy); x.lineTo(L+pw,gy); x.stroke();
       x.fillStyle='#6B6B72'; x.textAlign='right'; x.fillText(String(Math.round(maxBar*i/4)), L-6, gy);
       x.textAlign='left'; x.fillText(String(Math.round(maxCum*i/4)), L+pw+6, gy); }
-    // barras apiladas
+    // barras
     var step=pw/days.length, bw=Math.max(2,Math.min(26,step*0.72));
     days.forEach(function(d,i){ var v=byDay[d]||{p:0,t:0}, cx=L+step*(i+0.5);
       var hp=ph*v.p/maxBar, ht=ph*v.t/maxBar;
-      if(v.p){ x.fillStyle=C_MINT; x.fillRect(cx-bw/2, T+ph-hp, bw, hp); }
-      if(v.t){ x.fillStyle=C_SKY; x.fillRect(cx-bw/2, T+ph-hp-ht, bw, ht); } });
+      if(filter!=='t' && v.p){ x.fillStyle=C_MINT; x.fillRect(cx-bw/2, T+ph-hp, bw, hp); }
+      if(filter!=='p' && v.t){ x.fillStyle=C_SKY; x.fillRect(cx-bw/2, T+ph-(filter==='t'?0:hp)-ht, bw, ht); } });
     // línea acumulada (escala derecha)
     x.strokeStyle='rgba(244,244,243,.9)'; x.lineWidth=1.5; x.beginPath();
     days.forEach(function(d,i){ var cx=L+step*(i+0.5), cy=T+ph-ph*cums[i]/maxCum; i?x.lineTo(cx,cy):x.moveTo(cx,cy); });
@@ -287,8 +302,16 @@
     var every=Math.max(1,Math.ceil(days.length/6));
     days.forEach(function(d,i){ if(i%every===0||i===days.length-1) x.fillText(regDayLbl(d), L+step*(i+0.5), T+ph+14); });
   }
-  function wireRegistros(){
+  function wireRegistros(byDay){
     wireTabs();
+    // Cards como filtro del gráfico
+    Array.prototype.forEach.call(document.querySelectorAll('.scard[data-f]'), function(card){
+      card.onclick=function(){
+        var f=card.getAttribute('data-f');
+        Array.prototype.forEach.call(document.querySelectorAll('.scard[data-f]'), function(c){ c.classList.toggle('sel', c===card); });
+        regChart(regSpan(byDay, f), byDay, f);
+      };
+    });
     var c=document.getElementById('wcsv'); if(c) c.onclick=function(){
       fetch(API+'/admin/waitlist?format=csv',{headers:{'X-Admin-Token':tok},cache:'no-store'})
         .then(function(r){return r.text();}).then(function(t){
