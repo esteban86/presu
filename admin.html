@@ -227,10 +227,12 @@
   function regDay(ts){ return new Date(ts).toLocaleDateString('en-CA',{timeZone:'America/Bogota'}); } // YYYY-MM-DD
   function regDayLbl(iso){ var p=iso.split('-'); return new Date(Date.UTC(+p[0],+p[1]-1,+p[2],12)).toLocaleDateString('es-CO',{day:'numeric',month:'short'}); }
   function renderRegistros(rows){
-    var pio=0, ola=0, byDay={};
-    rows.forEach(function(r){ if(!r.ts) return; var d=regDay(r.ts);
-      if(!byDay[d]) byDay[d]={p:0,t:0};
-      if(r.cohort==='tanda2'){ ola++; byDay[d].t++; } else { pio++; byDay[d].p++; } });
+    var pio=0, ola=0, byDay={}, sinFecha=0;
+    rows.forEach(function(r){
+      if(r.cohort==='tanda2') ola++; else pio++;          // contadores: TODOS los registros
+      if(!r.ts){ sinFecha++; return; }                     // el gráfico solo puede ubicar los con fecha
+      var d=regDay(r.ts); if(!byDay[d]) byDay[d]={p:0,t:0};
+      if(r.cohort==='tanda2') byDay[d].t++; else byDay[d].p++; });
     var html=tabs()+'<h1>Registros <span class="stat">'+rows.length+' en la lista</span></h1>'+
       '<div class="row" style="margin:10px 0 6px"><button class="btn ghost" id="wcsv">⬇ CSV</button> '+
       '<button class="btn ghost" id="reload">Recargar</button> <button class="btn ghost" id="logout">Salir</button></div>'+
@@ -247,7 +249,8 @@
         '<span><span class="dot" style="background:'+C_MINT+'"></span>Pioneros</span>'+
         '<span><span class="dot" style="background:'+C_SKY+'"></span>Nueva Ola</span>'+
         '<span><span class="dot" style="background:#F4F4F3;height:3px;border-radius:2px"></span>Acumulado</span></span></div>'+
-        '<canvas id="regChart" style="width:100%;height:280px;display:block"></canvas></div>';
+        '<canvas id="regChart" style="width:100%;height:280px;display:block"></canvas>'+
+        (sinFecha?'<p class="muted" style="font-size:.82rem;margin:10px 0 0">'+sinFecha+' registros del import inicial no tienen fecha y no aparecen en el gráfico (sí cuentan arriba).</p>':'')+'</div>';
       app.innerHTML=html; regChart(all, byDay);
     } else {
       app.innerHTML=html+'<p class="empty">Aún no hay registros.</p>';
