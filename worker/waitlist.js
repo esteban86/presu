@@ -32,6 +32,11 @@ const TIERS = [
 const CAP = 1000; // cupos máximos antes del lanzamiento; al llegar, se cierran los registros.
 const CAMPAIGN_SUBJECT = 'Tu link de Fundador ya está aquí 🚀';
 const CAMPAIGN_BATCH = 30; // envíos por disparo del cron (bajo el límite de subrequests)
+// La tanda 1 (Pioneros) cerró el 30-jun-2026; desde el 1-jul es Nueva Ola.
+// Cohorte = Nueva Ola si se registró tras el corte O trae el tag origen=tanda2
+// (el tag solo no basta: 11 registros post-corte llegaron sin él). 1-jul 00:00 Bogotá (UTC-5).
+const OLA2_CUTOFF = Date.UTC(2026, 6, 1, 5);
+function cohortOf(r) { return (r && (r.origen === 'tanda2' || (r.ts || 0) >= OLA2_CUTOFF)) ? 'tanda2' : 'pionero'; }
 const TEST_EMAILS = ['x@x.com', 'prueba@asimetrica.co', 'prueba.worker@asimetrica.co', 'esteban.restrepo@bpt.global', 'debug1@aleph0.com.co', 'pionero.prueba@aleph0.com.co', 'chequeo.cuota@aleph0.com.co', 'esteban@aleph0.com.co'];
 function isTestEmail(e) { return TEST_EMAILS.indexOf(e) !== -1 || e.indexOf('+') !== -1 || e.indexOf('diag-') === 0; }
 
@@ -278,7 +283,7 @@ async function adminWaitlist(request, env, cors, url) {
         perfil: r.perfil || '',
         empresa: r.empresa || '',
         origen: r.origen || '',
-        cohort: r.origen === 'tanda2' ? 'tanda2' : 'pionero',
+        cohort: cohortOf(r),
         ref: r.ref || '',
         referredBy: r.referredBy || '',
         ts: r.ts || 0,
