@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>Aportes · Admin · Presu</title>
+<title>Admin · Presu</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
   :root{--mint:#34D399;--mint-bright:#5EEAB8;--ink:#08231A;--tx:#F4F4F3;--mut:#A1A1A6;--mut2:#6B6B72;--bg:#08080A;--bg2:#101014;--bg3:#16161A;--line:rgba(255,255,255,.1);--line2:rgba(255,255,255,.16);--head:"Space Grotesk",sans-serif;--mono:"JetBrains Mono",monospace}
@@ -33,11 +33,23 @@
   .pmeta a{color:var(--mint-bright);text-decoration:none}
   .err{color:#FCA5A5;margin-top:10px}
   .empty{color:var(--mut2);margin-top:24px}
+  .tabs{display:flex;gap:8px;margin:0 0 16px}
+  .tab{font-family:var(--head);font-weight:600;font-size:.95rem;background:transparent;border:1px solid var(--line2);color:var(--mut);border-radius:999px;padding:8px 18px;cursor:pointer}
+  .tab.on{background:var(--mint);border-color:var(--mint);color:var(--ink)}
+  .chips{display:flex;gap:7px;flex-wrap:wrap;margin:4px 0 10px}
+  .chip{font-family:var(--mono);font-size:.74rem;color:var(--tx);background:var(--bg3);border:1px solid var(--line);border-radius:8px;padding:4px 9px}
+  .chip b{color:var(--mint-bright)}
+  .agg-k{font-family:var(--mono);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--mut2);margin:10px 0 4px}
+  .kv{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px 16px;margin-top:8px}
+  .kv .k{color:var(--mut2);font-family:var(--mono);font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;display:block}
+  .kv div{font-size:.92rem}
+  .st-ok{color:var(--mint-bright)} .st-part{color:#FCD34D}
+  a.wa{color:var(--mint-bright);text-decoration:none}
 </style>
 </head>
 <body>
   <div class="brand">presu<span>.</span></div>
-  <div class="eb">Admin · Aportes</div>
+  <div class="eb">Admin</div>
   <div id="app"></div>
 <script>
 (function(){
@@ -47,6 +59,7 @@
   var app = document.getElementById('app');
   var tok = sessionStorage.getItem('presu_admin_tok') || '';
   var GROUPS = {};
+  var view = location.hash === '#encuesta' ? 'encuesta' : 'aportes';
   function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c];});}
 
   // Junta las páginas de un envío en UN solo PDF (en el navegador).
@@ -104,8 +117,20 @@
       .catch(function(e){ btn.disabled=false; btn.textContent=orig; alert('No se pudo armar el zip: '+(e&&e.message||e)); });
   }
 
+  // ── Tabs (Aportes | Encuesta) ──
+  function tabs(){
+    return '<div class="tabs">'+
+      '<button class="tab'+(view==='aportes'?' on':'')+'" data-v="aportes">Aportes</button>'+
+      '<button class="tab'+(view==='encuesta'?' on':'')+'" data-v="encuesta">Encuesta</button></div>';
+  }
+  function wireTabs(){
+    Array.prototype.forEach.call(document.querySelectorAll('.tab'), function(b){
+      b.onclick=function(){ view=b.getAttribute('data-v'); location.hash = view==='encuesta' ? '#encuesta' : ''; load(); };
+    });
+  }
+
   function gate(msg){
-    app.innerHTML = '<h1>Entrar</h1><p class="muted">Pega el token de admin para ver los aportes.</p>'+
+    app.innerHTML = '<h1>Entrar</h1><p class="muted">Pega el token de admin para entrar.</p>'+
       '<div class="row"><input id="tk" type="password" placeholder="X-Admin-Token" value="'+esc(tok)+'"><button class="btn" id="go">Entrar</button></div>'+
       (msg?'<p class="err">'+esc(msg)+'</p>':'');
     document.getElementById('go').onclick=function(){ tok=document.getElementById('tk').value.trim(); sessionStorage.setItem('presu_admin_tok',tok); load(); };
@@ -115,10 +140,71 @@
   function load(){
     if(!tok){ return gate(); }
     app.innerHTML='<p class="muted">Cargando…</p>';
+    if(view==='encuesta'){
+      fetch(API+'/admin/survey',{headers:{'X-Admin-Token':tok},cache:'no-store'})
+        .then(function(r){ if(r.status===401) throw new Error('Token inválido'); return r.json(); })
+        .then(function(d){ renderSurvey(d.rows||[]); })
+        .catch(function(e){ gate(e.message||'No se pudo cargar'); });
+      return;
+    }
     fetch(API+'/admin/contrib',{headers:{'X-Admin-Token':tok},cache:'no-store'})
       .then(function(r){ if(r.status===401) throw new Error('Token inválido'); return r.json(); })
       .then(function(d){ render(d.rows||[]); })
       .catch(function(e){ gate(e.message||'No se pudo cargar'); });
+  }
+
+  // ── Vista Encuesta ──
+  // Campos en el orden del formulario (encuesta.html); los de texto libre van aparte.
+  var SV_FIELDS=[['edad','Edad'],['ciudad','Ciudad'],['ocupacion','Ocupación'],['ingreso_tipo','Ingreso'],
+    ['metodo','Método hoy'],['metas','Metas'],['bancos','Bancos'],['dispositivo','Teléfono'],
+    ['pago','Pagaría'],['ingreso','Rango ingreso'],['ayuda','Ayuda ofrecida'],['uso','Usa Presu'],['features','Features'],['ayuda_config','Ayuda config']];
+  var SV_FREE=[['dolor','Frustración'],['valor','Lo que más le sirve'],['falta','Lo que le falta']];
+  function svVal(v){ return esc(Array.isArray(v)?v.join(', '):String(v)); }
+  function svDate(ts){ return ts?new Date(ts).toLocaleString('es-CO',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):''; }
+  function tally(rows,field){
+    var m={}; rows.forEach(function(r){ var v=r[field]; if(v==null||v==='') return;
+      (Array.isArray(v)?v:[v]).forEach(function(x){ m[x]=(m[x]||0)+1; }); });
+    return Object.keys(m).sort(function(a,b){return m[b]-m[a];})
+      .map(function(k){return '<span class="chip">'+esc(k)+' <b>'+m[k]+'</b></span>';}).join('');
+  }
+  function svCsv(rows){
+    var cols=['email','completed','ts','nombre'].concat(SV_FIELDS.map(function(f){return f[0];})).concat(SV_FREE.map(function(f){return f[0];})).concat(['celular','origen','perfil','referrals']);
+    var esc2=function(v){ v=Array.isArray(v)?v.join('; '):(v==null?'':String(v)); return '"'+v.replace(/"/g,'""')+'"'; };
+    var lines=[cols.join(',')].concat(rows.map(function(r){ return cols.map(function(c){ return esc2(c==='ts'?svDate(r.ts):r[c]); }).join(','); }));
+    var b=new Blob(['﻿'+lines.join('\r\n')],{type:'text/csv;charset=utf-8'}); var u=URL.createObjectURL(b);
+    var a=document.createElement('a'); a.href=u; a.download='presu-encuesta.csv'; a.click(); URL.revokeObjectURL(u);
+  }
+  function renderSurvey(rows){
+    var comp=rows.filter(function(r){return r.completed;}).length;
+    var html=tabs()+'<h1>Encuesta <span class="stat">'+rows.length+' respuestas · '+comp+' completas · '+(rows.length-comp)+' parciales</span></h1>'+
+      '<div class="row" style="margin:10px 0 6px"><button class="btn ghost" id="csv">⬇ CSV</button> '+
+      '<button class="btn ghost" id="reload">Recargar</button> <button class="btn ghost" id="logout">Salir</button></div>';
+    if(!rows.length){ app.innerHTML=html+'<p class="empty">Aún no hay respuestas.</p>'; wireSurvey(rows); return; }
+    html+='<div class="group"><div class="ghead"><b>Resumen</b></div>'+
+      '<div class="agg-k">Bancos</div><div class="chips">'+(tally(rows,'bancos')||'—')+'</div>'+
+      '<div class="agg-k">Pagarían</div><div class="chips">'+(tally(rows,'pago')||'—')+'</div>'+
+      '<div class="agg-k">Metas</div><div class="chips">'+(tally(rows,'metas')||'—')+'</div>'+
+      '<div class="agg-k">Teléfono</div><div class="chips">'+(tally(rows,'dispositivo')||'—')+'</div>'+
+      '<div class="agg-k">Ayuda ofrecida</div><div class="chips">'+(tally(rows,'ayuda')||'—')+'</div></div>';
+    rows.forEach(function(r){
+      var est=r.completed?'<span class="tag st-ok">completa ✓</span>':'<span class="tag st-part">parcial ✎</span>';
+      var wa=r.celular?String(r.celular).replace(/[^0-9]/g,''):'';
+      html+='<div class="group"><div class="ghead"><b>'+esc(r.nombre||'(sin nombre)')+' <span class="muted" style="font-weight:400">· '+esc(r.email)+'</span></b>'+
+        '<span>'+est+' <span class="tag">'+svDate(r.ts)+'</span>'+(r.origen?' <span class="tag">'+esc(r.origen)+'</span>':'')+(r.referrals?' <span class="tag">'+r.referrals+' referidos</span>':'')+
+        (wa?' <a class="btn wa" style="padding:6px 12px;font-size:.85rem" href="https://wa.me/'+wa+'" target="_blank" rel="noopener">WhatsApp</a>':'')+'</span></div><div class="kv">';
+      SV_FIELDS.forEach(function(f){ if(r[f[0]]!=null&&r[f[0]]!=='') html+='<div><span class="k">'+f[1]+'</span>'+svVal(r[f[0]])+'</div>'; });
+      if(r.celular) html+='<div><span class="k">WhatsApp</span><a class="wa" href="https://wa.me/'+wa+'" target="_blank" rel="noopener">'+esc(r.celular)+'</a></div>';
+      html+='</div>';
+      SV_FREE.forEach(function(f){ if(r[f[0]]) html+='<p class="muted" style="margin:8px 0 0;border-left:2px solid var(--line2);padding-left:10px"><b>'+f[1]+':</b> '+esc(r[f[0]])+'</p>'; });
+      html+='</div>';
+    });
+    app.innerHTML=html; wireSurvey(rows);
+  }
+  function wireSurvey(rows){
+    wireTabs();
+    var c=document.getElementById('csv'); if(c) c.onclick=function(){ svCsv(rows); };
+    var rl=document.getElementById('reload'); if(rl) rl.onclick=load;
+    var lo=document.getElementById('logout'); if(lo) lo.onclick=function(){ sessionStorage.removeItem('presu_admin_tok'); tok=''; gate(); };
   }
 
   function render(rows){
@@ -126,7 +212,7 @@
     GROUPS={}; var groups=GROUPS, order=[];
     rows.forEach(function(r){ var k=r.submissionId||r.id; if(!groups[k]){ groups[k]=[]; order.push(k); } groups[k].push(r); });
     var exportUrl = API+'/admin/contrib/export';
-    var head = '<h1>Aportes <span class="stat">'+rows.length+' docs · '+order.length+' envíos</span></h1>'+
+    var head = tabs()+'<h1>Aportes <span class="stat">'+rows.length+' docs · '+order.length+' envíos</span></h1>'+
       '<div class="row" style="margin:10px 0 6px"><button class="btn" id="dlall">📦 Descargar todo (PDFs .zip)</button> '+
       '<button class="btn ghost" id="exp">⬇ Dataset (JSONL)</button> '+
       '<button class="btn ghost" id="reload">Recargar</button> '+
@@ -149,6 +235,7 @@
   }
 
   function wire(){
+    wireTabs();
     var ex=document.getElementById('exp'); if(ex) ex.onclick=function(){
       fetch(API+'/admin/contrib/export',{headers:{'X-Admin-Token':tok},cache:'no-store'})
         .then(function(r){return r.text();}).then(function(t){

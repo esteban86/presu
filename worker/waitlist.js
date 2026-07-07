@@ -464,7 +464,7 @@ async function adminSurvey(request, env, cors) {
     const email = s.email || k.name.slice(7);
     let wl = {}; try { wl = JSON.parse((await env.WAITLIST.get('email:' + email)) || '{}'); } catch (e) {}
     const referrals = parseInt((await env.WAITLIST.get('referrals:' + email)) || '0', 10);
-    rows.push(Object.assign({ email, ts: s.ts || 0, referrals, origen: wl.origen || '', perfil: wl.perfil || '', signup: wl.ts || 0 }, s.answers));
+    rows.push(Object.assign({ email, ts: s.ts || 0, referrals, origen: wl.origen || '', perfil: wl.perfil || '', signup: wl.ts || 0, completed: !!s.completed }, s.answers));
   }
   rows.sort(function (a, b) { return (b.ts || 0) - (a.ts || 0); });
   return json({ total: rows.length, rows }, 200, cors);
