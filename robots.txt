@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://presu.asimetrica.co/sitemap.xml
+Sitemap: https://presu.io/sitemap.xml
