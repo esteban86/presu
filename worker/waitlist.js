@@ -18,8 +18,8 @@
  * Bindings: KV "WAITLIST" · Secrets RESEND_API_KEY, ADMIN_TOKEN · Var NOTIFY_EMAIL
  */
 
-const SITE = 'https://presu.asimetrica.co';
-const ALLOWED_ORIGINS = [SITE, 'http://localhost:4821', 'http://localhost:4796'];
+const SITE = 'https://presu.io';
+const ALLOWED_ORIGINS = [SITE, 'https://www.presu.io', 'https://presu.asimetrica.co', 'https://presu.com.co', 'http://localhost:4821', 'http://localhost:4796'];
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const FROM = 'Presu · de Asimétrica <presu@asimetrica.co>';
 const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
