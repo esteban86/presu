@@ -1071,7 +1071,7 @@
   (function(){
     // El formulario pasa por nuestro Worker de Cloudflare: dedup por correo,
     // guardado, y correo de bienvenida + notificación vía Resend (desde el Worker).
-    var WAITLIST_API = location.hostname === 'presu.asimetrica.co'
+    var WAITLIST_API = ['presu.asimetrica.co','presu.io','www.presu.io','presu.com.co'].indexOf(location.hostname) !== -1
       ? 'https://presu-waitlist.asimetrica.workers.dev'
       : 'https://presu-waitlist-staging.asimetrica.workers.dev';
     var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

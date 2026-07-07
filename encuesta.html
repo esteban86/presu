@@ -156,7 +156,7 @@
 
 <script>
 (function(){
-  var API = location.hostname === 'presu.asimetrica.co'
+  var API = ['presu.asimetrica.co','presu.io','www.presu.io','presu.com.co'].indexOf(location.hostname) !== -1
     ? 'https://presu-waitlist.asimetrica.workers.dev'
     : 'https://presu-waitlist-staging.asimetrica.workers.dev';
   var qs = new URLSearchParams(location.search);
