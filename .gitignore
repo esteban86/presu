@@ -1,2 +1,5 @@
 # (encuesta.html ya está en producción)
 .DS_Store
+
+# Documentos legales internos / borradores (no se publican en el sitio)
+docs/legal/
