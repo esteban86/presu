@@ -1,0 +1,16 @@
+{
+  "name": "presu-web",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "astro": "^5.0.0",
+    "vitest": "^2.0.0"
+  }
+}

@@ -3,3 +3,14 @@
 
 # Documentos legales internos / borradores (no se publican en el sitio)
 docs/legal/
+
+# Brainstorm visual companion (temporal)
+.superpowers/
+
+# Specs/planes internos (no se publican)
+docs/superpowers/
+
+# Build de Astro
+node_modules/
+dist/
+.astro/
