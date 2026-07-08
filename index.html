@@ -78,9 +78,11 @@
     --sh:0 1px 0 rgba(255,255,255,.04) inset, 0 18px 40px -24px rgba(0,0,0,.8);
     --sh-lg:0 1px 0 rgba(255,255,255,.05) inset, 0 40px 90px -40px rgba(0,0,0,.85);
     --ease:cubic-bezier(.2,.7,.2,1);
+    /* Picos emocionales: curva de salida "cara" + spring con leve overshoot */
+    --ease-out:cubic-bezier(.25,1,.5,1); --ease-spring:cubic-bezier(.34,1.56,.64,1);
   }
   *{box-sizing:border-box}
-  html{scroll-behavior:smooth;overflow-x:clip}
+  html{scroll-behavior:smooth;overflow-x:clip;interpolate-size:allow-keywords}
   body{margin:0;font-family:var(--body);color:var(--tx);background:var(--bg);line-height:1.6;-webkit-font-smoothing:antialiased;font-size:16px;overflow-x:clip}
   /* Grano sutil global — textura del Presu Design System */
   body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:9998;opacity:.04;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
@@ -180,8 +182,14 @@
 
   /* Buttons */
   .btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;font-family:var(--body);font-size:1rem;font-weight:600;padding:14px 24px;border-radius:14px;border:0;cursor:pointer;transition:transform .16s var(--ease),box-shadow .16s,background .16s,border-color .16s;line-height:1}
-  .btn:active{transform:translateY(1px) scale(.99)}
+  .btn:active{transform:translateY(1px) scale(.97);transition-duration:.09s}
   .btn svg{flex:none}
+  .btn:focus-visible,a:focus-visible,summary:focus-visible{outline:2px solid var(--mint);outline-offset:3px}
+  /* Estado de envío: spinner inline (reemplaza la flecha) */
+  .btn.loading{pointer-events:none;opacity:.92}
+  .btn.loading svg{display:none}
+  .btn.loading::after{content:"";width:15px;height:15px;border-radius:50%;border:2.5px solid rgba(8,35,26,.35);border-top-color:#08231A;animation:spin .7s linear infinite;flex:none}
+  @keyframes spin{to{transform:rotate(1turn)}}
   .btn-primary{background:var(--mint);color:var(--mint-ink);box-shadow:0 10px 28px -8px rgba(52,211,153,.5);font-weight:700}
   .btn-primary:hover{background:var(--mint-bright);transform:translateY(-2px);box-shadow:0 16px 34px -10px rgba(52,211,153,.7)}
   .btn-ghost{background:rgba(255,255,255,.05);color:#fff;border:1px solid var(--line-2)}
@@ -274,6 +282,14 @@
   .capture-ok .ok-ic{width:40px;height:40px;border-radius:50%;background:var(--mint);color:#06251B;display:grid;place-items:center;flex:none}
   .capture-ok strong{display:block;color:#fff}
   .capture-ok span{font-size:.88rem;color:var(--mut)}
+  /* Feedback con carácter: error = shake sutil · éxito = pop con spring */
+  @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}45%{transform:translateX(5px)}70%{transform:translateX(-3px)}85%{transform:translateX(2px)}}
+  .shake{animation:shake .4s var(--ease-out)}
+  .capture input.err,.formcard input.err{border-color:#FB7185;box-shadow:0 0 0 4px rgba(251,113,133,.15)}
+  @keyframes okpop{from{opacity:0;transform:translateY(12px) scale(.95)}to{opacity:1;transform:none}}
+  @keyframes icpop{from{transform:scale(0) rotate(-25deg)}to{transform:scale(1) rotate(0)}}
+  .pop-in{animation:okpop .55s var(--ease-spring) both}
+  .pop-in .ok-ic,.pop-in .check{animation:icpop .5s var(--ease-spring) .18s both}
   @media(max-width:480px){.capture-row{flex-direction:column}.capture .btn{width:100%}}
 
   /* Hero mock — pantalla estilo app */
@@ -401,9 +417,14 @@
   details[open]{border-color:var(--line-2)}
   summary{cursor:pointer;font-family:var(--head);font-weight:700;font-size:1.05rem;list-style:none;display:flex;justify-content:space-between;gap:16px;align-items:center;padding:18px 0;color:#fff}
   summary::-webkit-details-marker{display:none}
-  summary .plus{color:var(--mint-bright);font-size:1.5rem;line-height:1;transition:transform .2s;flex:none}
+  summary .plus{color:var(--mint-bright);font-size:1.5rem;line-height:1;transition:transform .3s var(--ease-spring);flex:none}
+  summary:hover .plus{transform:scale(1.15)}
   details[open] summary .plus{transform:rotate(45deg)}
+  details[open] summary:hover .plus{transform:rotate(45deg) scale(1.15)}
   details p{margin:0 0 18px;color:var(--mut)}
+  /* Apertura animada del acordeón (navegadores modernos; degrada a apertura instantánea) */
+  details::details-content{block-size:0;overflow:clip;transition:block-size .45s var(--ease-out),content-visibility .45s allow-discrete}
+  details[open]::details-content{block-size:auto}
 
   /* Waitlist form */
   .formcard{max-width:560px;margin:0 auto;background:var(--bg-2);border:1px solid var(--line-2);border-radius:24px;padding:38px;box-shadow:var(--sh-lg);position:relative;z-index:2}
@@ -440,6 +461,19 @@
   body.reveal-ready .reveal.in{transform:none}
   @media(prefers-reduced-motion:reduce){.reveal{transform:none!important;transition:none}.glow,.ping{animation:none}}
 
+  /* ════ Pico 1 — entrada orquestada del hero (una sola vez, al cargar) ════
+     Igual que .reveal: el estado inicial solo existe con JS (body.reveal-ready);
+     sin JS todo el contenido es visible. Excluye .capture-ok y .proof (aparecen después). */
+  @keyframes heroRise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+  /* Solo los primeros 6 hijos (badge→form); capture-ok/proof/ramps quedan fuera del rango */
+  .reveal-ready .hero-grid>div:first-child>*:nth-child(-n+6){animation:heroRise .65s var(--ease-out) both}
+  .reveal-ready .hero-grid>div:first-child>*:nth-child(2){animation-delay:.08s}
+  .reveal-ready .hero-grid>div:first-child>*:nth-child(3){animation-delay:.16s}
+  .reveal-ready .hero-grid>div:first-child>*:nth-child(4){animation-delay:.24s}
+  .reveal-ready .hero-grid>div:first-child>*:nth-child(5){animation-delay:.32s}
+  .reveal-ready .hero-grid>div:first-child>*:nth-child(6){animation-delay:.4s}
+  .reveal-ready .hero-grid>div:last-child{animation:heroRise .8s var(--ease-out) .3s both}
+
   /* ════ Gráficos animados al entrar (lenguaje de movimiento de Reportería · Asimétrica) ════
      Estado inicial SOLO con JS (body.reveal-ready). La clase .played (IntersectionObserver)
      lo dispara al entrar en pantalla. Técnicas robustas: transform / opacity / stroke-dashoffset. */
@@ -474,6 +508,10 @@
     .reveal-ready .bar>i,.reveal-ready .prog>i{transform:none!important;transition:none}
     .reveal-ready .ring .rc{opacity:1!important;transform:none!important;transition:none}
     .reveal-ready .wheel{opacity:1!important;transform:none!important;transition:none}
+    .reveal-ready .hero-grid>div:first-child>*,.reveal-ready .hero-grid>div:last-child{animation:none!important}
+    .shake{animation:none}
+    .pop-in,.pop-in .ok-ic,.pop-in .check{animation:none}
+    details::details-content{transition:none}
   }
 
   @media (max-width:820px){
@@ -1034,6 +1072,7 @@
         <p class="err" id="consent-err">Solo falta tu visto bueno aquí para sumarte.</p>
         <input type="text" name="botcheck" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
         <button type="submit" class="btn btn-primary btn-lg" style="width:100%">Únete a la lista de espera</button>
+        <p class="capture-err" id="wl-err" style="text-align:center">Algo falló de nuestro lado. Reintenta en un momento.</p>
         <p style="font-size:.8rem;text-align:center;margin:14px 0 0;color:var(--mut2)">Mac y Windows · móvil próximamente · Presu, de Asimétrica</p>
       </form>
       <div id="waitlist-success" class="success hidden" role="status">
@@ -1095,10 +1134,13 @@
     function renderCount(total){
       if (total > 0) {
         var changed = lastCount > 0 && total !== lastCount;
+        var first = lastCount === 0;
         lastCount = total;
         document.querySelectorAll('.count').forEach(function(el){
           el.textContent = fmtCount(total);
-          if (changed) { el.classList.remove('bumped'); void el.offsetWidth; el.classList.add('bumped'); }
+          // Pico 3: la primera vez el número CUENTA hasta su valor (countUp respeta reduced-motion vía REDUCE)
+          if (first && !REDUCE) { countUp(el); }
+          else if (changed) { el.classList.remove('bumped'); void el.offsetWidth; el.classList.add('bumped'); }
         });
         document.querySelectorAll('.proof').forEach(function(el){ el.classList.remove('hidden'); });
       }
@@ -1210,6 +1252,38 @@
       timer = setInterval(tick, 1000);
     })();
 
+    // ── Picos de feedback: confeti contenido, shake de error, botón en envío ──
+    function celebrate(anchor){
+      if (REDUCE) return;
+      var r = anchor.getBoundingClientRect();
+      var cv = document.createElement('canvas');
+      cv.width = innerWidth; cv.height = innerHeight;
+      cv.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:9999';
+      document.body.appendChild(cv);
+      var x = cv.getContext('2d'), cols = ['#34D399','#5EEAB8','#F4F4F3','#818CF8'], ps = [], i;
+      for (i=0;i<22;i++){
+        var a = -Math.PI/2 + (Math.random()-.5)*1.5, v = 6+Math.random()*7;
+        ps.push({x:r.left+r.width/2, y:r.top+r.height/2, vx:Math.cos(a)*v, vy:Math.sin(a)*v,
+                 s:3+Math.random()*4, c:cols[i%4], rot:Math.random()*Math.PI, vr:(Math.random()-.5)*.3});
+      }
+      var t0 = null;
+      requestAnimationFrame(function frame(t){
+        if (t0===null) t0=t;
+        var p = (t-t0)/1100; x.clearRect(0,0,cv.width,cv.height);
+        if (p>=1){ cv.remove(); return; }
+        ps.forEach(function(q){ q.x+=q.vx; q.y+=q.vy; q.vy+=.28; q.rot+=q.vr;
+          x.save(); x.globalAlpha=1-p; x.translate(q.x,q.y); x.rotate(q.rot);
+          x.fillStyle=q.c; x.fillRect(-q.s/2,-q.s/2,q.s,q.s*1.6); x.restore(); });
+        requestAnimationFrame(frame);
+      });
+    }
+    function shakeErr(el){
+      el.classList.add('err','shake');
+      el.addEventListener('animationend', function h(){ el.classList.remove('shake'); el.removeEventListener('animationend', h); });
+      el.addEventListener('input', function h2(){ el.classList.remove('err'); el.removeEventListener('input', h2); });
+    }
+    function btnLoading(f, on){ var b=f.querySelector('button[type=submit]'); if(b){ b.classList.toggle('loading', on); b.disabled = on; } }
+
     // Hero capture
     var heroForm = document.getElementById('hero-form');
     var heroEmail = document.getElementById('hero-email');
@@ -1218,12 +1292,13 @@
     heroForm.addEventListener('submit', function(e){
       e.preventDefault();
       var email = heroEmail.value.trim();
-      if (!EMAIL_RE.test(email)) { heroErr.style.display='block'; heroEmail.focus(); return; }
+      if (!EMAIL_RE.test(email)) { heroErr.textContent='Revisa el correo —parece que le falta algo.'; heroErr.style.display='block'; shakeErr(heroEmail); heroEmail.focus(); return; }
       heroErr.style.display='none';
+      btnLoading(heroForm, true);
       send({ perfil:'persona', correo:email, origen:(LATE?'tanda2':'hero'), ref:REF },
-        function(res){ heroForm.style.display='none'; if(LATE){ heroOk.querySelector('strong').textContent='¡Listo, estás en la Nueva Ola! 🌊'; heroOk.querySelector('span').textContent='Abre el 15 de julio a las 4pm. Comparte tu link para subir en la fila — o aporta un documento para entrar antes.'; } heroOk.style.display='flex'; if(res&&res.ref) heroOk.insertAdjacentHTML('afterend', referralCTA(res.ref)); bumpCount(); if(typeof gtag==='function') gtag('event','generate_lead',{perfil:'persona',origen:(LATE?'tanda2':'hero')}); if(window.plausible) window.plausible('Waitlist Signup',{props:{perfil:'persona',origen:(LATE?'tanda2':'hero')}}); openConnect(email); },
-        function(){ alert('Algo falló de nuestro lado. Reintenta en un momento.'); },
-        function(){ heroForm.style.display='none'; heroOk.querySelector('strong').textContent='¡Ya estás inscrito! 🎉'; heroOk.querySelector('span').textContent = LATE ? 'Si eres pionero de la beta, ya tienes acceso (revisa tu correo 📩). Si no, te avisamos cuando abra la Nueva Ola el 15 de julio.' : 'Ese correo ya está inscrito. Te avisamos primero cuando abramos.'; heroOk.style.display='flex'; openConnect(email); });
+        function(res){ heroForm.style.display='none'; if(LATE){ heroOk.querySelector('strong').textContent='¡Listo, estás en la Nueva Ola! 🌊'; heroOk.querySelector('span').textContent='Abre el 15 de julio a las 4pm. Comparte tu link para subir en la fila — o aporta un documento para entrar antes.'; } heroOk.classList.add('pop-in'); heroOk.style.display='flex'; celebrate(heroOk); if(res&&res.ref) heroOk.insertAdjacentHTML('afterend', referralCTA(res.ref)); bumpCount(); if(typeof gtag==='function') gtag('event','generate_lead',{perfil:'persona',origen:(LATE?'tanda2':'hero')}); if(window.plausible) window.plausible('Waitlist Signup',{props:{perfil:'persona',origen:(LATE?'tanda2':'hero')}}); openConnect(email); },
+        function(){ btnLoading(heroForm, false); heroErr.textContent='Algo falló de nuestro lado. Reintenta en un momento.'; heroErr.style.display='block'; },
+        function(){ heroForm.style.display='none'; heroOk.querySelector('strong').textContent='¡Ya estás inscrito! 🎉'; heroOk.querySelector('span').textContent = LATE ? 'Si eres pionero de la beta, ya tienes acceso (revisa tu correo 📩). Si no, te avisamos cuando abra la Nueva Ola el 15 de julio.' : 'Ese correo ya está inscrito. Te avisamos primero cuando abramos.'; heroOk.classList.add('pop-in'); heroOk.style.display='flex'; openConnect(email); });
     });
 
     // Full form
@@ -1247,17 +1322,19 @@
       var emailOk = EMAIL_RE.test(email);
       var consentOk = form.consent.checked;
       showError('email-err', !emailOk); showError('consent-err', !consentOk);
-      if (!emailOk) { form.email.focus(); return; }
+      if (!emailOk) { shakeErr(form.email); form.email.focus(); return; }
       if (!consentOk) { form.consent.focus(); return; }
+      showError('wl-err', false);
+      btnLoading(form, true);
       var perfil = form.querySelector('input[name=perfil]:checked').value;
       send({
         perfil: perfil, correo: email, nombre: form.nombre.value.trim(),
         empresa: perfil === 'empresa' ? form.empresa.value.trim() : '',
         empleados: perfil === 'empresa' ? form.empleados.value.trim() : '', ref: REF
       },
-      function(res){ form.classList.add('hidden'); var s=document.getElementById('waitlist-success'); s.classList.remove('hidden'); if(res&&res.ref) s.insertAdjacentHTML('beforeend', referralCTA(res.ref)); bumpCount(); if(typeof gtag==='function') gtag('event','generate_lead',{perfil:perfil,origen:'form'}); if(window.plausible) window.plausible('Waitlist Signup',{props:{perfil:perfil}}); openConnect(email); },
-      function(){ alert('Algo falló de nuestro lado. Reintenta en un momento.'); },
-      function(){ var s=document.getElementById('waitlist-success'); s.querySelector('h3').textContent='¡Ya estás en la lista! 🎉'; s.querySelector('p').textContent='Ese correo ya está inscrito. Te avisamos primero cuando abramos cupos.'; form.classList.add('hidden'); s.classList.remove('hidden'); openConnect(email); });
+      function(res){ form.classList.add('hidden'); var s=document.getElementById('waitlist-success'); s.classList.add('pop-in'); s.classList.remove('hidden'); celebrate(s); if(res&&res.ref) s.insertAdjacentHTML('beforeend', referralCTA(res.ref)); bumpCount(); if(typeof gtag==='function') gtag('event','generate_lead',{perfil:perfil,origen:'form'}); if(window.plausible) window.plausible('Waitlist Signup',{props:{perfil:perfil}}); openConnect(email); },
+      function(){ btnLoading(form, false); showError('wl-err', true); },
+      function(){ var s=document.getElementById('waitlist-success'); s.querySelector('h3').textContent='¡Ya estás en la lista! 🎉'; s.querySelector('p').textContent='Ese correo ya está inscrito. Te avisamos primero cuando abramos cupos.'; form.classList.add('hidden'); s.classList.add('pop-in'); s.classList.remove('hidden'); openConnect(email); });
     });
 
     // Reveal
