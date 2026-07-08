@@ -1,0 +1,124 @@
+---
+// Footer.astro — wordmark, endorso y legales (DS v2). Sin props por ahora.
+const year = new Date().getFullYear();
+---
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="row">
+      <div class="brandlock">
+        <a class="wordmark" href="/" aria-label="Presu — inicio">
+          presu<span class="wordmark-dot">.</span>
+        </a>
+        <a class="endorse" href="https://asimetrica.co" target="_blank" rel="noopener">
+          de Asimétrica
+        </a>
+      </div>
+
+      <div class="meta">
+        <span>&copy; {year} Presu</span>
+        <span class="sep" aria-hidden="true">·</span>
+        <span>Hecho en Colombia</span>
+        <span class="sep" aria-hidden="true">·</span>
+        <a href="/privacidad">Privacidad</a>
+        <span class="sep" aria-hidden="true">·</span>
+        <a href="/terminos">Términos</a>
+        <span class="sep" aria-hidden="true">·</span>
+        <a href="/politica-tratamiento-datos">Tratamiento de datos</a>
+        <span class="sep" aria-hidden="true">·</span>
+        <a href="/aviso-privacidad">Aviso</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    border-top: 1px solid var(--border);
+    padding: var(--space-12) 0 var(--space-10);
+  }
+
+  .wrap {
+    max-width: var(--content-max);
+    margin: 0 auto;
+    padding: 0 var(--screen-pad);
+  }
+
+  .row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+  }
+
+  .brandlock {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .wordmark {
+    font-family: var(--font-display);
+    font-weight: var(--weight-bold);
+    font-size: 1.125rem;
+    letter-spacing: var(--tracking-tight);
+    line-height: 1;
+    color: var(--text-primary);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .wordmark-dot {
+    color: var(--presu-emerald);
+  }
+
+  .endorse {
+    font-family: var(--font-body);
+    font-size: var(--text-caption);
+    font-weight: var(--weight-medium);
+    color: var(--text-tertiary);
+    text-decoration: none;
+    padding-left: var(--space-3);
+    border-left: 1px solid var(--border);
+    white-space: nowrap;
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+
+  .endorse:hover,
+  .endorse:focus-visible {
+    color: var(--text-secondary);
+  }
+
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-1) var(--space-2);
+    font-family: var(--font-body);
+    font-size: var(--text-caption);
+    color: var(--text-tertiary);
+  }
+
+  .meta a {
+    color: var(--text-tertiary);
+    text-decoration: none;
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+
+  .meta a:hover,
+  .meta a:focus-visible {
+    color: var(--text-secondary);
+  }
+
+  .sep {
+    color: var(--text-tertiary);
+    opacity: 0.6;
+  }
+
+  @media (max-width: 640px) {
+    .row {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+</style>
