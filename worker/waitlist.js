@@ -96,6 +96,9 @@ export default {
     if (request.method === 'GET' && path === '/admin/survey') return adminSurvey(request, env, cors);
     if (path === '/admin/survey-batch') return adminSurveyBatch(request, env, cors);
     if (path === '/admin/survey-one') return adminSurveyOne(request, env, cors);
+    if (path === '/admin/followup-batch') return adminFollowupBatch(request, env, cors);
+    if (path === '/admin/followup-one') return adminFollowupOne(request, env, cors);
+    if (request.method === 'GET' && path === '/es-pionero') return esPioneroCheck(request, env, pub, url);
 
     if (request.method === 'POST' && path === '/contrib') return contribSubmit(request, env, cors);
     if (request.method === 'GET' && path === '/contrib/progress') return contribProgress(request, env, pub);
@@ -411,6 +414,18 @@ async function roadmapVote(request, env, cors) {
 const SURVEY_FIELDS = ['nombre', 'uso', 'features', 'valor', 'falta', 'freno', 'ayuda_config', 'edad', 'ciudad', 'ocupacion', 'ingreso_tipo', 'metodo', 'metas', 'bancos', 'bancos_otra', 'dispositivo', 'dolor', 'pago', 'ingreso', 'ayuda', 'celular'];
 const SURVEY_ARRAY_FIELDS = ['bancos', 'metas', 'ayuda', 'features'];
 const SURVEY_SUBJECT = 'Llevas unos días con Presu — cuéntanos cómo te va 🌿';
+const FOLLOWUP_SUBJECT = 'Tu Presu ya está listo para instalar 🌿';
+
+// GET /es-pionero?e=correo → { pionero: bool } — puerta suave de la página /descargar (solo pioneros).
+async function esPioneroCheck(request, env, pub, url) {
+  const email = String(url.searchParams.get('e') || '').trim().toLowerCase();
+  if (!EMAIL_RE.test(email)) return json({ pionero: false }, 200, pub);
+  const raw = await env.WAITLIST.get('email:' + email);
+  if (!raw) return json({ pionero: false }, 200, pub);
+  let rec = {}; try { rec = JSON.parse(raw); } catch (e) {}
+  rec.email = email;
+  return json({ pionero: cohortOf(rec) === 'pionero' }, 200, pub);
+}
 
 // GET /survey?e=correo → ¿está en la lista?, ¿ya respondió?, nombre + answers previos (para precargar/reanudar)
 async function surveyCheck(request, env, pub, url) {
@@ -492,6 +507,26 @@ async function runSurveyBatch(env, limit) {
   }
   return { sent, skipped, errors, scanned: list.keys.length };
 }
+
+// Seguimiento a PIONEROS: instalador (presu.io/descargar) + encuesta. Flag aparte: followup_sent:
+// Excluye la Nueva Ola (cohortOf === 'tanda2'), que tiene su propio flujo de bienvenida.
+async function runFollowupBatch(env, limit) {
+  const list = await env.WAITLIST.list({ prefix: 'email:', limit: 1000 });
+  let sent = 0, skipped = 0, errors = 0;
+  for (const k of list.keys) {
+    if (sent >= limit) break;
+    const email = k.name.slice(6);
+    if (await env.WAITLIST.get('followup_sent:' + email)) { skipped++; continue; }
+    if (isTestEmail(email) || isDisposable(email)) { await env.WAITLIST.put('followup_sent:' + email, 'skip'); skipped++; continue; }
+    let rec = {}; try { rec = JSON.parse((await env.WAITLIST.get('email:' + email)) || '{}'); } catch (e) {}
+    rec.email = email;
+    if (cohortOf(rec) !== 'pionero') { await env.WAITLIST.put('followup_sent:' + email, 'skip'); skipped++; continue; } // Nueva Ola: excluida
+    if (!env.RESEND_API_KEY) { errors++; continue; }
+    const res = await sendResend(env, { to: email, reply_to: env.NOTIFY_EMAIL || undefined, subject: FOLLOWUP_SUBJECT, html: followupHtml(rec) });
+    if (res.ok) { await env.WAITLIST.put('followup_sent:' + email, String(Date.now())); sent++; } else errors++;
+  }
+  return { sent, skipped, errors, scanned: list.keys.length };
+}
 async function adminSurveyBatch(request, env, cors) {
   if (request.method !== 'POST') return json({ error: 'method' }, 405, cors);
   if (!authed(request, env)) return json({ error: 'unauthorized' }, 401, cors);
@@ -510,6 +545,28 @@ async function adminSurveyOne(request, env, cors) {
   rec.email = email;
   const res = await sendResend(env, { to: email, reply_to: env.NOTIFY_EMAIL || undefined, subject: SURVEY_SUBJECT, html: surveyEmailHtml(rec) });
   if (res.ok) { await env.WAITLIST.put('survey_sent:' + email, String(Date.now())); return json({ status: 'sent', id: res.id }, 200, cors); }
+  return json({ status: 'error', detail: res }, 502, cors);
+}
+
+async function adminFollowupBatch(request, env, cors) {
+  if (request.method !== 'POST') return json({ error: 'method' }, 405, cors);
+  if (!authed(request, env)) return json({ error: 'unauthorized' }, 401, cors);
+  let body = {}; try { body = await request.json(); } catch (e) {}
+  const limit = Math.min(Number(body.limit) || 30, 40);
+  return json(await runFollowupBatch(env, limit), 200, cors);
+}
+// Envío individual (p. ej. prueba a uno mismo): NO filtra cohorte/test — manda a lo que le pidas.
+async function adminFollowupOne(request, env, cors) {
+  if (request.method !== 'POST') return json({ error: 'method' }, 405, cors);
+  if (!authed(request, env)) return json({ error: 'unauthorized' }, 401, cors);
+  let body; try { body = await request.json(); } catch (e) { return json({ error: 'json' }, 400, cors); }
+  const email = String(body.email || '').trim().toLowerCase();
+  if (!EMAIL_RE.test(email)) return json({ status: 'error', reason: 'email' }, 400, cors);
+  let rec = {}; const raw = await env.WAITLIST.get('email:' + email);
+  if (raw) { try { rec = JSON.parse(raw); } catch (e) {} }
+  rec.email = email;
+  const res = await sendResend(env, { to: email, reply_to: env.NOTIFY_EMAIL || undefined, subject: FOLLOWUP_SUBJECT, html: followupHtml(rec) });
+  if (res.ok) { await env.WAITLIST.put('followup_sent:' + email, String(Date.now())); return json({ status: 'sent', id: res.id }, 200, cors); }
   return json({ status: 'error', detail: res }, 502, cors);
 }
 
@@ -783,6 +840,31 @@ function surveyEmailHtml(r) {
       <a href="${link}" style="display:inline-block;background:#34D399;color:#08231A;font-weight:800;font-size:17px;text-decoration:none;padding:16px 30px;border-radius:14px">Responder la encuesta →</a>
     </div>
     <p style="font-size:12px;line-height:1.6;color:#6B6B72;margin:0;text-align:center">Solo lo usamos para mejorar Presu. No compartimos tus datos. <span style="color:#34D399">Tu plata, clara.</span></p>
+  </div></body></html>`;
+}
+
+// Seguimiento a pioneros: instalador (→ presu.io/descargar) + encuesta, en un solo correo.
+function followupHtml(r) {
+  const hola = r.nombre ? 'Hola, ' + esc(r.nombre) + ' 👋' : 'Hola 👋';
+  const dl = SITE + '/descargar?e=' + encodeURIComponent(r.email || '');
+  const survey = SITE + '/encuesta.html?e=' + encodeURIComponent(r.email || '');
+  return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;background:#08080A;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#F4F4F3">
+  <div style="max-width:540px;margin:0 auto;padding:32px 24px">
+    <div style="font-size:24px;font-weight:800;letter-spacing:-.02em;margin-bottom:18px">presu<span style="color:#34D399">.</span></div>
+    <p style="font-size:16px;color:#A1A1A6;margin:0 0 6px">${hola}</p>
+    <h1 style="font-size:28px;line-height:1.14;font-weight:800;letter-spacing:-.02em;margin:0 0 14px;color:#fff">Tu Presu ya está listo <span style="color:#34D399">🌿</span></h1>
+    <p style="font-size:16px;line-height:1.55;color:#D4D4D6;margin:0 0 8px">Eres <b style="color:#fff">pionero</b> y la beta ya está abierta. Descarga Presu para <b style="color:#fff">Mac o Windows</b> —se instala en un minuto, y tus datos viven <b style="color:#fff">cifrados en tu equipo</b> (local-first, sin nube).</p>
+    <div style="text-align:center;margin:22px 0 8px">
+      <a href="${dl}" style="display:inline-block;background:#34D399;color:#08231A;font-weight:800;font-size:17px;text-decoration:none;padding:16px 32px;border-radius:14px">Descargar Presu →</a>
+    </div>
+    <p style="font-size:13px;line-height:1.5;color:#8A8A90;margin:0 0 26px;text-align:center">Elige tu sistema en la página; ahí te dejamos los pasos.</p>
+    <div style="border-top:1px solid rgba(255,255,255,.1);margin:0 0 22px"></div>
+    <h2 style="font-size:19px;font-weight:700;color:#fff;margin:0 0 8px">Y cuéntanos cómo te va</h2>
+    <p style="font-size:15px;line-height:1.55;color:#D4D4D6;margin:0 0 8px">Cuando la pruebes —o si algo te frenó para abrirla— respóndenos <b style="color:#fff">unas preguntas rápidas (menos de 3 min)</b>. Con tu feedback decidimos qué construir primero.</p>
+    <div style="text-align:center;margin:18px 0 24px">
+      <a href="${survey}" style="display:inline-block;background:#101014;border:1px solid rgba(255,255,255,.16);color:#fff;font-weight:700;font-size:16px;text-decoration:none;padding:14px 28px;border-radius:14px">Responder la encuesta →</a>
+    </div>
+    <p style="font-size:12px;line-height:1.6;color:#6B6B72;margin:0;text-align:center">Gracias por construir Presu desde el día cero. <span style="color:#34D399">Tu plata, clara.</span></p>
   </div></body></html>`;
 }
 

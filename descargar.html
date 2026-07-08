@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Descarga Presu</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --mint:#34D399;--mint-bright:#5EEAB8;--ink:#08231A;--tx:#F4F4F3;--mut:#A1A1A6;--mut2:#6B6B72;
+    --bg:#08080A;--bg2:#101014;--bg3:#16161A;--line:rgba(255,255,255,.1);--line2:rgba(255,255,255,.16);
+    --head:"Space Grotesk",sans-serif;--mono:"JetBrains Mono",monospace;
+    --ease:cubic-bezier(.2,.7,.2,1)
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:var(--bg);color:var(--tx);font-family:"Hanken Grotesk",sans-serif;
+    line-height:1.55;-webkit-font-smoothing:antialiased;padding:52px 22px 64px;
+    background-image:radial-gradient(120% 70% at 50% -10%,rgba(52,211,153,.10),transparent 60%);background-attachment:fixed;
+  }
+  .wrap{max-width:600px;margin:0 auto}
+  a{color:var(--mint-bright);text-decoration:none}
+  a:hover{text-decoration:underline}
+
+  /* Wordmark oficial (franja esmeralda) */
+  .brand{display:inline-flex;margin-bottom:34px}
+  .wordmark{position:relative;display:inline-flex;align-items:center;line-height:.9}
+  .wm-text{position:relative;z-index:1;font-family:var(--head);font-weight:700;font-size:1.6rem;letter-spacing:-.05em;color:var(--tx);line-height:.9}
+  .wm-bar{position:absolute;left:-5%;right:-8%;top:53%;height:.36em;border-radius:999px;background:var(--mint);transform:rotate(-9deg);z-index:0}
+
+  .eb{font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mint);margin-bottom:14px}
+  h1{font-family:var(--head);font-weight:700;font-size:clamp(1.9rem,5vw,2.5rem);line-height:1.1;letter-spacing:-.03em;color:#fff;margin:0 0 12px}
+  .lede{color:var(--mut);font-size:1.05rem;margin:0 0 30px;max-width:34em}
+
+  /* Puerta (validación de correo de pionero) */
+  .gate{background:var(--bg2);border:1px solid var(--line2);border-radius:18px;padding:24px}
+  .gate label{display:block;font-size:.9rem;color:var(--mut);margin:0 0 10px}
+  .gate-row{display:flex;gap:10px;flex-wrap:wrap}
+  .gate input{flex:1;min-width:0;background:var(--bg3);border:1.5px solid var(--line2);border-radius:13px;color:#fff;
+    font-family:inherit;font-size:16px;padding:14px 16px;outline:none;transition:border-color .15s,box-shadow .15s}
+  .gate input::placeholder{color:var(--mut2)}
+  .gate input:focus{border-color:var(--mint);box-shadow:0 0 0 4px rgba(52,211,153,.16)}
+  .gate input.err{border-color:#FB7185;box-shadow:0 0 0 4px rgba(251,113,133,.15)}
+  .gate button{background:var(--mint);color:var(--ink);font-family:var(--head);font-weight:700;font-size:1rem;
+    border:0;border-radius:13px;padding:14px 22px;cursor:pointer;white-space:nowrap;transition:transform .16s var(--ease),background .16s}
+  .gate button:hover{background:var(--mint-bright)}
+  .gate button:active{transform:scale(.97);transition-duration:.09s}
+  .gate button:disabled{opacity:.7;cursor:default}
+  .gate .hint{font-size:.82rem;color:var(--mut2);margin:12px 0 0}
+  .gate .msg{font-size:.9rem;margin:14px 0 0;display:none}
+  .gate .msg.err{display:block;color:#FCA5A5}
+  @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}45%{transform:translateX(7px)}70%{transform:translateX(-4px)}85%{transform:translateX(2px)}}
+  .shake{animation:shake .42s var(--ease)}
+
+  /* Botón primario de descarga */
+  .dl-primary{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;
+    background:var(--mint);color:var(--ink);font-family:var(--head);font-weight:700;font-size:1.12rem;
+    border:0;border-radius:16px;padding:19px 24px;cursor:pointer;text-decoration:none;
+    box-shadow:0 14px 34px -12px rgba(52,211,153,.6);transition:transform .16s var(--ease),box-shadow .16s,background .16s}
+  .dl-primary:hover{background:var(--mint-bright);transform:translateY(-2px);box-shadow:0 20px 40px -12px rgba(52,211,153,.7);text-decoration:none}
+  .dl-primary:active{transform:translateY(1px) scale(.98);transition-duration:.09s}
+  .dl-primary svg{flex:none}
+  .dl-sub{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;color:rgba(8,35,26,.6);font-weight:600;margin-top:2px}
+  .dl-primary .col{display:flex;flex-direction:column;align-items:flex-start;line-height:1.1}
+
+  /* Alternativas */
+  .alts{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0 0}
+  .alt{display:inline-flex;align-items:center;gap:8px;background:var(--bg2);border:1px solid var(--line2);
+    color:var(--tx);border-radius:12px;padding:11px 15px;font-size:.9rem;font-weight:600;text-decoration:none;transition:.16s}
+  .alt:hover{background:var(--bg3);border-color:rgba(255,255,255,.28);text-decoration:none}
+  .alt svg{flex:none;opacity:.9}
+  .alt .os{color:var(--mut)}
+
+  /* Instrucciones */
+  .steps{background:var(--bg2);border:1px solid var(--line);border-radius:18px;padding:22px 24px;margin:34px 0 0}
+  .steps h2{font-family:var(--head);font-size:1.05rem;font-weight:700;color:#fff;margin:0 0 4px;display:flex;align-items:center;gap:9px}
+  .steps ol{margin:12px 0 0;padding-left:20px;color:var(--mut)}
+  .steps li{margin-bottom:9px}
+  .steps li b{color:var(--tx)}
+  .note{background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.28);border-radius:12px;padding:12px 15px;margin:14px 0 0;font-size:.9rem;color:#CFE9DE}
+  .note b{color:var(--mint-bright)}
+  .os-toggle{margin:16px 0 0;font-size:.9rem;color:var(--mut2)}
+  .os-toggle a{cursor:pointer}
+
+  .foot{margin-top:44px;padding-top:22px;border-top:1px solid var(--line);color:var(--mut2);font-size:.9rem;display:flex;gap:18px;flex-wrap:wrap;align-items:center}
+  .foot a{color:var(--mut)}
+  .hidden{display:none}
+  @media(prefers-reduced-motion:reduce){.dl-primary,.gate button{transition:none}.shake{animation:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="brand" href="/"><span class="wordmark"><span class="wm-bar"></span><span class="wm-text">presu</span></span></a>
+
+  <div class="eb">Beta de pioneros</div>
+  <h1>Descarga Presu 🌿</h1>
+  <p class="lede">Tu copiloto de finanzas, <b style="color:var(--tx)">local-first</b>: tus datos viven cifrados en tu equipo. Confirma tu correo de pionero y empieza en un minuto.</p>
+
+  <!-- PUERTA: validación de correo de pionero (se oculta al validar) -->
+  <form class="gate" id="gate" novalidate>
+    <label for="gate-email">Tu correo de pionero</label>
+    <div class="gate-row">
+      <input type="email" id="gate-email" autocomplete="email" placeholder="tu@correo.com" aria-label="Tu correo de pionero">
+      <button type="submit" id="gate-btn">Continuar</button>
+    </div>
+    <p class="hint">Solo para pioneros de la beta. Usa el mismo correo con el que te registraste.</p>
+    <p class="msg" id="gate-msg"></p>
+  </form>
+
+  <!-- APP: descarga (oculta hasta validar) -->
+  <div id="app" class="hidden">
+    <a class="dl-primary" id="dl-primary" href="https://presu-ai.asimetrica.workers.dev/download/mac-arm64">
+      <span id="dl-ic"></span>
+      <span class="col"><span id="dl-label">Descargar para Mac</span><span class="dl-sub" id="dl-sublabel">Apple Silicon · M1–M4</span></span>
+    </a>
+    <div class="alts" id="alts"></div>
+
+    <div class="steps" id="steps-mac">
+      <h2>Instalar en Mac</h2>
+      <ol>
+        <li>Abre el archivo <b>.dmg</b> descargado.</li>
+        <li>Arrastra <b>Presu</b> a la carpeta <b>Aplicaciones</b>.</li>
+        <li>Ábrela desde Aplicaciones. <b>¿Tienes un Mac con Intel?</b> Usa la versión Intel (abajo).</li>
+      </ol>
+      <div class="note">Si macOS muestra una advertencia de seguridad al abrir, haz <b>clic derecho sobre Presu → Abrir</b> y confirma. Solo hace falta la primera vez.</div>
+    </div>
+
+    <div class="steps hidden" id="steps-win">
+      <h2>Instalar en Windows</h2>
+      <ol>
+        <li>Abre el archivo <b>Presu-Setup.exe</b> descargado.</li>
+        <li>Sigue el instalador. Presu se abre solo al terminar.</li>
+      </ol>
+      <div class="note">La app aún no está firmada, así que <b>Windows SmartScreen</b> mostrará un aviso: haz clic en <b>"Más información" → "Ejecutar de todos modos"</b>. Es seguro — es solo porque somos un producto nuevo.</div>
+    </div>
+
+    <p class="os-toggle">¿Otro sistema? <a id="toggle-os">Ver instrucciones de <span id="toggle-label">Windows</span> →</a></p>
+  </div>
+
+  <div class="foot">
+    <a href="/">← Volver a presu.io</a>
+    <span>¿Problemas? <a href="mailto:soporte@asimetrica.co">soporte@asimetrica.co</a></span>
+  </div>
+</div>
+
+<script>
+(function(){
+  var API = ['presu.asimetrica.co','presu.io','www.presu.io','presu.com.co'].indexOf(location.hostname) !== -1
+    ? 'https://presu-waitlist.asimetrica.workers.dev'
+    : 'https://presu-waitlist-staging.asimetrica.workers.dev';
+  var BASE = 'https://presu-ai.asimetrica.workers.dev/download';
+  var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  var IC = {
+    apple: '<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M16.36 12.9c.02 2.45 2.15 3.27 2.18 3.28-.02.06-.34 1.17-1.12 2.31-.67.99-1.37 1.97-2.47 1.99-1.08.02-1.43-.64-2.66-.64-1.24 0-1.62.62-2.64.66-1.06.04-1.87-1.07-2.55-2.06-1.38-2-2.44-5.66-1.02-8.13.7-1.23 1.96-2 3.33-2.02 1.04-.02 2.02.7 2.66.7.63 0 1.83-.87 3.08-.74.52.02 1.99.21 2.93 1.59-.08.05-1.75 1.02-1.73 3.03M14.4 5.6c.56-.68.94-1.62.84-2.56-.81.03-1.79.54-2.37 1.22-.52.6-.97 1.56-.85 2.48.9.07 1.82-.46 2.38-1.14"/></svg>',
+    win: '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.4 10.2 4.4v6.9H3zM10.2 12.1v6.9L3 18V12.1zM11.1 4.3 21 3v8.3h-9.9zM21 12.1V21l-9.9-1.3v-7.6z"/></svg>'
+  };
+
+  // ── Puerta ──
+  var gate = document.getElementById('gate');
+  var gateEmail = document.getElementById('gate-email');
+  var gateBtn = document.getElementById('gate-btn');
+  var gateMsg = document.getElementById('gate-msg');
+
+  function fail(msg){
+    gateMsg.className = 'msg err';
+    gateMsg.innerHTML = msg;
+    gateEmail.classList.add('err','shake');
+    setTimeout(function(){ gateEmail.classList.remove('shake'); }, 450);
+  }
+  function check(email){
+    return fetch(API + '/es-pionero?e=' + encodeURIComponent(email), {cache:'no-store'})
+      .then(function(r){ return r.json(); })
+      .then(function(d){ return !!(d && d.pionero); });
+  }
+  function unlock(){
+    try { sessionStorage.setItem('presu_dl_ok','1'); } catch(e){}
+    gate.classList.add('hidden');
+    document.getElementById('app').classList.remove('hidden');
+    setupDownload();
+  }
+  gate.addEventListener('submit', function(e){
+    e.preventDefault();
+    var email = gateEmail.value.trim().toLowerCase();
+    if (!EMAIL_RE.test(email)) { fail('Escribe un correo válido.'); return; }
+    gateMsg.className = 'msg'; gateEmail.classList.remove('err');
+    gateBtn.disabled = true; gateBtn.textContent = 'Verificando…';
+    check(email).then(function(ok){
+      gateBtn.disabled = false; gateBtn.textContent = 'Continuar';
+      if (ok) unlock();
+      else fail('Ese correo no está en la lista de pioneros. Si te registraste con otro, prueba ese — o <a href="/#waitlist">únete a la lista</a>.');
+    }).catch(function(){
+      gateBtn.disabled = false; gateBtn.textContent = 'Continuar';
+      fail('No pudimos verificar ahora. Reintenta en un momento.');
+    });
+  });
+
+  // Auto-desbloqueo: ?e= del correo, o sesión ya validada
+  (function(){
+    var qEmail = (new URLSearchParams(location.search).get('e') || '').trim().toLowerCase();
+    try { if (sessionStorage.getItem('presu_dl_ok') === '1') { unlock(); return; } } catch(e){}
+    if (qEmail && EMAIL_RE.test(qEmail)) {
+      gateEmail.value = qEmail;
+      check(qEmail).then(function(ok){ if (ok) unlock(); });
+    }
+  })();
+
+  // ── Descarga (se arma al desbloquear) ──
+  var shownSteps = 'mac';
+  function altHtml(href, icon, name, osname){
+    return '<a class="alt" href="'+href+'">'+icon+'<span>'+name+' <span class="os">'+osname+'</span></span></a>';
+  }
+  function detectOS(){
+    var p = ((navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || '').toLowerCase();
+    var ua = (navigator.userAgent || '').toLowerCase();
+    if (/win/.test(p) || /windows/.test(ua)) return 'win';
+    if (/mac/.test(p) || /mac os|macintosh/.test(ua)) return 'mac';
+    if (/iphone|ipad|ipod/.test(ua)) return 'ios';
+    return 'other';
+  }
+  function showSteps(which){
+    document.getElementById('steps-mac').classList.toggle('hidden', which !== 'mac');
+    document.getElementById('steps-win').classList.toggle('hidden', which !== 'win');
+    document.getElementById('toggle-label').textContent = which === 'mac' ? 'Windows' : 'Mac';
+    shownSteps = which;
+  }
+  function setupDownload(){
+    var os = detectOS();
+    var primary = document.getElementById('dl-primary');
+    var ic = document.getElementById('dl-ic');
+    var label = document.getElementById('dl-label');
+    var sub = document.getElementById('dl-sublabel');
+    var alts = document.getElementById('alts');
+    var MAC_ARM = altHtml(BASE+'/mac-arm64', IC.apple, 'Mac', 'Apple Silicon');
+    var MAC_INTEL = altHtml(BASE+'/mac-intel', IC.apple, 'Mac', 'Intel');
+    var WIN = altHtml(BASE+'/windows', IC.win, 'Windows', '');
+    if (os === 'win'){
+      primary.href = BASE+'/windows'; ic.innerHTML = IC.win;
+      label.textContent = 'Descargar para Windows'; sub.textContent = 'Windows 10 y 11';
+      alts.innerHTML = MAC_ARM + MAC_INTEL; showSteps('win');
+    } else {
+      primary.href = BASE+'/mac-arm64'; ic.innerHTML = IC.apple;
+      label.textContent = 'Descargar para Mac'; sub.textContent = 'Apple Silicon · M1–M4';
+      alts.innerHTML = MAC_INTEL + WIN + altHtml(BASE, '', 'Todas', ''); showSteps('mac');
+      if (os === 'other' || os === 'ios'){
+        var lede = document.querySelector('.lede');
+        if (lede && !lede.dataset.noted){ lede.dataset.noted='1'; lede.insertAdjacentHTML('beforeend', '<br><span style="color:var(--mut2);font-size:.92rem">Presu es una app de escritorio para <b style="color:var(--mut)">Mac y Windows</b>.</span>'); }
+      }
+    }
+    document.getElementById('toggle-os').onclick = function(){ showSteps(shownSteps === 'mac' ? 'win' : 'mac'); };
+  }
+})();
+</script>
+</body>
+</html>
