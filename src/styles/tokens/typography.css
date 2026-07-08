@@ -1,0 +1,47 @@
+/* ============================================================
+   PRESU · TYPOGRAPHY TOKENS
+   Three voices, one tone.
+   Space Grotesk  — display, headings, financial numbers (tabular)
+   Hanken Grotesk — body, labels, interface (warm + legible)
+   JetBrains Mono — data, metadata, logs, microcopy
+   ============================================================ */
+
+:root {
+  /* ---------- Families ---------- */
+  --font-display: "Space Grotesk", system-ui, sans-serif;
+  --font-body:    "Hanken Grotesk", system-ui, sans-serif;
+  --font-mono:    "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+
+  /* numbers always render tabular so columns of pesos line up */
+  --num-features: "tnum" 1;  /* @kind other */
+
+  /* ---------- Type scale (px) ---------- */
+  --text-display:  52px;  /* hero balance, splash */
+  --text-h1:       32px;  /* section title */
+  --text-h2:       24px;  /* sub-section */
+  --text-h3:       18px;  /* card heading */
+  --text-body-lg:  17px;  /* lead paragraph */
+  --text-body:     15px;  /* default interface text */
+  --text-label:    13px;  /* field labels, buttons */
+  --text-caption:  12px;  /* captions, meta */
+  --text-micro:    11px;  /* mono microcopy / tags */
+
+  /* ---------- Weights ---------- */
+  --weight-regular:   400;
+  --weight-medium:    500;
+  --weight-semibold:  600;
+  --weight-bold:      700;
+  --weight-extra:     800;
+
+  /* ---------- Line heights ---------- */
+  --leading-display: 1.03;
+  --leading-tight:   1.1;
+  --leading-snug:    1.25;
+  --leading-normal:  1.55;
+
+  /* ---------- Letter spacing ---------- */
+  --tracking-display: -0.03em;
+  --tracking-tight:   -0.02em;
+  --tracking-normal:  0;
+  --tracking-mono:    0.1em;   /* mono microcopy / uppercase labels */
+}

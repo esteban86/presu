@@ -1,0 +1,29 @@
+/* ============================================================
+   PRESU · SPACING & LAYOUT TOKENS
+   4-point rhythm. Generous air between groups (space-12+),
+   compact within a group (space-3). Air is premium.
+   ============================================================ */
+
+:root {
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+
+  /* ---------- Layout ---------- */
+  --content-max:   1280px;  /* max content width on wide screens */
+  --tap-min:       44px;    /* minimum touch target — never smaller */
+  --screen-pad:    18px;    /* default mobile screen padding */
+
+  /* ---------- Breakpoints (reference) ---------- */
+  --bp-mobile:  640px;
+  --bp-tablet:  1024px;
+  --bp-desktop: 1440px;
+}

@@ -1,0 +1,53 @@
+/* ============================================================
+   PRESU · EFFECTS — motion, shadow, grain, glass
+   Calm with character: confident easing, short durations, no bounce
+   on money. Decorative loops stay subtle (breathe / blink / halo).
+   ============================================================ */
+
+:root {
+  /* ---------- Motion ---------- */
+  --ease-out:    cubic-bezier(.2,.85,.25,1);   /* @kind other */
+  --ease-in-out: cubic-bezier(.45,0,.2,1);     /* @kind other */
+  --dur-fast:    120ms;   /* @kind other */
+  --dur-base:    260ms;   /* @kind other */
+  --dur-slow:    1500ms;  /* @kind other */
+
+  /* ---------- Shadows ---------- */
+  --shadow-sm:  0 1px 2px rgba(0,0,0,.30);
+  --shadow-md:  0 8px 24px rgba(0,0,0,.30);
+  --shadow-lg:  0 40px 80px rgba(0,0,0,.18);
+
+  /* ---------- Focus ---------- */
+  --focus-ring: 0 0 0 4px rgba(52,211,153,.25);
+}
+
+/* ---------- Keyframes shared across the system ---------- */
+@keyframes presu-rise   { from { opacity:0; transform:translateY(16px); } }
+@keyframes presu-breathe{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.06); } }
+@keyframes presu-blink  { 0%,100%{ opacity:1; } 50%{ opacity:.30; } }
+@keyframes presu-halo   { 0%{ transform:scale(.5); opacity:.7; } 70%{ transform:scale(2.4); opacity:0; } 100%{ opacity:0; } }
+@keyframes presu-bar    { from { transform:scaleX(0); } }
+@keyframes presu-draw   { from { stroke-dashoffset:var(--len,600); } }
+@keyframes presu-pulse  { 0%,100%{ opacity:1; } 50%{ opacity:.45; } }
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition: none !important;
+  }
+}
+
+/* ---------- Reusable grain overlay ----------
+   Add class "presu-grain" to a full-bleed container. Subtle film noise,
+   the texture that keeps the dark UI from feeling sterile. */
+.presu-grain::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: var(--z-grain);
+  opacity: .05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
