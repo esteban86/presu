@@ -16,6 +16,7 @@ import BanksStrip from '../components/ui/BanksStrip.astro';
 import Showcase from '../components/ui/Showcase.astro';
 import FaqItem from '../components/ui/FaqItem.astro';
 import { formatCOPCompact, CATEGORIES } from '../lib/format.js';
+import homeJsonLd from '../data/home-jsonld.json';
 
 const ingresos = formatCOPCompact(11952222); // "$11,95M"
 const gastos = formatCOPCompact(9141829); // "$9,14M"
@@ -102,6 +103,8 @@ const faqs = [
   title="Presu — tus gastos personales, claros."
   description="Presu reúne tu plata de todos los bancos, la organiza sola y te dice —en una frase— si vas bien este mes. Todo cifrado en tu equipo: sin nube, sin cuentas."
 >
+  <script type="application/ld+json" is:inline set:html={JSON.stringify(homeJsonLd)}></script>
+
   <!-- ══════════════════ 1 · HERO (split) ══════════════════ -->
   <section class="hero">
     <div class="hero-glow hero-glow--emerald" aria-hidden="true"></div>

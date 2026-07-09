@@ -23,20 +23,41 @@ const {
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    <meta name="keywords" content="finanzas personales, control de gastos, presupuesto personal, app de gastos Colombia, organizar gastos, extracto bancario, Bancolombia, Nu, Davivienda, RappiCard, finanzas privadas" />
+    <meta name="author" content="Asimétrica" />
+    <meta name="application-name" content="Presu" />
+    <meta name="apple-mobile-web-app-title" content="Presu" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="theme-color" content="#08080A" />
     <link rel="canonical" href={Astro.url.href} />
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Presu" />
+    <meta property="og:locale" content="es_CO" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:image" content={ogImage} />
-    <meta property="og:type" content="website" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Presu — tus gastos personales, claros" />
+    <meta property="og:url" content={Astro.url.href} />
+    <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+    <meta name="twitter:image:alt" content="Presu — tus gastos personales, claros" />
     <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
-    <!-- GA4 (mismo ID de hoy) -->
-    <script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-DZPY2T152N"></script>
+    <!-- Analítica: Consent Mode v2 + GA4 (deny-by-default hasta consentimiento; lee la cookie asi-consent) -->
     <script is:inline>
       window.dataLayer = window.dataLayer || [];
-      function gtag() {
-        dataLayer.push(arguments);
-      }
+      function gtag(){ dataLayer.push(arguments); }
+      var _m = document.cookie.match(/(?:^|; )asi-consent=(granted|denied)/);
+      var _c = _m ? _m[1] : null;
+      gtag('consent','default',{'ad_storage':'denied','ad_user_data':'denied','ad_personalization':'denied','analytics_storage': _c === 'granted' ? 'granted' : 'denied','wait_for_update':500});
+    </script>
+    <script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-DZPY2T152N"></script>
+    <script is:inline>
       gtag('js', new Date());
       gtag('config', 'G-DZPY2T152N');
     </script>
@@ -45,5 +66,29 @@ const {
     <Header />
     <slot />
     <Footer />
+
+    <!-- Consentimiento de cookies (setea asi-consent, gatea GA4) -->
+    <div id="cookie-consent" class="cookie-consent" hidden>
+      <p>Usamos cookies de <b>Google Analytics</b> para medir el uso del sitio. Puedes aceptarlas o seguir sin ellas.</p>
+      <div class="cc-row">
+        <button data-consent="granted" type="button" class="cc-accept">Aceptar</button>
+        <button data-consent="denied" type="button" class="cc-deny">Rechazar</button>
+      </div>
+    </div>
+    <script is:inline>
+      (function(){var el=document.getElementById('cookie-consent');if(!el)return;var m=document.cookie.match(/(?:^|; )asi-consent=(granted|denied)/);var s=m?m[1]:null;if(!s){el.hidden=false;requestAnimationFrame(function(){el.classList.add('is-in');});}el.querySelectorAll('[data-consent]').forEach(function(b){b.addEventListener('click',function(){var v=b.getAttribute('data-consent');var dom=location.hostname.indexOf('asimetrica.co')>-1?';domain=.asimetrica.co':'';try{document.cookie='asi-consent='+v+';path=/;max-age=15552000'+dom+';SameSite=Lax';}catch(e){}if(typeof gtag==='function'){gtag('consent','update',{'analytics_storage':v==='granted'?'granted':'denied'});}el.classList.remove('is-in');setTimeout(function(){el.hidden=true;},250);});});})();
+    </script>
+    <style is:global>
+      .cookie-consent{position:fixed;left:18px;bottom:18px;z-index:80;max-width:340px;background:#1B1B20;border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:15px 17px;box-shadow:0 1px 0 rgba(255,255,255,.05) inset,0 40px 90px -40px rgba(0,0,0,.85);font-size:.86rem;line-height:1.5;color:#A1A1A6;font-family:"Hanken Grotesk",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;opacity:0;transform:translateY(10px);transition:opacity .3s cubic-bezier(.2,.7,.2,1),transform .3s cubic-bezier(.2,.7,.2,1)}
+      .cookie-consent.is-in{opacity:1;transform:none}
+      .cookie-consent p{margin:0 0 11px}
+      .cookie-consent b{color:#F4F4F3;font-weight:600}
+      .cc-row{display:flex;gap:8px}
+      .cc-accept{background:#34D399;color:#06231a;border:0;border-radius:9px;padding:7px 15px;font-weight:700;font-size:.82rem;cursor:pointer;transition:background .16s}
+      .cc-accept:hover{background:#5EEAB8}
+      .cc-deny{background:transparent;color:#A1A1A6;border:0;border-radius:9px;padding:7px 12px;font-size:.82rem;cursor:pointer;transition:color .16s}
+      .cc-deny:hover{color:#F4F4F3}
+      @media(max-width:480px){.cookie-consent{left:10px;right:10px;bottom:10px;max-width:none}}
+    </style>
   </body>
 </html>

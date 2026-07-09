@@ -1,0 +1,70 @@
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://asimetrica.co/#organization",
+      "name": "Asimétrica",
+      "url": "https://asimetrica.co",
+      "logo": "https://asimetrica.co/logo.png",
+      "areaServed": "CO"
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://presu.io/#website",
+      "url": "https://presu.io/",
+      "name": "Presu",
+      "inLanguage": "es-CO",
+      "publisher": { "@id": "https://asimetrica.co/#organization" }
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://presu.io/#app",
+      "name": "Presu",
+      "applicationCategory": "FinanceApplication",
+      "operatingSystem": "macOS, Windows",
+      "inLanguage": "es-CO",
+      "url": "https://presu.io/",
+      "image": "https://presu.io/presu-og.png",
+      "description": "Presu reúne los gastos de tus bancos colombianos, los organiza solos y te muestra a dónde se va tu plata. Local-first: tus datos viven cifrados en tu propio equipo, no en la nube.",
+      "publisher": { "@id": "https://asimetrica.co/#organization" },
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "COP",
+        "description": "Empieza gratis con importación manual y panel básico."
+      }
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://presu.io/#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "¿Es seguro? ¿Dónde quedan mis datos?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Tus datos quedan cifrados en tu propio computador, no en un servidor ni en la nube. Presu es local-first: la información no sale de tu equipo, así que nadie más —ni Asimétrica— puede verla." }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Necesito dar la clave de mi banco?",
+          "acceptedAnswer": { "@type": "Answer", "text": "No. Presu no se conecta a tu banca en línea ni te pide usuario o clave. Solo importas el PDF de tu extracto (o un pantallazo) y Presu lo lee." }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Qué bancos sirven?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Hoy: Bancolombia, Nu, Davivienda y RappiCard. Seguimos sumando más." }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Tiene costo?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Puedes empezar gratis con la importación manual y el panel básico. Habrá un plan completo con funciones automáticas; definiremos los precios al lanzar." }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Funciona en Mac, Windows o celular?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Hoy funciona en computador, Mac y Windows. La versión para celular está en camino —te avisamos cuando esté lista." }
+        }
+      ]
+    }
+  ]
+}
