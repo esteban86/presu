@@ -12,6 +12,63 @@ import Logo from '../Logo.astro';
 
     <div class="show">
 
+      <!-- A · Inicio -->
+      <div class="show-row reveal">
+        <div class="show-copy">
+          <span class="eyebrow">¿Voy bien este mes?</span>
+          <h3>Ingresos, gastos y balance, al instante</h3>
+          <p>Abres Presu y ya sabes cómo vas: cuánto entró, cuánto salió y qué te queda —con la variación contra el mes pasado y tus presupuestos por categoría. La respuesta primero; los números, si los quieres.</p>
+          <ul class="show-list">
+            <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Todos tus bancos sumados en una sola vista</li>
+            <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Comparación automática contra el mes anterior</li>
+            <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Presupuestos por categoría en anillos, en tiempo real</li>
+          </ul>
+        </div>
+        <div class="show-art">
+          <div class="panel-glow" style="background:linear-gradient(120deg,#818CF8,#34D399)"></div>
+          <div class="panel">
+            <span class="panel-cap">Inicio</span>
+            <div class="dash-top">
+              <span class="m-chip">📅 Mes actual ▾</span>
+              <span class="m-chip">Todas las cuentas ▾</span>
+              <span class="m-chip"><span class="gd"></span> 12 visitas</span>
+              <span class="dash-date">2026-06-01 → 06-30</span>
+            </div>
+            <div class="verdict-line">
+              <span class="vl-tag"><span class="vl-dot"></span> Vas bien</span>
+              <p class="vl-txt">Hasta ahora <b>te sobran $1.680.000</b> de lo que entró este mes.</p>
+            </div>
+            <div class="stat-grid">
+              <div class="stat">
+                <div class="sl" style="color:var(--mint-bright)">↗ Ingresos</div>
+                <svg class="spark" viewBox="0 0 72 26" preserveAspectRatio="none" aria-hidden="true"><polyline points="0,20 12,17 24,18 36,10 48,7 60,9 72,4" fill="none" stroke="var(--mint-bright)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <div class="sv" style="color:var(--mint-bright)">$6.420.000</div>
+                <div class="sd"><b style="color:var(--mint-bright)">↑ 9.2%</b> vs mes ant.</div>
+              </div>
+              <div class="stat">
+                <div class="sl" style="color:var(--coral)">↘ Gastos</div>
+                <svg class="spark" viewBox="0 0 72 26" preserveAspectRatio="none" aria-hidden="true"><polyline points="0,8 12,6 24,12 36,7 48,14 60,11 72,16" fill="none" stroke="var(--coral)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <div class="sv" style="color:var(--coral)">$4.740.000</div>
+                <div class="sd"><b style="color:var(--mint-bright)">↓ 8.4%</b> vs mes ant.</div>
+              </div>
+              <div class="stat">
+                <div class="sl" style="color:var(--indigo-soft)">▦ Balance</div>
+                <svg class="spark" viewBox="0 0 72 26" preserveAspectRatio="none" aria-hidden="true"><polyline points="0,18 12,20 24,13 36,15 48,9 60,11 72,5" fill="none" stroke="var(--indigo-soft)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <div class="sv" style="color:var(--indigo-soft)">$1.680.000</div>
+                <div class="sd"><b style="color:var(--mint-bright)">↑ 138.5%</b> vs mes ant.</div>
+              </div>
+            </div>
+            <div class="budget-hd"><span class="bt">Presupuestos del mes</span><span class="bn">$4.740.000 / $5.700.000 · 83%</span></div>
+            <div class="rings">
+              <div class="ring"><div class="rc" style="--rc-color:var(--amber);--target:83%;--k:0"><b>83%</b></div><span class="rt">Vivienda</span></div>
+              <div class="ring"><div class="rc" style="--rc-color:var(--amber);--target:90%;--k:1"><b>90%</b></div><span class="rt">Alimentación</span></div>
+              <div class="ring"><div class="rc" style="--rc-color:var(--mint);--target:60%;--k:2"><b>60%</b></div><span class="rt">Salud</span></div>
+              <div class="ring"><div class="rc" style="--rc-color:var(--mint);--target:64%;--k:3"><b>64%</b></div><span class="rt">Hija</span></div>
+              <div class="ring"><div class="rc" style="--rc-color:var(--mint);--target:45%;--k:4"><b>45%</b></div><span class="rt">Familia</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <!-- B · Ritmo de gasto -->
       <div class="show-row rev reveal">
