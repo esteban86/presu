@@ -1,0 +1,102 @@
+---
+// FaqItem.astro — un ítem de acordeón para la sección de preguntas
+// frecuentes. Tampoco está en el kit DS v2 (no hay spec dedicada); se
+// construye con <details>/<summary> nativo (sin JS) siguiendo las reglas
+// generales del readme (radii, hairline borders, motion calmo) y el
+// patrón visual de la landing legacy (index.html §FAQ).
+export interface Props {
+  question: string;
+  answer?: string;
+  open?: boolean;
+}
+
+const { question, answer, open = false } = Astro.props;
+const hasSlot = Astro.slots.has('default');
+---
+
+<details class="faq-item" open={open}>
+  <summary class="faq-item__summary">
+    <span class="faq-item__question">{question}</span>
+    <span class="faq-item__plus" aria-hidden="true">+</span>
+  </summary>
+  <div class="faq-item__answer">
+    {hasSlot ? <slot /> : <p>{answer}</p>}
+  </div>
+</details>
+
+<style>
+  .faq-item {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 0 var(--space-5);
+    margin-bottom: var(--space-3);
+    background: var(--surface);
+    transition: border-color var(--dur-base) var(--ease-out);
+  }
+
+  .faq-item[open] {
+    border-color: var(--border-strong);
+  }
+
+  .faq-item__summary {
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding: var(--space-4) 0;
+    font-family: var(--font-display);
+    font-weight: var(--weight-bold);
+    font-size: var(--text-h3);
+    color: var(--text-primary);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .faq-item__summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .faq-item__summary:focus-visible {
+    outline: none;
+    border-radius: var(--radius-sm);
+    box-shadow: var(--focus-ring);
+  }
+
+  .faq-item__plus {
+    flex: none;
+    color: var(--presu-emerald);
+    font-size: 1.4rem;
+    line-height: 1;
+    transition: transform var(--dur-base) var(--ease-out);
+  }
+
+  .faq-item[open] .faq-item__plus {
+    transform: rotate(45deg);
+  }
+
+  .faq-item__answer {
+    margin: 0 0 var(--space-4);
+    font-family: var(--font-body);
+    font-size: var(--text-body);
+    line-height: var(--leading-normal);
+    color: var(--text-secondary);
+  }
+
+  .faq-item__answer p {
+    margin: 0;
+  }
+
+  /* Apertura animada donde el navegador soporta ::details-content;
+     degrada a apertura instantánea en el resto (progressive enhancement). */
+  .faq-item::details-content {
+    block-size: 0;
+    overflow: clip;
+    transition: block-size var(--dur-base) var(--ease-out),
+      content-visibility var(--dur-base) allow-discrete;
+  }
+
+  .faq-item[open]::details-content {
+    block-size: auto;
+  }
+</style>

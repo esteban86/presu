@@ -1,0 +1,53 @@
+---
+// Section.astro — envoltorio de sección para la landing. Ancho máximo de
+// contenido, padding horizontal responsive y ritmo vertical generoso
+// (space-16) entre los grupos que el caller ponga dentro del slot.
+export interface Props {
+  id?: string;
+  eyebrow?: string;
+}
+
+const { id, eyebrow } = Astro.props;
+---
+
+<section id={id} class="ds-section">
+  <div class="ds-section__inner">
+    {eyebrow && <p class="ds-section__eyebrow">{eyebrow}</p>}
+    <slot />
+  </div>
+</section>
+
+<style>
+  .ds-section {
+    padding: var(--space-20) 0;
+  }
+
+  .ds-section__inner {
+    max-width: var(--content-max);
+    margin: 0 auto;
+    padding: 0 var(--screen-pad);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-16);
+  }
+
+  .ds-section__eyebrow {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    font-weight: var(--weight-medium);
+    letter-spacing: var(--tracking-mono);
+    text-transform: uppercase;
+    color: var(--presu-emerald);
+  }
+
+  @media (max-width: 640px) {
+    .ds-section {
+      padding: var(--space-12) 0;
+    }
+
+    .ds-section__inner {
+      gap: var(--space-10);
+    }
+  }
+</style>

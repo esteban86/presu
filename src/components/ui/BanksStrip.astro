@@ -1,0 +1,93 @@
+---
+// BanksStrip.astro — franja de confianza "funciona con tus bancos".
+// No forma parte del kit DS v2 (no hay spec en components/data ni
+// components/forms), así que se construye con los tokens del DS a partir
+// de los logos ya presentes en public/assets/banks (mismo patrón que la
+// landing legacy). `label` y `more` quedan como props por si cambia el
+// copy; la lista de bancos vive aquí porque es la misma en todo el sitio.
+export interface Props {
+  label?: string;
+  more?: string;
+}
+
+const { label = 'Funciona con tus bancos', more = '+ muchos más' } = Astro.props;
+
+const BANKS = [
+  { name: 'Bancolombia', src: '/assets/banks/bancolombia-t.png' },
+  { name: 'Banco de Bogotá', src: '/assets/banks/bogota-t.png' },
+  { name: 'Davivienda', src: '/assets/banks/davivienda-t.png' },
+  { name: 'BBVA', src: '/assets/banks/bbva-t.png' },
+  { name: 'Nu', src: '/assets/banks/nu-t.png' },
+  { name: 'RappiCard', src: '/assets/banks/rappicard-t.png' },
+];
+---
+
+<div class="banks-strip">
+  <span class="banks-strip__label">{label}</span>
+  {BANKS.map((bank) => (
+    <span class="banks-strip__logo">
+      <img src={bank.src} alt={bank.name} loading="lazy" width="120" height="28" />
+    </span>
+  ))}
+  {more && <span class="banks-strip__more">{more}</span>}
+</div>
+
+<style>
+  .banks-strip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: var(--space-4) var(--space-6);
+    padding: var(--space-6) 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .banks-strip__label {
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    font-weight: var(--weight-medium);
+    letter-spacing: var(--tracking-mono);
+    text-transform: uppercase;
+    color: var(--text-secondary);
+  }
+
+  .banks-strip__logo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 54px;
+    padding: 0 var(--space-4);
+    background: #fff;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .banks-strip__logo img {
+    display: block;
+    height: 28px;
+    width: auto;
+  }
+
+  .banks-strip__more {
+    font-family: var(--font-body);
+    font-size: var(--text-body);
+    color: var(--text-secondary);
+  }
+
+  @media (max-width: 640px) {
+    .banks-strip {
+      gap: var(--space-3) var(--space-4);
+    }
+
+    .banks-strip__logo {
+      height: 44px;
+      padding: 0 var(--space-3);
+    }
+
+    .banks-strip__logo img {
+      height: 22px;
+    }
+  }
+</style>

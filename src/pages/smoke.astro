@@ -1,9 +1,83 @@
 ---
 import Base from '../layouts/Base.astro';
+import Button from '../components/ui/Button.astro';
+import Section from '../components/ui/Section.astro';
+import VerdictCard from '../components/ui/VerdictCard.astro';
+import StatCard from '../components/ui/StatCard.astro';
+import BudgetBar from '../components/ui/BudgetBar.astro';
+import BanksStrip from '../components/ui/BanksStrip.astro';
+import FaqItem from '../components/ui/FaqItem.astro';
+import { formatCOP, formatCOPCompact, CATEGORIES } from '../lib/format.js';
+
+const ingresos = formatCOPCompact(11950000);
+const gastos = formatCOPCompact(9140000);
+const saldo = formatCOP(1680000);
+const vivienda = CATEGORIES.vivienda;
+const mercado = CATEGORIES.mercado;
 ---
-<Base title="Smoke test — Presu" description="Verificación de Base.astro + Header + Footer.">
-  <main style="padding: 64px 22px; max-width: 720px; margin: 0 auto;">
-    <p>Astro OK</p>
-    <div style="width:120px;height:40px;background:var(--presu-emerald)"></div>
+
+<Base title="Smoke test — Presu" description="Verificación de los componentes ui/ del DS v2.">
+  <main style="padding: 64px 0;">
+    <Section id="botones" eyebrow="Botones">
+      <div style="display:flex; gap:16px; flex-wrap:wrap; align-items:center;">
+        <Button href="#waitlist" variant="primary" size="lg">Únete a la lista</Button>
+        <Button href="#como" variant="ghost" size="md">Ver cómo funciona →</Button>
+        <Button variant="primary" size="md">Sin href (button)</Button>
+      </div>
+    </Section>
+
+    <Section id="verdict" eyebrow="Verdict card">
+      <VerdictCard
+        label="VAS BIEN ESTE MES"
+        verdict="Vas $268.000 por debajo de tu ritmo. Te quedan:"
+        amount={saldo}
+      />
+    </Section>
+
+    <Section id="stats" eyebrow="Stat cards">
+      <div style="display:flex; gap:12px; flex-wrap:wrap;">
+        <StatCard label="↗ Ingresos" value={ingresos} delta="↑ 9,2%" deltaTone="positive" />
+        <StatCard label="↘ Gastos" value={gastos} delta="↓ 48,9%" deltaTone="negative" />
+      </div>
+    </Section>
+
+    <Section id="budget" eyebrow="Budget bars">
+      <div style="display:flex; flex-direction:column; gap:20px; max-width:480px;">
+        <BudgetBar
+          label={vivienda.label}
+          emoji={vivienda.emoji}
+          spent={formatCOP(1200000)}
+          total={formatCOP(1500000)}
+          pct={80}
+          color={vivienda.color}
+        />
+        <BudgetBar
+          label={mercado.label}
+          emoji={mercado.emoji}
+          spent={formatCOP(580000)}
+          total={formatCOP(500000)}
+          pct={116}
+          color={mercado.color}
+          over="↑ te pasaste $80.000"
+        />
+      </div>
+    </Section>
+
+    <Section id="banks" eyebrow="Banks strip">
+      <BanksStrip />
+    </Section>
+
+    <Section id="faq" eyebrow="FAQ">
+      <div>
+        <FaqItem question="¿Es seguro? ¿Dónde quedan mis datos?" open>
+          Tus datos quedan cifrados en tu propio computador, no en un servidor ni en la nube.
+        </FaqItem>
+        <FaqItem
+          question="¿Qué bancos sirven?"
+          answer="Hoy: Bancolombia, Nu, Davivienda y RappiCard. Seguimos sumando más."
+        />
+      </div>
+    </Section>
   </main>
 </Base>
+

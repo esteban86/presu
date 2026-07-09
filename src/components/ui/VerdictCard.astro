@@ -1,0 +1,103 @@
+---
+// VerdictCard.astro — pieza firma del DS v2: "claridad antes que dato".
+// Panel frosted-glass con veredicto humano + cifra en esmeralda. Ghost
+// "$" gigante al ~3.5% de opacidad detrás del contenido (readme.md
+// §VISUAL FOUNDATIONS · Backgrounds & texture).
+export interface Props {
+  label: string;
+  verdict: string;
+  amount: string;
+}
+
+const { label, verdict, amount } = Astro.props;
+---
+
+<div class="verdict-card">
+  <span class="verdict-card__ghost" aria-hidden="true">$</span>
+  <div class="verdict-card__status">
+    <span class="verdict-card__dot"></span>
+    <span class="verdict-card__label">{label}</span>
+  </div>
+  <p class="verdict-card__sentence">{verdict}</p>
+  <p class="verdict-card__amount">{amount}</p>
+</div>
+
+<style>
+  .verdict-card {
+    position: relative;
+    overflow: hidden;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-xl);
+    padding: var(--space-6);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+  }
+
+  .verdict-card__ghost {
+    position: absolute;
+    top: -0.35em;
+    right: var(--space-2);
+    font-family: var(--font-display);
+    font-weight: var(--weight-bold);
+    font-size: 11rem;
+    line-height: 1;
+    color: var(--text-primary);
+    opacity: 0.035;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .verdict-card__status {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-bottom: var(--space-3);
+  }
+
+  .verdict-card__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--presu-emerald);
+  }
+
+  .verdict-card__label {
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    letter-spacing: var(--tracking-mono);
+    text-transform: uppercase;
+    color: var(--presu-emerald);
+  }
+
+  .verdict-card__sentence {
+    position: relative;
+    margin: 0 0 var(--space-4);
+    font-family: var(--font-display);
+    font-weight: var(--weight-semibold);
+    font-size: var(--text-h2);
+    line-height: var(--leading-snug);
+    letter-spacing: var(--tracking-tight);
+    color: var(--text-primary);
+    text-wrap: balance;
+  }
+
+  .verdict-card__amount {
+    position: relative;
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: var(--weight-bold);
+    font-size: var(--text-display);
+    line-height: var(--leading-display);
+    letter-spacing: var(--tracking-display);
+    font-variant-numeric: tabular-nums;
+    color: var(--presu-emerald);
+  }
+
+  @media (max-width: 640px) {
+    .verdict-card__amount {
+      font-size: var(--text-h1);
+    }
+  }
+</style>

@@ -1,0 +1,86 @@
+---
+// Button.astro — CTA de Presu DS v2. Pill completo, target táctil 44px,
+// foco visible. Un primary por vista (regla del readme). Sin JS: el
+// estado "press" se resuelve con :active (progressive enhancement).
+export interface Props {
+  href?: string;
+  variant?: 'primary' | 'ghost';
+  size?: 'md' | 'lg';
+}
+
+const { href, variant = 'primary', size = 'md' } = Astro.props;
+const Tag = href ? 'a' : 'button';
+---
+
+<Tag
+  href={href}
+  type={href ? undefined : 'button'}
+  class={`btn btn-${variant} btn-${size}`}
+>
+  <slot />
+</Tag>
+
+<style>
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    min-height: var(--tap-min);
+    border-radius: var(--radius-full);
+    border: 1px solid transparent;
+    font-family: var(--font-body);
+    font-weight: var(--weight-semibold);
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform var(--dur-fast) var(--ease-out),
+      background var(--dur-base) var(--ease-out),
+      box-shadow var(--dur-fast) var(--ease-out),
+      color var(--dur-base) var(--ease-out);
+  }
+
+  .btn:active {
+    transform: scale(0.96);
+  }
+
+  .btn:focus-visible {
+    outline: none;
+    border-color: var(--border-focus);
+    box-shadow: var(--focus-ring);
+  }
+
+  /* ---------- Sizes ---------- */
+  .btn-md {
+    padding: var(--space-3) var(--space-5);
+    font-size: var(--text-label);
+  }
+
+  .btn-lg {
+    padding: var(--space-4) var(--space-6);
+    font-size: var(--text-body);
+  }
+
+  /* ---------- Variants ---------- */
+  .btn-primary {
+    background: var(--presu-emerald);
+    color: var(--text-on-accent);
+    font-weight: var(--weight-bold);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .btn-primary:hover {
+    background: var(--presu-emerald-press);
+    box-shadow: var(--shadow-accent);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-secondary);
+  }
+
+  .btn-ghost:hover {
+    color: var(--text-primary);
+  }
+</style>

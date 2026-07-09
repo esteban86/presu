@@ -1,0 +1,110 @@
+---
+// StatCard.astro — tarjeta compacta de métrica (Ingresos / Gastos). Cifra
+// en Space Grotesk tabular; badge de delta opcional debajo. `value` y
+// `delta` llegan pre-formateados (ver src/lib/format.js). Slot "icon"
+// opcional para el ícono junto al label.
+export interface Props {
+  label: string;
+  value: string;
+  delta?: string;
+  deltaTone?: 'positive' | 'negative' | 'warning' | 'info' | 'neutral';
+}
+
+const { label, value, delta, deltaTone = 'positive' } = Astro.props;
+const hasIcon = Astro.slots.has('icon');
+---
+
+<div class="stat-card">
+  <div class="stat-card__head">
+    {hasIcon && (
+      <span class="stat-card__icon">
+        <slot name="icon" />
+      </span>
+    )}
+    <span class="stat-card__label">{label}</span>
+  </div>
+  <div class="stat-card__value">{value}</div>
+  {delta && (
+    <div class="stat-card__delta">
+      <span class={`stat-card__badge stat-card__badge--${deltaTone}`}>{delta}</span>
+    </div>
+  )}
+</div>
+
+<style>
+  .stat-card {
+    flex: 1;
+    min-width: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+  }
+
+  .stat-card__head {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-bottom: var(--space-2);
+  }
+
+  .stat-card__icon {
+    display: inline-flex;
+    color: var(--text-secondary);
+  }
+
+  .stat-card__label {
+    font-family: var(--font-body);
+    font-size: var(--text-caption);
+    color: var(--text-secondary);
+  }
+
+  .stat-card__value {
+    font-family: var(--font-display);
+    font-weight: var(--weight-bold);
+    font-size: var(--text-h2);
+    letter-spacing: var(--tracking-tight);
+    font-variant-numeric: tabular-nums;
+    color: var(--text-primary);
+  }
+
+  .stat-card__delta {
+    margin-top: var(--space-2);
+  }
+
+  .stat-card__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    font-family: var(--font-body);
+    font-size: var(--text-caption);
+    font-weight: var(--weight-bold);
+    padding: 3px var(--space-3);
+    border-radius: var(--radius-full);
+  }
+
+  .stat-card__badge--positive {
+    color: var(--color-positive);
+    background: var(--fill-emerald);
+  }
+
+  .stat-card__badge--negative {
+    color: var(--color-negative);
+    background: var(--fill-rose);
+  }
+
+  .stat-card__badge--warning {
+    color: var(--color-warning);
+    background: var(--fill-amber);
+  }
+
+  .stat-card__badge--info {
+    color: var(--color-info);
+    background: var(--fill-indigo);
+  }
+
+  .stat-card__badge--neutral {
+    color: var(--text-secondary);
+    background: var(--fill-neutral);
+  }
+</style>
