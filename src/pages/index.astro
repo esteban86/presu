@@ -13,7 +13,6 @@ import VerdictCard from '../components/ui/VerdictCard.astro';
 import StatCard from '../components/ui/StatCard.astro';
 import BudgetBar from '../components/ui/BudgetBar.astro';
 import CategoryDonut from '../components/ui/CategoryDonut.astro';
-import AppWindow from '../components/ui/AppWindow.astro';
 import BanksStrip from '../components/ui/BanksStrip.astro';
 import Showcase from '../components/ui/Showcase.astro';
 import FaqItem from '../components/ui/FaqItem.astro';
@@ -180,7 +179,15 @@ const faqs = [
 
       <!-- Derecha: la pieza firma — VerdictCard + categorías -->
       <div class="hero-viz">
-        <AppWindow />
+        <img
+          class="hero-shot"
+          src="/hero-app.webp"
+          width="1536"
+          height="1024"
+          alt="Presu en macOS: la pantalla de Inicio con ingresos, gastos, balance y los presupuestos del mes por categoría"
+          fetchpriority="high"
+          decoding="async"
+        />
       </div>
     </div>
   </section>
@@ -880,6 +887,13 @@ const faqs = [
     display: flex;
     flex-direction: column;
     gap: var(--space-4);
+  }
+  .hero-shot {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: var(--radius-xl);
+    box-shadow: 0 40px 90px -40px rgba(0, 0, 0, 0.9);
   }
   .hero-viz-glow {
     position: absolute;
