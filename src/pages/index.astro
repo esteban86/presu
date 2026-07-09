@@ -257,17 +257,10 @@ const faqs = [
         <StatCard label="▦ Balance" value={balance} delta="↑ 140,5%" deltaTone="positive" />
       </div>
 
-      <div class="panel-donut">
-        <span class="panel-sub">Gastos por categoría</span>
-        <CategoryDonut segments={spendByCategory} total={gastos} caption="Junio · 6 categorías" />
-      </div>
-
       <div class="panel-cols">
-        <div class="panel-bars">
-          <span class="panel-sub">Presupuestos del mes</span>
-          <BudgetBar label={CATEGORIES.vivienda.label} emoji={CATEGORIES.vivienda.emoji} spent="$2.750.000" total="$2.900.000" pct={95} color={CATEGORIES.vivienda.color} />
-          <BudgetBar label={CATEGORIES.mercado.label} emoji={CATEGORIES.mercado.emoji} spent="$1.640.000" total="$2.000.000" pct={82} color={CATEGORIES.mercado.color} />
-          <BudgetBar label={CATEGORIES.salud.label} emoji={CATEGORIES.salud.emoji} spent="$960.000" total="$1.100.000" pct={87} color={CATEGORIES.salud.color} />
+        <div class="panel-donut">
+          <span class="panel-sub">Gastos por categoría</span>
+          <CategoryDonut segments={spendByCategory} total={gastos} caption="Junio" />
         </div>
 
         <div class="panel-txns">
@@ -1060,9 +1053,8 @@ const faqs = [
     margin-bottom: var(--space-6);
   }
   .panel-donut {
-    margin-bottom: var(--space-6);
-    padding-bottom: var(--space-6);
-    border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
   }
   .panel-cols {
     display: grid;
