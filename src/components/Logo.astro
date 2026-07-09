@@ -1,0 +1,39 @@
+---
+// Logo.astro — wordmark oficial de Presu (DS v2): "presu" en Space Grotesk
+// cruzado por el marcador esmeralda a -9° (el gesto de marca: resaltar lo que importa).
+// Ref: Presu Design System v2 · components/brand/Logo.jsx
+interface Props {
+  size?: string;   // tamaño de la palabra (font-size), ej. '1.375rem'
+  href?: string | null;
+}
+const { size = '1.375rem', href = '/' } = Astro.props;
+const Tag = href ? 'a' : 'span';
+---
+<Tag class="logo" {...(href ? { href, 'aria-label': 'Presu — inicio' } : { 'aria-label': 'Presu' })} style={`--logo-size:${size}`}>
+  <span class="wm">
+    <span class="wm-bar" aria-hidden="true"></span>
+    <span class="wm-text">presu</span>
+  </span>
+</Tag>
+
+<style>
+  .logo { display:inline-flex; align-items:center; text-decoration:none; }
+  .wm { position:relative; display:inline-flex; align-items:center; line-height:.9; }
+  /* El marcador: barra esmeralda que cruza la palabra a -9° (nunca recto, nunca subrayado) */
+  .wm-bar {
+    position:absolute; left:-5%; right:-8%; top:55%;
+    height:calc(var(--logo-size) * .30);
+    border-radius:var(--radius-full, 999px);
+    background:var(--presu-emerald);
+    transform:rotate(-9deg);
+  }
+  .wm-text {
+    position:relative;
+    font-family:var(--font-display);
+    font-weight:var(--weight-bold, 700);
+    font-size:var(--logo-size);
+    letter-spacing:-0.05em;
+    line-height:.9;
+    color:var(--text-primary);
+  }
+</style>
