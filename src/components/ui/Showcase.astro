@@ -33,10 +33,29 @@
               <span class="m-chip"><span class="gd"></span> 20 visitas</span>
               <span class="dash-date">2026-06-01 → 06-30</span>
             </div>
+            <div class="verdict-line">
+              <span class="vl-tag"><span class="vl-dot"></span> Vas bien</span>
+              <p class="vl-txt">Hasta ahora <b>te sobran $1.680.000</b> de lo que entró este mes.</p>
+            </div>
             <div class="stat-grid">
-              <div class="stat"><div class="sl" style="color:var(--mint-bright)">↗ Ingresos</div><div class="sv" style="color:var(--mint-bright)">$6.420.000</div><div class="sd"><b style="color:var(--mint-bright)">↑ 9.2%</b> vs mes ant.</div></div>
-              <div class="stat"><div class="sl" style="color:var(--coral)">↘ Gastos</div><div class="sv" style="color:var(--coral)">$4.740.000</div><div class="sd"><b style="color:var(--mint-bright)">↓ 8.4%</b> vs mes ant.</div></div>
-              <div class="stat"><div class="sl" style="color:var(--indigo-soft)">▦ Balance</div><div class="sv" style="color:var(--indigo-soft)">$1.680.000</div><div class="sd"><b style="color:var(--mint-bright)">↑ 138.5%</b> vs mes ant.</div></div>
+              <div class="stat">
+                <div class="sl" style="color:var(--mint-bright)">↗ Ingresos</div>
+                <svg class="spark" viewBox="0 0 72 26" preserveAspectRatio="none" aria-hidden="true"><polyline points="0,20 12,17 24,18 36,10 48,7 60,9 72,4" fill="none" stroke="var(--mint-bright)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <div class="sv" style="color:var(--mint-bright)">$6.420.000</div>
+                <div class="sd"><b style="color:var(--mint-bright)">↑ 9.2%</b> vs mes ant.</div>
+              </div>
+              <div class="stat">
+                <div class="sl" style="color:var(--coral)">↘ Gastos</div>
+                <svg class="spark" viewBox="0 0 72 26" preserveAspectRatio="none" aria-hidden="true"><polyline points="0,8 12,6 24,12 36,7 48,14 60,11 72,16" fill="none" stroke="var(--coral)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <div class="sv" style="color:var(--coral)">$4.740.000</div>
+                <div class="sd"><b style="color:var(--mint-bright)">↓ 8.4%</b> vs mes ant.</div>
+              </div>
+              <div class="stat">
+                <div class="sl" style="color:var(--indigo-soft)">▦ Balance</div>
+                <svg class="spark" viewBox="0 0 72 26" preserveAspectRatio="none" aria-hidden="true"><polyline points="0,18 12,20 24,13 36,15 48,9 60,11 72,5" fill="none" stroke="var(--indigo-soft)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <div class="sv" style="color:var(--indigo-soft)">$1.680.000</div>
+                <div class="sd"><b style="color:var(--mint-bright)">↑ 138.5%</b> vs mes ant.</div>
+              </div>
             </div>
             <div class="budget-hd"><span class="bt">Presupuestos del mes</span><span class="bn">$4.740.000 / $5.700.000 · 83%</span></div>
             <div class="rings">
@@ -95,9 +114,9 @@
               <div class="chart-pill pop" style="left:45%;top:24%">$268.000 por debajo</div>
             </div>
             <div class="chart-legend">
-              <span><i style="border:0;height:3px;width:18px;border-radius:2px;background:linear-gradient(90deg,#FBBF24,#34D399)"></i> Gastado real</span>
-              <span><i style="border-color:rgba(255,255,255,.45);border-top-style:dashed"></i> Esperado</span>
-              <span><i style="border-color:#FB7185;border-top-style:dashed"></i> Presupuesto</span>
+              <span><i style="border:0;height:3px;width:18px;border-radius:2px;background:linear-gradient(90deg,#FBBF24,#34D399)"></i> Real</span>
+              <span><i style="border-color:rgba(255,255,255,.45);border-top-style:dashed"></i> Tu ritmo de costumbre</span>
+              <span><i style="border-color:#FB7185;border-top-style:dashed"></i> Techo del presupuesto</span>
             </div>
           </div>
         </div>
@@ -191,7 +210,13 @@
   .presu-showcase .m-chip .gd{width:6px;height:6px;border-radius:50%;background:var(--mint)}
   .presu-showcase .dash-date{margin-left:auto;font-size:.66rem;color:var(--mut2);font-variant-numeric:tabular-nums}
   .presu-showcase .stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:14px}
-  .presu-showcase .stat{background:var(--bg-elev);border:1px solid var(--line);border-radius:12px;padding:12px 13px}
+  .presu-showcase .stat{position:relative;overflow:hidden;background:var(--bg-elev);border:1px solid var(--line);border-radius:12px;padding:12px 13px}
+  .presu-showcase .spark{position:absolute;top:12px;right:12px;width:56px;height:20px;opacity:.85}
+  .presu-showcase .verdict-line{background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.22);border-radius:12px;padding:11px 14px;margin-bottom:13px}
+  .presu-showcase .vl-tag{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:.58rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--mint)}
+  .presu-showcase .vl-dot{width:6px;height:6px;border-radius:50%;background:var(--mint);box-shadow:0 0 7px var(--mint)}
+  .presu-showcase .vl-txt{margin:6px 0 0;font-family:var(--head);font-weight:700;font-size:1rem;line-height:1.3;color:#fff}
+  .presu-showcase .vl-txt b{color:var(--mint-bright)}
   .presu-showcase .stat .sl{display:flex;align-items:center;gap:6px;font-size:.7rem;color:var(--mut);font-weight:600;margin-bottom:7px}
   .presu-showcase .stat .sv{font-family:var(--head);font-weight:800;font-size:1.12rem;letter-spacing:-0.02em}
   .presu-showcase .stat .sd{font-size:.64rem;color:var(--mut2);margin-top:5px}
