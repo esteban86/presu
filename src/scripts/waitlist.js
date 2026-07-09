@@ -94,7 +94,7 @@ export function enterNuevaOla() {
 
   const wl = q('#waitlist-lede');
   if (wl) {
-    wl.innerHTML = 'La beta de pioneros ya está corriendo; la <b style="color:var(--tx,#fff)">Nueva Ola</b> abre el <b style="color:var(--tx,#fff)">15 de julio, 4pm</b>. Déjanos tu correo y entras. <br><span style="color:var(--mut2,#6B6B72)">¿Ya eres pionero? Ya tienes acceso — revisa tu correo 📩.</span>';
+    wl.innerHTML = 'La beta de pioneros ya está corriendo; la <b style="color:var(--text-primary,#F4F4F3)">Nueva Ola</b> abre el <b style="color:var(--text-primary,#F4F4F3)">15 de julio, 4pm</b>. Déjanos tu correo y entras. <br><span style="color:var(--text-tertiary,#6B6B72)">¿Ya eres pionero? Ya tienes acceso — revisa tu correo 📩.</span>';
   }
 
   return true;

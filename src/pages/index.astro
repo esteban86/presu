@@ -292,6 +292,19 @@ const faqs = [
     </div>
   </Section>
 
+  <!-- ══════════════════ 6.5 · PARA EMPRESAS (B2B) ══════════════════ -->
+  <Section id="equipos">
+    <div class="b2b reveal">
+      <div class="b2b-glow" aria-hidden="true"></div>
+      <p class="b2b-eyebrow">Para empresas</p>
+      <h2>Bienestar financiero para tu equipo, <span class="mark">sin tocar su privacidad</span>.</h2>
+      <p class="b2b-lead">Ofrece Presu como beneficio. Tu gente ordena su plata y tú impulsas su tranquilidad —y nadie en la empresa ve sus datos, porque viven en el equipo de cada persona.</p>
+      <a href="#waitlist" class="capture-btn b2b-cta" data-perfil="empresa">Quiero ofrecerlo en mi empresa
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+      </a>
+    </div>
+  </Section>
+
   <!-- ══════════════════ 7 · PLANES (teaser) ══════════════════ -->
   <Section id="planes" eyebrow="Planes">
     <div class="sec-head reveal">
@@ -395,6 +408,14 @@ const faqs = [
       </div>
     </div>
   </Section>
+
+  <!-- ══════════════ ENCUESTA POST-REGISTRO (modal, oculto por defecto) ══════════════ -->
+  <div id="connect-modal" class="connect-modal" role="dialog" aria-modal="true" aria-label="Cuéntanos un poco más">
+    <div class="connect-modal__card">
+      <button type="button" class="connect-modal__close" aria-label="Ahora no">Ahora no</button>
+      <iframe title="Conectemos con Presu" allow="clipboard-write"></iframe>
+    </div>
+  </div>
 </Base>
 
 <!-- Estilos globales: los tocan/inyectan countdown.js y waitlist.js
@@ -1089,6 +1110,66 @@ const faqs = [
     color: var(--presu-emerald);
   }
 
+  /* ───────────────── 6.5 · Para empresas (B2B) ───────────────── */
+  .b2b {
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: var(--space-12) var(--space-8);
+    background: var(--surface-alt);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+  }
+  .b2b-glow {
+    position: absolute;
+    width: 380px;
+    height: 380px;
+    left: -120px;
+    bottom: -150px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(129, 140, 248, 0.22), transparent 65%);
+    filter: blur(30px);
+    pointer-events: none;
+  }
+  .b2b-eyebrow {
+    position: relative;
+    margin: 0 0 var(--space-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    font-weight: var(--weight-medium);
+    letter-spacing: var(--tracking-mono);
+    text-transform: uppercase;
+    color: var(--presu-indigo-bright);
+  }
+  .b2b h2 {
+    position: relative;
+    margin: 0 0 var(--space-4);
+    max-width: 24ch;
+    margin-left: auto;
+    margin-right: auto;
+    font-family: var(--font-display);
+    font-weight: var(--weight-bold);
+    font-size: var(--text-h1);
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-tight);
+    color: var(--text-primary);
+    text-wrap: balance;
+  }
+  .b2b-lead {
+    position: relative;
+    margin: 0 auto var(--space-6);
+    max-width: 52ch;
+    font-size: var(--text-body-lg);
+    line-height: var(--leading-normal);
+    color: var(--text-secondary);
+  }
+  .b2b-cta {
+    position: relative;
+    text-decoration: none;
+  }
+
   /* ───────────────── 7 · Planes ───────────────── */
   .plans {
     display: grid;
@@ -1381,6 +1462,72 @@ const faqs = [
     color: var(--text-secondary);
   }
 
+  /* ───────────────── Encuesta post-registro (modal) ───────────────── */
+  .connect-modal {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-overlay);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-5);
+    background: rgba(4, 4, 6, 0.72);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+  }
+  .connect-modal.is-open {
+    display: flex;
+  }
+  .connect-modal__card {
+    position: relative;
+    width: 100%;
+    max-width: 560px;
+    max-height: 92vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+  }
+  .connect-modal__close {
+    position: absolute;
+    top: var(--space-3);
+    right: var(--space-3);
+    z-index: 2;
+    background: var(--surface-elevated);
+    border: 1px solid var(--border-strong);
+    color: var(--text-secondary);
+    border-radius: var(--radius-full);
+    padding: var(--space-2) var(--space-4);
+    font-family: var(--font-body);
+    font-size: var(--text-caption);
+    cursor: pointer;
+  }
+  .connect-modal__close:hover {
+    color: var(--text-primary);
+  }
+  .connect-modal iframe {
+    width: 100%;
+    flex: 1;
+    min-height: 540px;
+    border: 0;
+    background: transparent;
+    display: block;
+  }
+  @media (max-width: 560px) {
+    .connect-modal {
+      padding: 0;
+    }
+    .connect-modal__card {
+      max-width: none;
+      height: 100dvh;
+      max-height: none;
+      border-radius: 0;
+    }
+  }
+
   /* ───────────────── Utilidades ───────────────── */
   .hidden {
     display: none !important;
@@ -1453,7 +1600,8 @@ const faqs = [
       display: none;
     }
     .sec-head h2,
-    .privacy h2 {
+    .privacy h2,
+    .b2b h2 {
       font-size: var(--text-h2);
     }
   }
@@ -1559,6 +1707,43 @@ const faqs = [
   loadCount();
   setInterval(loadCount, 15000);
 
+  // ── Ventana post-registro: encuesta opcional (Nombre → WhatsApp → perfil) en un iframe ──
+  // Reutiliza encuesta.html en modo nuevo+embed; guarda incremental (cada campo apenas se llena).
+  let connectShown = false;
+  function openConnect(email: string) {
+    if (connectShown || !email) return;
+    connectShown = true;
+    const ov = document.getElementById('connect-modal');
+    if (!ov) return;
+    const iframe = ov.querySelector<HTMLIFrameElement>('iframe');
+    if (iframe) iframe.src = '/encuesta.html?e=' + encodeURIComponent(email) + '&nuevo=1&embed=1';
+    ov.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+    if (typeof (window as any).gtag === 'function') (window as any).gtag('event', 'connect_open');
+  }
+  function closeConnect() {
+    const ov = document.getElementById('connect-modal');
+    if (ov) ov.classList.remove('is-open');
+    document.body.style.overflow = '';
+  }
+  (() => {
+    const ov = document.getElementById('connect-modal');
+    if (!ov) return;
+    ov.addEventListener('click', (e) => {
+      if (e.target === ov) closeConnect();
+    });
+    ov.querySelector('.connect-modal__close')?.addEventListener('click', closeConnect);
+  })();
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeConnect();
+  });
+  window.addEventListener('message', (e: MessageEvent) => {
+    const d = e && (e.data as any);
+    if (d && (d.presu === 'survey-close' || d.presu === 'survey-complete')) {
+      closeConnect();
+    }
+  });
+
   // ── Countdown: usa las funciones puras portadas (BETA/target/parts) ──
   (function () {
     const cd = document.getElementById('countdown');
@@ -1640,6 +1825,7 @@ const faqs = [
           if (res && (res as any).ref) heroOk.insertAdjacentHTML('afterend', referralCTA((res as any).ref));
           bumpCount();
           track('persona', late ? 'tanda2' : 'hero');
+          openConnect(email);
         },
         () => {
           btnLoading(heroForm, false);
@@ -1654,6 +1840,7 @@ const faqs = [
             : 'Ese correo ya está inscrito. Te avisamos primero cuando abramos.';
           heroOk.classList.remove('hidden');
           heroOk.classList.add('pop-in');
+          openConnect(email);
         }
       );
     });
@@ -1671,6 +1858,12 @@ const faqs = [
       if (empresaInput) empresaInput.required = esEmpresa;
     };
     form.querySelectorAll('input[name=perfil]').forEach((r) => r.addEventListener('change', syncPerfil));
+    document.querySelectorAll('[data-perfil=empresa]').forEach((a) => {
+      a.addEventListener('click', () => {
+        (form.querySelector('input[name=perfil][value=empresa]') as HTMLInputElement).checked = true;
+        syncPerfil();
+      });
+    });
     const showError = (id: string, show: boolean) => {
       const el = document.getElementById(id);
       if (el) el.style.display = show ? 'block' : 'none';
@@ -1712,6 +1905,7 @@ const faqs = [
           if (res && (res as any).ref) s.insertAdjacentHTML('beforeend', referralCTA((res as any).ref));
           bumpCount();
           track(perfil, 'form');
+          openConnect(email);
         },
         () => {
           btnLoading(form, false);
@@ -1725,6 +1919,7 @@ const faqs = [
           form.classList.add('hidden');
           s.classList.remove('hidden');
           s.classList.add('pop-in');
+          openConnect(email);
         }
       );
     });
