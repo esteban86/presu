@@ -19,18 +19,18 @@ import FaqItem from '../components/ui/FaqItem.astro';
 import { formatCOPCompact, CATEGORIES } from '../lib/format.js';
 import homeJsonLd from '../data/home-jsonld.json';
 
-const ingresos = formatCOPCompact(11952222); // "$11,95M"
-const gastos = formatCOPCompact(9141829); // "$9,14M"
-const balance = formatCOPCompact(2810393); // "$2,81M"
+const ingresos = formatCOPCompact(6420000); // "$6,42M"
+const gastos = formatCOPCompact(4740000); // "$4,74M"
+const balance = formatCOPCompact(1680000); // "$1,68M" (= ingresos − gastos)
 
-// Gastos por categoría (dona del panel) — suman exactamente 9.141.829 = `gastos`.
+// Gastos por categoría (dona del panel) — suman exactamente 4.740.000 = `gastos`.
 const spendByCategory = [
-  { ...CATEGORIES.vivienda, amount: '$2.750.000', value: 2750000 },
-  { ...CATEGORIES.mercado, amount: '$1.640.000', value: 1640000 },
-  { ...CATEGORIES.restaurantes, amount: '$980.000', value: 980000 },
-  { ...CATEGORIES.salud, amount: '$960.000', value: 960000 },
-  { ...CATEGORIES.transporte, amount: '$620.000', value: 620000 },
-  { ...CATEGORIES.otros, amount: '$2.191.829', value: 2191829 },
+  { ...CATEGORIES.vivienda, amount: '$1.500.000', value: 1500000 },
+  { ...CATEGORIES.mercado, amount: '$900.000', value: 900000 },
+  { ...CATEGORIES.restaurantes, amount: '$620.000', value: 620000 },
+  { ...CATEGORIES.salud, amount: '$420.000', value: 420000 },
+  { ...CATEGORIES.transporte, amount: '$480.000', value: 480000 },
+  { ...CATEGORIES.otros, amount: '$820.000', value: 820000 },
 ];
 
 // El problema — la tensión, con la frase humana primero.
@@ -186,9 +186,9 @@ const faqs = [
           <StatCard label="↘ Gastos" value={gastos} delta="↓ 8,4%" deltaTone="negative" />
         </div>
         <div class="hero-bars">
-          <BudgetBar label={CATEGORIES.mercado.label} emoji={CATEGORIES.mercado.emoji} spent="$1.640.000" total="$2.000.000" pct={82} color={CATEGORIES.mercado.color} />
-          <BudgetBar label={CATEGORIES.restaurantes.label} emoji={CATEGORIES.restaurantes.emoji} spent="$980.000" total="$900.000" pct={109} color={CATEGORIES.restaurantes.color} over="↑ te pasaste $80.000" />
-          <BudgetBar label={CATEGORIES.transporte.label} emoji={CATEGORIES.transporte.emoji} spent="$620.000" total="$800.000" pct={78} color={CATEGORIES.transporte.color} />
+          <BudgetBar label={CATEGORIES.mercado.label} emoji={CATEGORIES.mercado.emoji} spent="$900.000" total="$1.000.000" pct={90} color={CATEGORIES.mercado.color} />
+          <BudgetBar label={CATEGORIES.restaurantes.label} emoji={CATEGORIES.restaurantes.emoji} spent="$620.000" total="$550.000" pct={113} color={CATEGORIES.restaurantes.color} over="↑ te pasaste $70.000" />
+          <BudgetBar label={CATEGORIES.transporte.label} emoji={CATEGORIES.transporte.emoji} spent="$480.000" total="$600.000" pct={80} color={CATEGORIES.transporte.color} />
         </div>
       </div>
     </div>
@@ -254,7 +254,7 @@ const faqs = [
       <div class="panel-stats">
         <StatCard label="↗ Ingresos" value={ingresos} delta="↑ 9,2%" deltaTone="positive" />
         <StatCard label="↘ Gastos" value={gastos} delta="↓ 8,4%" deltaTone="negative" />
-        <StatCard label="▦ Balance" value={balance} delta="↑ 191,2%" deltaTone="positive" />
+        <StatCard label="▦ Balance" value={balance} delta="↑ 138,5%" deltaTone="positive" />
       </div>
 
       <div class="panel-cols">
