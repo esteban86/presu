@@ -1,0 +1,246 @@
+---
+// Showcase — "Mira lo que verás por dentro"
+// Sección de vistas de la app (mockups en HTML/CSS/SVG). Autocontenida: trae sus
+// propios tokens y CSS con <style> scoped de Astro (aislado del resto del landing).
+// Portada desde la landing estática (main:index.html) a la migración Astro.
+---
+
+<section class="presu-showcase">
+  <div class="wrap">
+    <div class="sec-head reveal"><span class="eyebrow center-eb">Funciones</span><h2>Mira lo que verás por dentro</h2></div>
+
+    <div class="show">
+
+      <!-- A · Inicio -->
+      <div class="show-row reveal">
+        <div class="show-copy">
+          <span class="eyebrow">¿Voy bien este mes?</span>
+          <h3>Ingresos, gastos y balance, al instante</h3>
+          <p>Abres Presu y ya sabes cómo vas: cuánto entró, cuánto salió y qué te queda —con la variación contra el mes pasado y tus presupuestos por categoría. La respuesta primero; los números, si los quieres.</p>
+          <ul class="show-list">
+            <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Todos tus bancos sumados en una sola vista</li>
+            <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Comparación automática contra el mes anterior</li>
+            <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Presupuestos por categoría en anillos, en tiempo real</li>
+          </ul>
+        </div>
+        <div class="show-art">
+          <div class="panel-glow" style="background:linear-gradient(120deg,#818CF8,#34D399)"></div>
+          <div class="panel">
+            <span class="panel-cap">Inicio</span>
+            <div class="dash-top">
+              <span class="m-chip">📅 Mes actual ▾</span>
+              <span class="m-chip">Todas las cuentas ▾</span>
+              <span class="m-chip"><span class="gd"></span> 20 visitas</span>
+              <span class="dash-date">2026-06-01 → 06-30</span>
+            </div>
+            <div class="stat-grid">
+              <div class="stat"><div class="sl" style="color:var(--mint-bright)">↗ Ingresos</div><div class="sv" style="color:var(--mint-bright)">$11.952.222</div><div class="sd"><b style="color:var(--mint-bright)">↑ 9.2%</b> vs mes ant.</div></div>
+              <div class="stat"><div class="sl" style="color:var(--coral)">↘ Gastos</div><div class="sv" style="color:var(--coral)">$9.141.829</div><div class="sd"><b style="color:var(--mint-bright)">↓ 48.9%</b> vs mes ant.</div></div>
+              <div class="stat"><div class="sl" style="color:var(--indigo-soft)">▦ Balance</div><div class="sv" style="color:var(--indigo-soft)">$2.810.393</div><div class="sd"><b style="color:var(--mint-bright)">↑ 140.5%</b> vs mes ant.</div></div>
+            </div>
+            <div class="budget-hd"><span class="bt">Presupuestos del mes</span><span class="bn">$9.141.829 / $16.395.000 · 56%</span></div>
+            <div class="rings">
+              <div class="ring"><div class="rc" style="--rc-color:var(--amber);--target:90%;--k:0"><b>90%</b></div><span class="rt">Vivienda</span></div>
+              <div class="ring"><div class="rc" style="--rc-color:var(--mint);--target:59%;--k:1"><b>59%</b></div><span class="rt">Maria del Mar</span></div>
+              <div class="ring"><div class="rc" style="--rc-color:var(--mint);--target:47%;--k:2"><b>47%</b></div><span class="rt">Alimentación</span></div>
+              <div class="ring"><div class="rc" style="--rc-color:var(--mint);--target:56%;--k:3"><b>56%</b></div><span class="rt">Salud</span></div>
+              <div class="ring"><div class="rc" style="--rc-color:var(--amber);--target:86%;--k:4"><b>86%</b></div><span class="rt">Familia</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- B · Ritmo de gasto -->
+      <div class="show-row rev reveal">
+        <div class="show-copy">
+          <span class="eyebrow">¿Vas a llegar a fin de mes?</span>
+          <h3>Tu ritmo de gasto, contra lo esperado</h3>
+          <p>Presu dibuja lo que llevas gastado (línea verde) sobre lo que deberías ir gastando (punteada) y tu techo de presupuesto. Si vas muy rápido, lo ves días antes —no cuando ya es tarde.</p>
+          <ul class="show-list">
+            <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Gasto real vs. ritmo esperado, día a día</li>
+            <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Techo de presupuesto siempre a la vista</li>
+            <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Proyección de cómo cerrarás el mes</li>
+          </ul>
+        </div>
+        <div class="show-art">
+          <div class="panel-glow" style="background:linear-gradient(120deg,#34D399,#818CF8)"></div>
+          <div class="panel">
+            <span class="panel-cap">Ritmo de gasto</span>
+            <div class="chart-hd"><span class="ct">Ritmo de Gasto</span><span class="cl">Ver análisis →</span></div>
+            <div style="position:relative">
+              <svg viewBox="0 0 340 184" width="100%" style="display:block" role="img" aria-label="Gráfica de ritmo de gasto">
+                <defs>
+                  <linearGradient id="realfill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#34D399" stop-opacity=".30"/><stop offset="1" stop-color="#34D399" stop-opacity="0"/></linearGradient>
+                  <linearGradient id="lineg" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FBBF24"/><stop offset=".5" stop-color="#9BE15D"/><stop offset="1" stop-color="#34D399"/></linearGradient>
+                </defs>
+                <line x1="30" y1="24" x2="332" y2="24" stroke="rgba(255,255,255,.05)"/>
+                <line x1="30" y1="87" x2="332" y2="87" stroke="rgba(255,255,255,.05)"/>
+                <line x1="30" y1="150" x2="332" y2="150" stroke="rgba(255,255,255,.09)"/>
+                <line x1="30" y1="35" x2="332" y2="35" stroke="#FB7185" stroke-width="1.6" stroke-dasharray="6 5" opacity=".7"/>
+                <path d="M30 148 C80 130 110 112 150 100 C200 84 270 54 326 42" fill="none" stroke="rgba(255,255,255,.42)" stroke-width="2.2" stroke-dasharray="6 5"/>
+                <path class="area-fade" d="M30 140 C66 132 92 116 120 108 C156 98 182 95 210 86 L210 150 L30 150 Z" fill="url(#realfill)"/>
+                <path class="grow-line" pathLength="1" d="M30 140 C66 132 92 116 120 108 C156 98 182 95 210 86" fill="none" stroke="url(#lineg)" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
+                <line x1="210" y1="22" x2="210" y2="150" stroke="#8B8DF7" stroke-width="1.4" stroke-dasharray="4 4" opacity=".55"/>
+                <circle class="land-pulse" cx="210" cy="86" r="8.5" fill="#34D399" opacity=".25" style="transform-box:fill-box;transform-origin:center"/>
+                <circle class="land-dot" cx="210" cy="86" r="5" fill="#34D399" stroke="#0A0A0C" stroke-width="2.2"/>
+                <line x1="300" y1="35" x2="300" y2="150" stroke="rgba(255,255,255,.12)" stroke-width="1"/>
+                <circle cx="300" cy="44" r="4" fill="#9A9AA6" stroke="#0A0A0C" stroke-width="2"/>
+                <text x="4" y="27" fill="#6B6B76" font-size="8.5" font-family="JetBrains Mono">18M</text>
+                <text x="4" y="90" fill="#6B6B76" font-size="8.5" font-family="JetBrains Mono">9M</text>
+                <text x="4" y="152" fill="#6B6B76" font-size="8.5" font-family="JetBrains Mono">0</text>
+                <text x="28" y="167" fill="#6B6B76" font-size="8.5" font-family="JetBrains Mono">Día 1</text>
+                <text x="195" y="167" fill="#8B8DF7" font-size="8.5" font-weight="600" font-family="JetBrains Mono">Hoy</text>
+                <text x="284" y="167" fill="#6B6B76" font-size="8.5" font-family="JetBrains Mono">Día 27</text>
+              </svg>
+              <div class="chart-pill pop" style="left:45%;top:24%">$268.000 por debajo</div>
+            </div>
+            <div class="chart-legend">
+              <span><i style="border:0;height:3px;width:18px;border-radius:2px;background:linear-gradient(90deg,#FBBF24,#34D399)"></i> Gastado real</span>
+              <span><i style="border-color:rgba(255,255,255,.45);border-top-style:dashed"></i> Esperado</span>
+              <span><i style="border-color:#FB7185;border-top-style:dashed"></i> Presupuesto</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- C · Sincronización con correo -->
+      <div class="show-row reveal">
+        <div class="show-copy">
+          <span class="eyebrow">Sin trabajo manual</span>
+          <h3>Importa solo, desde tu correo</h3>
+          <p>Conecta tu correo y Presu encuentra las notificaciones del banco y los extractos PDF que ya te llegaron, los lee y los importa —saltándose los duplicados. Y todo el procesamiento ocurre en tu equipo.</p>
+          <ul class="show-list">
+            <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Gmail, Outlook, Yahoo e iCloud</li>
+            <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Encuentra y procesa extractos PDF automáticamente</li>
+            <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Detecta duplicados para no repetir movimientos</li>
+          </ul>
+        </div>
+        <div class="show-art">
+          <div class="panel-glow" style="background:linear-gradient(120deg,#818CF8,#A855F7)"></div>
+          <div class="panel">
+            <span class="panel-cap">Sincronización</span>
+            <div class="sync-hd"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg> Sincronización con tu correo</div>
+            <div class="sync-stat">270 transacciones importadas desde el correo</div>
+            <div class="sync-period"><span class="p">⚡ 24 horas</span><span class="p on">7 días</span><span class="p">30 días</span><span class="p">90 días</span></div>
+            <div class="sync-status"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg> Gmail conectado (OAuth)</div>
+            <div class="sync-banks">Extractos PDF: <span class="bk">Bancolombia</span><span class="bk">Davivienda</span><span class="bk">Nu</span><span class="bk">RappiCard</span></div>
+            <div class="prog-row"><span>10/20 correos · <span style="color:var(--mint-bright)">6 importadas</span> · 4 omitidas</span><span>50%</span></div>
+            <div class="prog"><i></i></div>
+            <div class="console">
+              <div>7:59:21 p.m. [1/20] <span class="imp">Importada: NONNA MALL DEL ESTE</span></div>
+              <div>7:59:21 p.m. [2/20] <span class="dup">Duplicado: BOLD CO SAS</span></div>
+              <div>7:59:22 p.m. [3/20] <span class="imp">Importada: D1 CRA 70 — $48.900</span></div>
+              <div>7:59:22 p.m. [4/20] <span class="imp">Importada: RAPPI COL — $32.500</span></div>
+              <div>7:59:23 p.m. [5/20] <span class="dup">Duplicado: UBER BV USD-USD COLO</span></div>
+              <div>7:59:23 p.m. [6/20] <span class="imp">Importada: ÉXITO POBLADO — $124.300</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="feat-extra reveal">
+      <span class="x"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3 1.9 4.6L19 8.3l-3.7 3.3 1 5L12 14.5 7.7 16.6l1-5L5 8.3l5.1-.7z"/></svg>Categorización con IA</span>
+      <span class="x"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Flujo de caja y patrimonio</span>
+      <span class="x"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>Exporta a Excel o CSV</span>
+      <span class="x"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Multi-dispositivo</span>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Tokens (aislados a esta sección — el DS v2 renombró los globales) */
+  .presu-showcase{
+    --indigo:#818CF8; --indigo-soft:#A5B4FC; --mint:#34D399; --mint-bright:#5EEAB8; --coral:#FB7185; --amber:#FBBF24;
+    --bg-2:#101014; --bg-3:#141418; --bg-elev:#1B1B20;
+    --line:rgba(255,255,255,.07); --line-2:rgba(255,255,255,.12);
+    --tx:#F4F4F3; --mut:#A1A1A6; --mut2:#6B6B72;
+    --radius:20px; --maxw:1160px;
+    --head:"Space Grotesk",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+    --sh-lg:0 1px 0 rgba(255,255,255,.05) inset, 0 40px 90px -40px rgba(0,0,0,.85);
+    position:relative; padding:clamp(72px,9vw,112px) 0;
+  }
+  .presu-showcase .wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px}
+  .presu-showcase h2{font-family:var(--head);font-weight:700;line-height:1.08;letter-spacing:-0.03em;color:#fff;font-size:clamp(1.8rem,3.8vw,2.6rem);margin:0 0 14px}
+  .presu-showcase h3{font-family:var(--head);color:#fff}
+  .presu-showcase .sec-head{max-width:680px;margin:0 auto 52px;text-align:center;position:relative;z-index:2}
+  .presu-showcase .eyebrow{display:inline-flex;align-items:center;gap:11px;font-family:var(--mono);font-size:.7rem;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--mint);margin-bottom:18px}
+  .presu-showcase .eyebrow::before{content:"";width:24px;height:1.5px;background:var(--mint-bright);opacity:.6;display:inline-block}
+  .presu-showcase .eyebrow.center-eb{justify-content:center}
+
+  /* ── Feature showcase ── */
+  .presu-showcase .show{display:flex;flex-direction:column;gap:88px}
+  .presu-showcase .show-row{display:grid;grid-template-columns:.92fr 1.08fr;gap:56px;align-items:center}
+  .presu-showcase .show-row.rev .show-copy{order:2}
+  .presu-showcase .show-row.rev .show-art{order:1}
+  .presu-showcase .show-copy h3{font-family:var(--head);font-weight:700;font-size:clamp(1.5rem,3vw,2.05rem);letter-spacing:-0.03em;color:#fff;margin:0 0 12px;line-height:1.1}
+  .presu-showcase .show-copy>p{color:var(--mut);font-size:1.06rem;margin:0 0 18px;max-width:46ch}
+  .presu-showcase .show-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:11px}
+  .presu-showcase .show-list li{display:flex;gap:10px;align-items:flex-start;color:var(--tx);font-size:.97rem}
+  .presu-showcase .show-list svg{color:var(--mint-bright);flex:none;margin-top:3px}
+  .presu-showcase .show-art{position:relative}
+  .presu-showcase .panel-glow{position:absolute;inset:-14% -10%;border-radius:50%;filter:blur(74px);opacity:.4;z-index:0}
+  .presu-showcase .panel{background:linear-gradient(180deg,var(--bg-3),var(--bg-2));border:1px solid var(--line-2);border-radius:var(--radius);box-shadow:var(--sh-lg);padding:18px;position:relative;z-index:2}
+  .presu-showcase .panel-cap{position:absolute;top:-11px;left:20px;z-index:3;background:rgba(52,211,153,.14);border:1px solid rgba(52,211,153,.34);color:var(--mint);font-family:var(--mono);font-size:.6rem;font-weight:500;padding:4px 10px;border-radius:999px;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap}
+
+  /* dashboard mock */
+  .presu-showcase .dash-top{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:13px}
+  .presu-showcase .m-chip{display:inline-flex;align-items:center;gap:6px;background:var(--bg-elev);border:1px solid var(--line);border-radius:9px;padding:6px 10px;font-size:.72rem;color:var(--mut);font-weight:500}
+  .presu-showcase .m-chip .gd{width:6px;height:6px;border-radius:50%;background:var(--mint)}
+  .presu-showcase .dash-date{margin-left:auto;font-size:.66rem;color:var(--mut2);font-variant-numeric:tabular-nums}
+  .presu-showcase .stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:14px}
+  .presu-showcase .stat{background:var(--bg-elev);border:1px solid var(--line);border-radius:12px;padding:12px 13px}
+  .presu-showcase .stat .sl{display:flex;align-items:center;gap:6px;font-size:.7rem;color:var(--mut);font-weight:600;margin-bottom:7px}
+  .presu-showcase .stat .sv{font-family:var(--head);font-weight:800;font-size:1.12rem;letter-spacing:-0.02em}
+  .presu-showcase .stat .sd{font-size:.64rem;color:var(--mut2);margin-top:5px}
+  .presu-showcase .budget-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px;font-size:.74rem}
+  .presu-showcase .budget-hd .bt{font-family:var(--head);font-weight:700;color:#fff;font-size:.84rem}
+  .presu-showcase .budget-hd .bn{color:var(--mut2);font-variant-numeric:tabular-nums}
+  .presu-showcase .rings{display:flex;gap:10px}
+  .presu-showcase .ring{display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;min-width:0}
+  .presu-showcase .ring .rc{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;position:relative;background:conic-gradient(var(--rc-color,var(--mint)) var(--target,0%),rgba(255,255,255,.08) 0)}
+  .presu-showcase .ring .rc::after{content:"";position:absolute;inset:6px;background:var(--bg-3);border-radius:50%}
+  .presu-showcase .ring .rc b{position:relative;z-index:1;font-size:.66rem;font-weight:700;color:var(--tx)}
+  .presu-showcase .ring .rt{font-size:.6rem;color:var(--mut);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+
+  /* chart mock */
+  .presu-showcase .chart-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+  .presu-showcase .chart-hd .ct{font-family:var(--head);font-weight:700;color:#fff;font-size:.92rem}
+  .presu-showcase .chart-hd .cl{font-size:.72rem;color:var(--indigo-soft);font-weight:600}
+  .presu-showcase .chart-legend{display:flex;gap:16px;margin-top:10px;font-size:.68rem;color:var(--mut)}
+  .presu-showcase .chart-legend span{display:inline-flex;align-items:center;gap:6px}
+  .presu-showcase .chart-legend i{width:16px;height:0;border-top-width:2.5px;border-top-style:solid;display:inline-block}
+  .presu-showcase .chart-pill{position:absolute;background:var(--mint);color:#06251B;font-weight:700;font-size:.74rem;padding:5px 11px;border-radius:9px;white-space:nowrap;box-shadow:0 8px 20px -8px rgba(52,211,153,.6);z-index:4}
+  .presu-showcase .chart-pill::after{content:"";position:absolute;left:50%;bottom:-5px;transform:translateX(-50%);border-left:6px solid transparent;border-right:6px solid transparent;border-top:6px solid var(--mint)}
+
+  /* sync mock */
+  .presu-showcase .sync-hd{display:flex;align-items:center;gap:8px;font-family:var(--head);font-weight:800;font-size:.98rem;color:#fff;margin-bottom:10px}
+  .presu-showcase .sync-hd svg{color:var(--indigo-soft)}
+  .presu-showcase .sync-stat{background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);border-radius:10px;padding:9px 12px;font-size:.78rem;color:var(--indigo-soft);font-weight:600;margin-bottom:11px}
+  .presu-showcase .sync-period{display:flex;gap:6px;margin-bottom:11px}
+  .presu-showcase .sync-period .p{font-size:.68rem;padding:5px 9px;border-radius:8px;background:var(--bg-elev);border:1px solid var(--line);color:var(--mut2);font-weight:500}
+  .presu-showcase .sync-period .p.on{background:rgba(99,102,241,.9);color:#fff;border-color:transparent}
+  .presu-showcase .sync-status{display:flex;align-items:center;gap:7px;font-size:.76rem;color:var(--mint-bright);font-weight:600;margin-bottom:12px}
+  .presu-showcase .sync-banks{display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:.68rem;color:var(--mut);margin-bottom:11px}
+  .presu-showcase .sync-banks .bk{background:var(--bg-elev);border:1px solid var(--line);border-radius:7px;padding:3px 8px}
+  .presu-showcase .prog-row{display:flex;align-items:center;justify-content:space-between;font-size:.68rem;color:var(--mut);margin-bottom:7px}
+  .presu-showcase .prog{height:5px;border-radius:4px;background:var(--bg-elev);overflow:hidden;margin-bottom:11px}
+  .presu-showcase .prog>i{display:block;height:100%;width:50%;background:linear-gradient(90deg,var(--indigo),var(--mint))}
+  .presu-showcase .console{background:#08080B;border:1px solid var(--line);border-radius:10px;padding:11px 13px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.68rem;line-height:1.75;color:var(--mut2);max-height:124px;overflow:hidden}
+  .presu-showcase .console .dup{color:var(--amber)}
+  .presu-showcase .console .imp{color:var(--mint-bright)}
+  .presu-showcase .feat-extra{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:64px}
+  .presu-showcase .feat-extra .x{display:inline-flex;align-items:center;gap:8px;background:var(--bg-2);border:1px solid var(--line);border-radius:999px;padding:9px 16px;font-size:.86rem;color:var(--tx);font-weight:500}
+  .presu-showcase .feat-extra .x svg{color:var(--mint-bright)}
+
+  @media(max-width:860px){
+    .presu-showcase .show-row{grid-template-columns:1fr;gap:28px}
+    .presu-showcase .show-row>*{min-width:0}
+    .presu-showcase .show-row.rev .show-copy{order:1}
+    .presu-showcase .show-row.rev .show-art{order:2}
+    .presu-showcase .show{gap:56px}
+    .presu-showcase .stat .sv{font-size:1rem}
+  }
+</style>

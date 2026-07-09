@@ -13,6 +13,7 @@ import VerdictCard from '../components/ui/VerdictCard.astro';
 import StatCard from '../components/ui/StatCard.astro';
 import BudgetBar from '../components/ui/BudgetBar.astro';
 import BanksStrip from '../components/ui/BanksStrip.astro';
+import Showcase from '../components/ui/Showcase.astro';
 import FaqItem from '../components/ui/FaqItem.astro';
 import { formatCOPCompact, CATEGORIES } from '../lib/format.js';
 
@@ -268,6 +269,9 @@ const faqs = [
       <BanksStrip />
     </div>
   </Section>
+
+  <!-- ══════════════════ Mira lo que verás por dentro (showcase) ══════════════════ -->
+  <Showcase />
 
   <!-- ══════════════════ 6 · PRIVACIDAD (firma) ══════════════════ -->
   <Section id="privacidad" eyebrow="Privacidad que se siente">
