@@ -1,6 +1,11 @@
 import { defineConfig } from 'astro/config';
+import cloudflare from "@astrojs/cloudflare";
 export default defineConfig({
   site: 'https://presu.io',
   output: 'static',
-  build: { format: 'file' }, // genera /pagina.html (URLs limpias como hoy)
+
+  // genera /pagina.html (URLs limpias como hoy)
+  build: { format: 'file' },
+
+  adapter: cloudflare()
 });
