@@ -133,7 +133,7 @@ const faqs = [
             <div class="cd-u"><b id="cd-s">00</b><span>seg</span></div>
           </div>
           <span class="cd-live">● La beta ya está abierta —entra y reclama tu acceso.</span>
-          <p class="cd-note">Los <b>pioneros</b> entran antes del 30: prueban la beta y usan <b>Presu completo, gratis</b>.</p>
+          <p class="cd-note">Los <b>pioneros</b> entran antes del 30: prueban la beta, le dan forma con su feedback y usan <b>Presu completo, gratis</b>.</p>
         </div>
 
         <form id="hero-form" class="capture" novalidate>
@@ -156,7 +156,7 @@ const faqs = [
         </div>
 
         <div class="proof hidden" id="proof-hero">
-          <span class="proof-dot" aria-hidden="true"></span>
+          <span class="avatars" aria-hidden="true"><i class="av"></i><i class="av"></i><i class="av"></i><i class="av"></i></span>
           <b class="count">—</b><span class="proof-txt">&nbsp;personas ya en la Nueva Ola</span>
         </div>
 
@@ -296,15 +296,15 @@ const faqs = [
       <div class="privacy-pills">
         <span class="ppill">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-          En tu equipo
+          Cifrado en tu dispositivo
         </span>
         <span class="ppill">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-          Cifrado
+          Sin servidores, sin nube
         </span>
         <span class="ppill">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18.36 6.64A9 9 0 1 1 5.64 6.64"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
-          Sin nube
+          Sin crear cuenta
         </span>
       </div>
     </div>
@@ -400,7 +400,7 @@ const faqs = [
       <h2>Sé de los primeros en usar <span class="mark">Presu</span>.</h2>
       <p class="sec-lead" id="waitlist-lede">La beta abre el <b>martes 30 de junio</b>. Los pioneros entran antes y usan Presu completo gratis —más unos bonos— a cambio de su feedback. Sin spam.</p>
       <div class="proof hidden" id="proof-wait">
-        <span class="proof-dot" aria-hidden="true"></span>
+        <span class="avatars" aria-hidden="true"><i class="av"></i><i class="av"></i><i class="av"></i><i class="av"></i></span>
         <b class="count">—</b><span class="proof-txt">&nbsp;personas ya en la Nueva Ola</span>
       </div>
     </div>
@@ -801,6 +801,24 @@ const faqs = [
     background: var(--presu-emerald);
     box-shadow: 0 0 8px var(--presu-emerald);
   }
+  .proof .avatars {
+    display: inline-flex;
+    align-items: center;
+  }
+  .proof .avatars .av {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid var(--bg-base, #08080a);
+    margin-left: -8px;
+  }
+  .proof .avatars .av:first-child {
+    margin-left: 0;
+  }
+  .proof .avatars .av:nth-child(1) { background: linear-gradient(135deg, #34d399, #059669); }
+  .proof .avatars .av:nth-child(2) { background: linear-gradient(135deg, #60a5fa, #2563eb); }
+  .proof .avatars .av:nth-child(3) { background: linear-gradient(135deg, #fbbf24, #d97706); }
+  .proof .avatars .av:nth-child(4) { background: linear-gradient(135deg, #f472b6, #db2777); }
   .proof .count {
     font-family: var(--font-display);
     font-weight: var(--weight-bold);
