@@ -1,0 +1,1761 @@
+---
+// index.astro — la landing rediseñada de Presu (DS v2 "Esmeralda").
+// Narrativa "problema primero"; hero "split". Reúne los componentes de
+// ui/ (Section, VerdictCard, StatCard, BudgetBar, BanksStrip, FaqItem) y
+// la lógica portada de src/scripts/ (countdown, waitlist, api). El markup
+// del hero PROVEE el contrato de DOM que consumen countdown.js y
+// waitlist.js sin cambios: .hero-grid {.pill-badge, h1, .pitch, .sub},
+// #hero-form + #hero-email, #countdown {.cd-top/.cd-live/.cd-note,
+// #cd-d/#cd-h/#cd-m/#cd-s}, #late-ramps, #os-eb-date, #waitlist-lede.
+import Base from '../layouts/Base.astro';
+import Section from '../components/ui/Section.astro';
+import VerdictCard from '../components/ui/VerdictCard.astro';
+import StatCard from '../components/ui/StatCard.astro';
+import BudgetBar from '../components/ui/BudgetBar.astro';
+import BanksStrip from '../components/ui/BanksStrip.astro';
+import FaqItem from '../components/ui/FaqItem.astro';
+import { formatCOPCompact, CATEGORIES } from '../lib/format.js';
+
+const ingresos = formatCOPCompact(11952222); // "$11,95M"
+const gastos = formatCOPCompact(9141829); // "$9,14M"
+const balance = formatCOPCompact(2810393); // "$2,81M"
+
+// El problema — la tensión, con la frase humana primero.
+const problems = [
+  {
+    tone: 'negative',
+    title: 'La plata se va sin saber en qué',
+    body: 'Ganas bien, pero a fin de mes no cuadra. Sin un panorama claro, decidir es adivinar.',
+  },
+  {
+    tone: 'info',
+    title: 'Cuatro apps de bancos distintas',
+    body: 'Bancolombia por aquí, Nu por allá, la tarjeta en otra. Nunca ves todo junto.',
+  },
+  {
+    tone: 'positive',
+    title: 'Las demás apps suben todo a la nube',
+    body: 'Para organizarte te piden entregar tus datos financieros a un servidor ajeno. No, gracias.',
+  },
+];
+
+// El giro — cómo funciona en 3 pasos.
+const steps = [
+  {
+    n: '1',
+    title: 'Importas tu extracto',
+    body: 'Arrastras el PDF del banco —o hasta un pantallazo. Sin claves ni conexión a tu banca en línea.',
+  },
+  {
+    n: '2',
+    title: 'Presu lo organiza solo',
+    body: 'Detecta el banco y categoriza cada movimiento en segundo plano. Cuando abres, ya está hecho.',
+  },
+  {
+    n: '3',
+    title: 'Lo ves en una frase',
+    body: 'Cuánto entró, cuánto salió y qué te queda. La respuesta primero; los números, si los quieres.',
+  },
+];
+
+// Mira por dentro — movimientos reales (Colombia).
+const txns = [
+  { emoji: '💰', name: 'Nómina', bank: 'Bancolombia', amount: '+$5.200.000', income: true },
+  { emoji: '🏠', name: 'Arriendo', bank: 'Davivienda', amount: '−$1.500.000' },
+  { emoji: '🛒', name: 'Éxito Poblado', bank: 'Bancolombia', amount: '−$124.300' },
+  { emoji: '🍔', name: 'Rappi', bank: 'Nu', amount: '−$32.500' },
+  { emoji: '🎬', name: 'Netflix', bank: 'RappiCard', amount: '−$44.900' },
+];
+
+// FAQ — preguntas reales de la landing en vivo.
+const faqs = [
+  {
+    q: '¿Es seguro? ¿Dónde quedan mis datos?',
+    a: 'Tus datos quedan cifrados en tu propio computador, no en un servidor ni en la nube. Presu es local-first: la información no sale de tu equipo, así que nadie más —ni Asimétrica— puede verla.',
+    open: true,
+  },
+  {
+    q: '¿Necesito dar la clave de mi banco?',
+    a: 'No. Presu no se conecta a tu banca en línea ni te pide usuario o clave. Solo importas el PDF de tu extracto (o un pantallazo) y Presu lo lee.',
+  },
+  {
+    q: '¿Qué bancos sirven?',
+    a: 'Hoy: Bancolombia, Nu, Davivienda y RappiCard. Seguimos sumando más cada mes.',
+  },
+  {
+    q: '¿Qué gano por entrar antes del lanzamiento?',
+    a: 'Eres pionero: usas Presu completo gratis durante la beta, recibes la guía «De ruido a claridad» de Asimétrica, entras a una sesión de finanzas en vivo solo para pioneros, conservas un precio especial cuando salga el plan de pago y ayudas a decidir qué banco o función construimos después. A cambio, solo te pedimos tu feedback.',
+  },
+  {
+    q: '¿Tiene costo?',
+    a: 'Si entras como pionero (antes del 30 de junio), usas toda la beta gratis a cambio de tu feedback y conservas un precio especial. Después podrás seguir gratis con la importación manual y el panel básico; el plan completo tendrá un precio que definimos al lanzar.',
+  },
+  {
+    q: '¿Funciona en Mac, Windows o celular?',
+    a: 'Hoy funciona en computador, Mac y Windows. La versión para celular está en camino —te avisamos cuando esté lista.',
+  },
+];
+---
+
+<Base
+  title="Presu — tus gastos personales, claros."
+  description="Presu reúne tu plata de todos los bancos, la organiza sola y te dice —en una frase— si vas bien este mes. Todo cifrado en tu equipo: sin nube, sin cuentas."
+>
+  <!-- ══════════════════ 1 · HERO (split) ══════════════════ -->
+  <section class="hero">
+    <div class="hero-glow hero-glow--emerald" aria-hidden="true"></div>
+    <div class="hero-glow hero-glow--indigo" aria-hidden="true"></div>
+
+    <div class="hero-grid">
+      <!-- Izquierda: el argumento + captura -->
+      <div class="hero-copy">
+        <span class="pill-badge"><span class="ping"></span> Beta de pioneros · gratis antes del 30 de junio</span>
+        <h1>Tus gastos de todos los bancos, <span class="mark">claros</span>.</h1>
+        <p class="pitch">Presu reúne tu plata de Bancolombia, Nu, Davivienda y más, la organiza sola y te dice —en una frase, no en una hoja de cálculo— a dónde se va y si vas bien este mes.</p>
+        <p class="sub">Todo vive cifrado en tu equipo: sin nube, sin cuentas, sin que nadie más lo vea.</p>
+
+        <div class="countdown" id="countdown">
+          <span class="cd-top">Falta para abrir la beta</span>
+          <div class="cd-units" role="timer" aria-label="Cuenta regresiva para la beta">
+            <div class="cd-u"><b id="cd-d">00</b><span>días</span></div>
+            <span class="cd-sep">:</span>
+            <div class="cd-u"><b id="cd-h">00</b><span>horas</span></div>
+            <span class="cd-sep">:</span>
+            <div class="cd-u"><b id="cd-m">00</b><span>min</span></div>
+            <span class="cd-sep">:</span>
+            <div class="cd-u"><b id="cd-s">00</b><span>seg</span></div>
+          </div>
+          <span class="cd-live">● La beta ya está abierta —entra y reclama tu acceso.</span>
+          <p class="cd-note">Los <b>pioneros</b> entran antes del 30: prueban la beta y usan <b>Presu completo, gratis</b>.</p>
+        </div>
+
+        <form id="hero-form" class="capture" novalidate>
+          <div class="capture-row">
+            <input type="email" id="hero-email" name="email" autocomplete="email" placeholder="tu@correo.com" aria-label="Tu correo" required />
+            <button type="submit" class="capture-btn">Únete a la lista
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+            </button>
+          </div>
+          <p class="capture-err" id="hero-err">Revisa el correo —parece que le falta algo.</p>
+          <p class="capture-note">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            Gratis para empezar · Tus datos no salen de tu equipo · Sin spam
+          </p>
+        </form>
+
+        <div class="capture-ok hidden" id="hero-ok" role="status">
+          <span class="ok-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M20 6 9 17l-5-5"></path></svg></span>
+          <span><strong>¡Listo, ya estás dentro!</strong><span>Te escribimos primero cuando abramos cupos —sin afán, sin spam.</span></span>
+        </div>
+
+        <div class="proof hidden" id="proof-hero">
+          <span class="proof-dot" aria-hidden="true"></span>
+          <b class="count">—</b><span class="proof-txt">&nbsp;personas ya en la Nueva Ola</span>
+        </div>
+
+        <div id="late-ramps" class="late-ramps">
+          <div class="ramp">🚀 <b>Salta la fila</b> — al unirte recibes tu link; cada amigo que invites te sube en la cola de la próxima tanda.</div>
+          <a href="/aporta" class="ramp ramp-link">🌱 <b>Gánate tu cupo</b> — aporta un documento (anónimo, en tu equipo) y te invitamos antes que al resto <span class="arw">→</span></a>
+        </div>
+      </div>
+
+      <!-- Derecha: la pieza firma — VerdictCard + categorías -->
+      <div class="hero-viz reveal">
+        <div class="hero-viz-glow" aria-hidden="true"></div>
+        <VerdictCard label="Junio · vas bien" verdict="Te quedan para fin de mes" amount="$1,68M" />
+        <div class="hero-stats">
+          <StatCard label="↗ Ingresos" value={ingresos} delta="↑ 9,2%" deltaTone="positive" />
+          <StatCard label="↘ Gastos" value={gastos} delta="↓ 8,4%" deltaTone="negative" />
+        </div>
+        <div class="hero-bars">
+          <BudgetBar label={CATEGORIES.mercado.label} emoji={CATEGORIES.mercado.emoji} spent="$1.640.000" total="$2.000.000" pct={82} color={CATEGORIES.mercado.color} />
+          <BudgetBar label={CATEGORIES.restaurantes.label} emoji={CATEGORIES.restaurantes.emoji} spent="$980.000" total="$900.000" pct={109} color={CATEGORIES.restaurantes.color} over="↑ te pasaste $80.000" />
+          <BudgetBar label={CATEGORIES.transporte.label} emoji={CATEGORIES.transporte.emoji} spent="$620.000" total="$800.000" pct={78} color={CATEGORIES.transporte.color} />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════ 2 · EL PROBLEMA ══════════════════ -->
+  <Section eyebrow="El problema">
+    <div class="sec-head reveal">
+      <h2>Llegas a fin de mes preguntándote <span class="mark">en qué</span> se fue la plata.</h2>
+      <p class="sec-lead">Te suena, ¿cierto? No es que gastes de más. Es que nunca ves todo junto.</p>
+    </div>
+    <div class="cards">
+      {problems.map((p) => (
+        <div class="card reveal">
+          <span class={`card-ic card-ic--${p.tone}`}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"></path><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+          </span>
+          <h3>{p.title}</h3>
+          <p>{p.body}</p>
+        </div>
+      ))}
+    </div>
+  </Section>
+
+  <!-- ══════════════════ 3 · EL GIRO — CÓMO FUNCIONA ══════════════════ -->
+  <Section id="como" eyebrow="El giro">
+    <div class="sec-head reveal">
+      <h2>De un PDF a saber si vas bien, en <span class="mark">tres pasos</span>.</h2>
+      <p class="sec-lead">Sin claves del banco. Sin hojas de cálculo. Sin subir nada a la nube.</p>
+    </div>
+    <div class="steps">
+      {steps.map((s) => (
+        <div class="step reveal">
+          <span class="step-n">{s.n}</span>
+          <h3>{s.title}</h3>
+          <p>{s.body}</p>
+        </div>
+      ))}
+    </div>
+  </Section>
+
+  <!-- ══════════════════ 4 · MIRA POR DENTRO ══════════════════ -->
+  <Section eyebrow="Mira por dentro">
+    <div class="sec-head reveal">
+      <h2>Todo tu dinero, en <span class="mark">una sola vista</span>.</h2>
+      <p class="sec-lead">Ingresos, gastos, presupuestos y movimientos —sumados de todos tus bancos, al día.</p>
+    </div>
+
+    <div class="panel reveal">
+      <div class="panel-head">
+        <span class="panel-cap">Inicio · Junio 2026</span>
+        <span class="panel-date">01 → 30 jun · 5 cuentas</span>
+      </div>
+
+      <div class="panel-stats">
+        <StatCard label="↗ Ingresos" value={ingresos} delta="↑ 9,2%" deltaTone="positive" />
+        <StatCard label="↘ Gastos" value={gastos} delta="↓ 48,9%" deltaTone="negative" />
+        <StatCard label="▦ Balance" value={balance} delta="↑ 140,5%" deltaTone="positive" />
+      </div>
+
+      <div class="panel-cols">
+        <div class="panel-bars">
+          <span class="panel-sub">Presupuestos del mes</span>
+          <BudgetBar label={CATEGORIES.vivienda.label} emoji={CATEGORIES.vivienda.emoji} spent="$1.500.000" total="$1.650.000" pct={90} color={CATEGORIES.vivienda.color} />
+          <BudgetBar label={CATEGORIES.mercado.label} emoji={CATEGORIES.mercado.emoji} spent="$1.640.000" total="$2.000.000" pct={82} color={CATEGORIES.mercado.color} />
+          <BudgetBar label={CATEGORIES.salud.label} emoji={CATEGORIES.salud.emoji} spent="$560.000" total="$1.000.000" pct={56} color={CATEGORIES.salud.color} />
+        </div>
+
+        <div class="panel-txns">
+          <span class="panel-sub">Últimos movimientos</span>
+          <ul class="txns">
+            {txns.map((t) => (
+              <li class="txn">
+                <span class="txn-ic">{t.emoji}</span>
+                <span class="txn-main">
+                  <span class="txn-name">{t.name}</span>
+                  <span class="txn-bank">{t.bank}</span>
+                </span>
+                <span class:list={['txn-amt', { 'txn-amt--in': t.income }]}>{t.amount}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </Section>
+
+  <!-- ══════════════════ 5 · BANCOS QUE LEE ══════════════════ -->
+  <Section eyebrow="Bancos que lee">
+    <div class="sec-head reveal">
+      <h2>Lee los extractos de <span class="mark">tus bancos</span>.</h2>
+      <p class="sec-lead">Arrastra el PDF y Presu detecta el banco solo. Sumamos más cada mes.</p>
+    </div>
+    <div class="reveal">
+      <BanksStrip />
+    </div>
+  </Section>
+
+  <!-- ══════════════════ 6 · PRIVACIDAD (firma) ══════════════════ -->
+  <Section id="privacidad" eyebrow="Privacidad que se siente">
+    <div class="privacy reveal">
+      <div class="privacy-glow" aria-hidden="true"></div>
+      <h2>Tus datos viven en <span class="mark">tu equipo</span>. Punto.</h2>
+      <p class="privacy-lead">Presu funciona <strong>local-first</strong>: tu información financiera se guarda <strong>cifrada en tu computador</strong>. No en un servidor, no en la nube, no con nosotros. No necesitas crear una cuenta, y de tu equipo solo sale lo que tú decidas exportar.</p>
+      <div class="privacy-pills">
+        <span class="ppill">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          En tu equipo
+        </span>
+        <span class="ppill">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          Cifrado
+        </span>
+        <span class="ppill">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18.36 6.64A9 9 0 1 1 5.64 6.64"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
+          Sin nube
+        </span>
+      </div>
+    </div>
+  </Section>
+
+  <!-- ══════════════════ 7 · PLANES (teaser) ══════════════════ -->
+  <Section id="planes" eyebrow="Planes">
+    <div class="sec-head reveal">
+      <h2>Empiezas <span class="mark">gratis</span>. Siempre.</h2>
+      <p class="sec-lead">Importa a mano y mira tu panel sin pagar nada. Cuando quieras todo automático, sube al plan completo.</p>
+    </div>
+    <div class="plans">
+      <div class="plan reveal">
+        <h3>Gratis</h3>
+        <p class="plan-tag">Para empezar a ver claro</p>
+        <ul class="plan-list">
+          <li>Importación manual de extractos</li>
+          <li>Categorización automática</li>
+          <li>Panel básico de gastos y presupuestos</li>
+        </ul>
+      </div>
+      <div class="plan plan--pro reveal">
+        <span class="plan-badge">Recomendado</span>
+        <h3>Plan completo</h3>
+        <p class="plan-tag">Cuando quieras todo automático</p>
+        <ul class="plan-list">
+          <li>Sincronización por correo</li>
+          <li>Categorización con IA</li>
+          <li>Cuentas y bancos ilimitados</li>
+          <li>Analítica avanzada y patrimonio</li>
+          <li>Multi-dispositivo</li>
+        </ul>
+      </div>
+    </div>
+    <div class="offer reveal">
+      <span class="os-eb" id="os-eb-date">¿Entras antes del 30 de junio? Eres pionero</span>
+      <p class="offer-lead"><strong>No pagas nada</strong> por la beta —y conservas tu <strong>precio de pionero</strong> cuando salga el plan completo.</p>
+      <p class="offer-note">Los precios del plan completo se definen al lanzar. Quien entre por la lista lo sabrá primero.</p>
+    </div>
+  </Section>
+
+  <!-- ══════════════════ 8 · FAQ ══════════════════ -->
+  <Section eyebrow="Preguntas frecuentes">
+    <div class="sec-head reveal">
+      <h2>Lo que la gente nos pregunta.</h2>
+    </div>
+    <div class="faq reveal">
+      {faqs.map((f) => (
+        <FaqItem question={f.q} answer={f.a} open={f.open} />
+      ))}
+    </div>
+  </Section>
+
+  <!-- ══════════════════ 9 · CTA FINAL / NUEVA OLA ══════════════════ -->
+  <Section id="waitlist" eyebrow="La Nueva Ola">
+    <div class="cta-glow" aria-hidden="true"></div>
+    <div class="sec-head reveal">
+      <h2>Sé de los primeros en usar <span class="mark">Presu</span>.</h2>
+      <p class="sec-lead" id="waitlist-lede">La beta abre el <b>martes 30 de junio</b>. Los pioneros entran antes y usan Presu completo gratis —más unos bonos— a cambio de su feedback. Sin spam.</p>
+      <div class="proof hidden" id="proof-wait">
+        <span class="proof-dot" aria-hidden="true"></span>
+        <b class="count">—</b><span class="proof-txt">&nbsp;personas ya en la Nueva Ola</span>
+      </div>
+    </div>
+
+    <div class="formcard reveal">
+      <form id="waitlist-form" novalidate>
+        <fieldset class="segmented" id="perfil-group">
+          <legend>Soy</legend>
+          <label class="seg"><input type="radio" name="perfil" value="persona" checked /> <span>Persona</span></label>
+          <label class="seg"><input type="radio" name="perfil" value="empresa" /> <span>Empresa</span></label>
+        </fieldset>
+
+        <div class="field">
+          <label for="email">Correo <span aria-hidden="true" class="req">*</span></label>
+          <input type="email" id="email" name="email" autocomplete="email" placeholder="tu@correo.com" required aria-required="true" />
+          <p class="err" id="email-err">Revisa el correo —parece que le falta algo.</p>
+        </div>
+
+        <div class="field">
+          <label for="nombre">Nombre <span class="opt">(opcional)</span></label>
+          <input type="text" id="nombre" name="nombre" autocomplete="name" placeholder="Tu nombre" />
+        </div>
+
+        <div id="empresa-fields" class="hidden">
+          <div class="field"><label for="empresa">Nombre de la empresa</label><input type="text" id="empresa" name="empresa" autocomplete="organization" placeholder="Tu empresa" /></div>
+          <div class="field"><label for="empleados">N.º aproximado de empleados</label><input type="number" id="empleados" name="empleados" min="1" inputmode="numeric" placeholder="Ej. 50" /></div>
+        </div>
+
+        <div class="field consent">
+          <input type="checkbox" id="consent" name="consent" required aria-required="true" />
+          <label for="consent">Autorizo el tratamiento de mis datos según la <a href="/privacidad" target="_blank" rel="noopener">política de privacidad</a>.</label>
+        </div>
+        <p class="err" id="consent-err">Solo falta tu visto bueno aquí para sumarte.</p>
+
+        <input type="text" name="botcheck" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+        <button type="submit" class="capture-btn capture-btn--block">Únete a la lista de espera</button>
+        <p class="err err--center" id="wl-err">Algo falló de nuestro lado. Reintenta en un momento.</p>
+        <p class="form-foot">Mac y Windows · móvil próximamente · Presu, de Asimétrica</p>
+      </form>
+
+      <div id="waitlist-success" class="success hidden" role="status">
+        <span class="success-ic" aria-hidden="true"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"></path></svg></span>
+        <h3>¡Listo, ya estás dentro!</h3>
+        <p>Te escribimos primero cuando abramos cupos. Tu plata, clara —muy pronto.</p>
+      </div>
+    </div>
+  </Section>
+</Base>
+
+<!-- Estilos globales: los tocan/inyectan countdown.js y waitlist.js
+     (el .mark inicial se vuelve .mintword tras el flip; el badge inyecta .ping). -->
+<style is:global>
+  .mark,
+  .mintword {
+    position: relative;
+    color: var(--presu-emerald);
+    white-space: nowrap;
+  }
+  .mark::after,
+  .mintword::after {
+    content: '';
+    position: absolute;
+    left: -0.05em;
+    right: -0.05em;
+    bottom: 0.05em;
+    height: 0.12em;
+    border-radius: 999px;
+    background: var(--presu-emerald);
+    opacity: 0.85;
+    transform: rotate(-1.4deg);
+    transform-origin: left center;
+  }
+  .ping {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--presu-emerald);
+    box-shadow: 0 0 10px var(--presu-emerald);
+    animation: presu-blink 2s infinite;
+  }
+</style>
+
+<style>
+  /* ───────────────── HERO ───────────────── */
+  .hero {
+    position: relative;
+    overflow: hidden;
+    padding: var(--space-16) var(--screen-pad) var(--space-12);
+  }
+  .hero-glow {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(40px);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .hero-glow--emerald {
+    width: 560px;
+    height: 560px;
+    right: -180px;
+    top: -180px;
+    background: radial-gradient(circle, rgba(52, 211, 153, 0.22), transparent 65%);
+  }
+  .hero-glow--indigo {
+    width: 480px;
+    height: 480px;
+    left: -200px;
+    bottom: -200px;
+    background: radial-gradient(circle, rgba(129, 140, 248, 0.16), transparent 65%);
+  }
+
+  .hero-grid {
+    position: relative;
+    z-index: 1;
+    max-width: var(--content-max);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: var(--space-12);
+    align-items: center;
+  }
+  .hero-grid > * {
+    min-width: 0;
+  }
+
+  .pill-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    background: var(--fill-emerald);
+    border: 1px solid var(--fill-emerald-border);
+    color: var(--presu-emerald);
+    font-family: var(--font-body);
+    font-weight: var(--weight-semibold);
+    font-size: var(--text-label);
+    padding: 7px 15px;
+    border-radius: var(--radius-full);
+    margin-bottom: var(--space-5);
+  }
+
+  .hero-copy h1 {
+    margin: 0 0 var(--space-4);
+    font-family: var(--font-display);
+    font-weight: var(--weight-bold);
+    font-size: clamp(2.1rem, 5.2vw, var(--text-display));
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-display);
+    color: var(--text-primary);
+    text-wrap: balance;
+  }
+  .hero-copy .pitch {
+    margin: 0 0 var(--space-3);
+    font-size: var(--text-body-lg);
+    line-height: var(--leading-normal);
+    color: var(--text-secondary);
+    max-width: 34em;
+  }
+  .hero-copy .sub {
+    margin: 0 0 var(--space-6);
+    font-size: var(--text-body);
+    line-height: var(--leading-normal);
+    color: var(--text-tertiary);
+    max-width: 34em;
+  }
+
+  /* Countdown */
+  .countdown {
+    margin: 0 0 var(--space-6);
+    padding: var(--space-4) var(--space-5);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    max-width: 440px;
+  }
+  .cd-top {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    font-weight: var(--weight-medium);
+    letter-spacing: var(--tracking-mono);
+    text-transform: uppercase;
+    color: var(--presu-emerald);
+  }
+  .cd-top::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--presu-emerald);
+    box-shadow: 0 0 9px var(--presu-emerald);
+  }
+  .cd-units {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-2);
+    margin-top: var(--space-3);
+  }
+  .cd-u {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 52px;
+  }
+  .cd-u b {
+    font-family: var(--font-display);
+    font-weight: var(--weight-bold);
+    font-size: 1.7rem;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-primary);
+  }
+  .cd-u span {
+    margin-top: 4px;
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    letter-spacing: 0.06em;
+    color: var(--text-tertiary);
+  }
+  .cd-sep {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    color: var(--text-tertiary);
+    line-height: 1;
+    padding-top: 8px;
+  }
+  .cd-note {
+    margin: var(--space-3) 0 0;
+    font-size: var(--text-caption);
+    line-height: var(--leading-normal);
+    color: var(--text-secondary);
+  }
+  .cd-note b {
+    color: var(--presu-emerald);
+    font-weight: var(--weight-semibold);
+  }
+  .cd-live {
+    display: none;
+    align-items: center;
+    gap: var(--space-2);
+    margin-top: var(--space-2);
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+    color: var(--presu-emerald);
+  }
+  .countdown.is-live .cd-units,
+  .countdown.is-live .cd-top {
+    display: none;
+  }
+  .countdown.is-live .cd-live {
+    display: flex;
+  }
+
+  /* Captura */
+  .capture {
+    max-width: 470px;
+  }
+  .capture-row {
+    display: flex;
+    gap: var(--space-2);
+  }
+  .capture input {
+    flex: 1;
+    min-width: 0;
+    padding: var(--space-3) var(--space-4);
+    background: var(--bg-raised);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-md);
+    font-family: var(--font-body);
+    font-size: var(--text-body);
+    color: var(--text-primary);
+  }
+  .capture input::placeholder {
+    color: var(--text-tertiary);
+  }
+  .capture input:focus-visible {
+    outline: none;
+    border-color: var(--border-focus);
+    box-shadow: var(--focus-ring);
+  }
+  .capture input.err {
+    border-color: var(--color-negative);
+  }
+  .capture-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    flex-shrink: 0;
+    min-height: var(--tap-min);
+    padding: var(--space-3) var(--space-5);
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    background: var(--presu-emerald);
+    color: var(--text-on-accent);
+    font-family: var(--font-body);
+    font-weight: var(--weight-bold);
+    font-size: var(--text-label);
+    white-space: nowrap;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: background var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out),
+      transform var(--dur-fast) var(--ease-out);
+  }
+  .capture-btn:hover {
+    background: var(--presu-emerald-press);
+    box-shadow: var(--shadow-accent);
+  }
+  .capture-btn:active {
+    transform: scale(0.97);
+  }
+  .capture-btn:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+  }
+  .capture-btn.loading {
+    opacity: 0.65;
+    pointer-events: none;
+  }
+  .capture-btn--block {
+    width: 100%;
+    margin-top: var(--space-2);
+  }
+  .capture-err {
+    display: none;
+    margin: var(--space-2) 0 0;
+    font-size: var(--text-caption);
+    color: var(--color-negative);
+  }
+  .capture-note {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin: var(--space-3) 0 0;
+    font-size: var(--text-caption);
+    color: var(--text-tertiary);
+  }
+  .capture-note svg {
+    color: var(--presu-emerald);
+    flex-shrink: 0;
+  }
+
+  .capture-ok {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    max-width: 470px;
+    padding: var(--space-4);
+    background: var(--fill-emerald);
+    border: 1px solid var(--fill-emerald-border);
+    border-radius: var(--radius-lg);
+  }
+  .capture-ok .ok-ic {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--presu-emerald);
+    color: var(--text-on-accent);
+  }
+  .capture-ok strong {
+    display: block;
+    color: var(--text-primary);
+    font-weight: var(--weight-bold);
+  }
+  .capture-ok span span {
+    display: block;
+    margin-top: 2px;
+    font-size: var(--text-caption);
+    color: var(--text-secondary);
+  }
+
+  .proof {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-top: var(--space-5);
+    font-size: var(--text-caption);
+    color: var(--text-secondary);
+  }
+  .proof .proof-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--presu-emerald);
+    box-shadow: 0 0 8px var(--presu-emerald);
+  }
+  .proof .count {
+    font-family: var(--font-display);
+    font-weight: var(--weight-bold);
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .late-ramps {
+    display: none;
+    flex-direction: column;
+    gap: var(--space-3);
+    margin-top: var(--space-5);
+    max-width: 470px;
+  }
+  .ramp {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--text-caption);
+    line-height: var(--leading-normal);
+    color: var(--text-secondary);
+    text-decoration: none;
+  }
+  .ramp b {
+    color: var(--text-primary);
+  }
+  .ramp-link {
+    border-color: var(--fill-emerald-border);
+  }
+  .ramp-link .arw {
+    color: var(--presu-emerald);
+    font-weight: var(--weight-bold);
+  }
+
+  /* Hero viz (derecha) */
+  .hero-viz {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+  .hero-viz-glow {
+    position: absolute;
+    inset: -12% -8%;
+    background: var(--glow-emerald);
+    filter: blur(30px);
+    z-index: -1;
+    pointer-events: none;
+  }
+  .hero-stats {
+    display: flex;
+    gap: var(--space-3);
+  }
+  .hero-bars {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    padding: var(--space-5);
+    background: var(--surface-alt);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+  }
+
+  /* ───────────────── Cabeceras de sección ───────────────── */
+  .sec-head {
+    max-width: 44rem;
+  }
+  .sec-head h2 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: var(--weight-bold);
+    font-size: var(--text-h1);
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-tight);
+    color: var(--text-primary);
+    text-wrap: balance;
+  }
+  .sec-lead {
+    margin: var(--space-3) 0 0;
+    font-size: var(--text-body-lg);
+    line-height: var(--leading-normal);
+    color: var(--text-secondary);
+  }
+
+  /* ───────────────── 2 · Problema (cards) ───────────────── */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-5);
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+  }
+  .card-ic {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-4);
+  }
+  .card-ic--negative {
+    background: var(--fill-rose);
+    color: var(--color-negative);
+  }
+  .card-ic--info {
+    background: var(--fill-indigo);
+    color: var(--color-info);
+  }
+  .card-ic--positive {
+    background: var(--fill-emerald);
+    color: var(--presu-emerald);
+  }
+  .card h3 {
+    margin: 0 0 var(--space-2);
+    font-family: var(--font-display);
+    font-weight: var(--weight-semibold);
+    font-size: var(--text-h3);
+    color: var(--text-primary);
+  }
+  .card p {
+    margin: 0;
+    font-size: var(--text-body);
+    line-height: var(--leading-normal);
+    color: var(--text-secondary);
+  }
+
+  /* ───────────────── 3 · Cómo funciona (steps) ───────────────── */
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-6);
+  }
+  .step {
+    position: relative;
+  }
+  .step-n {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    margin-bottom: var(--space-4);
+    border-radius: 50%;
+    background: var(--fill-emerald);
+    border: 1px solid var(--fill-emerald-border);
+    font-family: var(--font-display);
+    font-weight: var(--weight-bold);
+    font-size: var(--text-h3);
+    color: var(--presu-emerald);
+  }
+  .step h3 {
+    margin: 0 0 var(--space-2);
+    font-family: var(--font-display);
+    font-weight: var(--weight-semibold);
+    font-size: var(--text-h3);
+    color: var(--text-primary);
+  }
+  .step p {
+    margin: 0;
+    font-size: var(--text-body);
+    line-height: var(--leading-normal);
+    color: var(--text-secondary);
+  }
+
+  /* ───────────────── 4 · Panel (showcase) ───────────────── */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: var(--space-6);
+    box-shadow: var(--shadow-md);
+  }
+  .panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+    margin-bottom: var(--space-5);
+  }
+  .panel-cap {
+    font-family: var(--font-display);
+    font-weight: var(--weight-semibold);
+    font-size: var(--text-h3);
+    color: var(--text-primary);
+  }
+  .panel-date {
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    letter-spacing: var(--tracking-mono);
+    color: var(--text-tertiary);
+  }
+  .panel-stats {
+    display: flex;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+    margin-bottom: var(--space-6);
+  }
+  .panel-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-8);
+  }
+  .panel-sub {
+    display: block;
+    margin-bottom: var(--space-4);
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    letter-spacing: var(--tracking-mono);
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+  }
+  .panel-bars {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  .txns {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .txn {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .txn:last-child {
+    border-bottom: 0;
+  }
+  .txn-ic {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    border-radius: var(--radius-md);
+    background: var(--bg-raised);
+    font-size: 17px;
+  }
+  .txn-main {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+  }
+  .txn-name {
+    font-family: var(--font-body);
+    font-weight: var(--weight-semibold);
+    font-size: var(--text-body);
+    color: var(--text-primary);
+  }
+  .txn-bank {
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    letter-spacing: 0.04em;
+    color: var(--text-tertiary);
+  }
+  .txn-amt {
+    font-family: var(--font-mono);
+    font-size: var(--text-body);
+    font-variant-numeric: tabular-nums;
+    color: var(--text-secondary);
+    white-space: nowrap;
+  }
+  .txn-amt--in {
+    color: var(--presu-emerald);
+  }
+
+  /* ───────────────── 6 · Privacidad (firma) ───────────────── */
+  .privacy {
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: var(--space-12) var(--space-8);
+    background: var(--surface-alt);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+  }
+  .privacy-glow {
+    position: absolute;
+    width: 380px;
+    height: 380px;
+    right: -120px;
+    top: -140px;
+    border-radius: 50%;
+    background: var(--glow-emerald);
+    filter: blur(30px);
+    pointer-events: none;
+  }
+  .privacy h2 {
+    position: relative;
+    margin: 0 0 var(--space-4);
+    font-family: var(--font-display);
+    font-weight: var(--weight-bold);
+    font-size: var(--text-h1);
+    letter-spacing: var(--tracking-tight);
+    color: var(--text-primary);
+  }
+  .privacy-lead {
+    position: relative;
+    margin: 0 auto var(--space-6);
+    max-width: 52ch;
+    font-size: var(--text-body-lg);
+    line-height: var(--leading-normal);
+    color: var(--text-secondary);
+  }
+  .privacy-lead strong {
+    color: var(--text-primary);
+    font-weight: var(--weight-semibold);
+  }
+  .privacy-pills {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+  .ppill {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-4);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    font-family: var(--font-body);
+    font-weight: var(--weight-medium);
+    font-size: var(--text-label);
+    color: var(--text-primary);
+  }
+  .ppill svg {
+    color: var(--presu-emerald);
+  }
+
+  /* ───────────────── 7 · Planes ───────────────── */
+  .plans {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-5);
+  }
+  .plan {
+    position: relative;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: var(--space-6);
+  }
+  .plan--pro {
+    border-color: var(--fill-emerald-border);
+    background: var(--surface-alt);
+  }
+  .plan-badge {
+    position: absolute;
+    top: var(--space-5);
+    right: var(--space-5);
+    padding: 4px var(--space-3);
+    border-radius: var(--radius-full);
+    background: var(--fill-emerald);
+    color: var(--presu-emerald);
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    letter-spacing: var(--tracking-mono);
+    text-transform: uppercase;
+  }
+  .plan h3 {
+    margin: 0 0 var(--space-1);
+    font-family: var(--font-display);
+    font-weight: var(--weight-bold);
+    font-size: var(--text-h2);
+    color: var(--text-primary);
+  }
+  .plan-tag {
+    margin: 0 0 var(--space-5);
+    font-size: var(--text-body);
+    color: var(--text-secondary);
+  }
+  .plan-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+  .plan-list li {
+    position: relative;
+    padding-left: var(--space-6);
+    font-size: var(--text-body);
+    color: var(--text-secondary);
+  }
+  .plan-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.35em;
+    width: 14px;
+    height: 8px;
+    border-left: 2px solid var(--presu-emerald);
+    border-bottom: 2px solid var(--presu-emerald);
+    transform: rotate(-45deg);
+  }
+  .offer {
+    text-align: center;
+    max-width: 620px;
+    margin: 0 auto;
+    padding: var(--space-6);
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+  }
+  .os-eb {
+    display: inline-block;
+    margin-bottom: var(--space-2);
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    letter-spacing: var(--tracking-mono);
+    text-transform: uppercase;
+    color: var(--presu-emerald);
+  }
+  .offer-lead {
+    margin: 0 0 var(--space-2);
+    font-size: var(--text-body-lg);
+    color: var(--text-primary);
+  }
+  .offer-lead strong {
+    color: var(--presu-emerald);
+  }
+  .offer-note {
+    margin: 0;
+    font-size: var(--text-caption);
+    color: var(--text-tertiary);
+  }
+
+  /* ───────────────── 9 · CTA / Waitlist ───────────────── */
+  .cta-glow {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    transform: translateX(-50%);
+    width: 520px;
+    height: 420px;
+    max-width: 90vw;
+    background: var(--glow-emerald);
+    filter: blur(40px);
+    pointer-events: none;
+    z-index: 0;
+  }
+  #waitlist .sec-head {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    margin: 0 auto;
+  }
+  #waitlist .proof {
+    justify-content: center;
+  }
+
+  .formcard {
+    position: relative;
+    z-index: 1;
+    max-width: 520px;
+    margin: 0 auto;
+    padding: var(--space-6);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-md);
+  }
+  .segmented {
+    display: flex;
+    gap: var(--space-2);
+    border: 0;
+    margin: 0 0 var(--space-5);
+    padding: 0;
+  }
+  .segmented legend {
+    font-family: var(--font-body);
+    font-size: var(--text-label);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-2);
+    padding: 0;
+  }
+  .seg {
+    flex: 1;
+  }
+  .seg input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .seg span {
+    display: block;
+    text-align: center;
+    padding: var(--space-3);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-md);
+    font-family: var(--font-body);
+    font-weight: var(--weight-semibold);
+    font-size: var(--text-label);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all var(--dur-fast) var(--ease-out);
+  }
+  .seg input:checked + span {
+    background: var(--fill-emerald);
+    border-color: var(--fill-emerald-border);
+    color: var(--presu-emerald);
+  }
+  .seg input:focus-visible + span {
+    box-shadow: var(--focus-ring);
+  }
+
+  .field {
+    margin-bottom: var(--space-4);
+  }
+  .field label {
+    display: block;
+    margin-bottom: var(--space-2);
+    font-family: var(--font-body);
+    font-size: var(--text-label);
+    color: var(--text-secondary);
+  }
+  .field .req {
+    color: var(--presu-emerald);
+  }
+  .field .opt {
+    font-weight: var(--weight-regular);
+    color: var(--text-tertiary);
+  }
+  .field input[type='email'],
+  .field input[type='text'],
+  .field input[type='number'] {
+    width: 100%;
+    padding: var(--space-3) var(--space-4);
+    background: var(--bg-raised);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-md);
+    font-family: var(--font-body);
+    font-size: var(--text-body);
+    color: var(--text-primary);
+  }
+  .field input::placeholder {
+    color: var(--text-tertiary);
+  }
+  .field input:focus-visible {
+    outline: none;
+    border-color: var(--border-focus);
+    box-shadow: var(--focus-ring);
+  }
+  .field input.err {
+    border-color: var(--color-negative);
+  }
+  .consent {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    margin-bottom: var(--space-2);
+  }
+  .consent input {
+    margin-top: 3px;
+    accent-color: var(--presu-emerald);
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+  .consent label {
+    margin: 0;
+    font-size: var(--text-caption);
+    line-height: var(--leading-normal);
+    color: var(--text-tertiary);
+  }
+  .consent label a {
+    color: var(--presu-emerald);
+    text-decoration: none;
+  }
+  .err {
+    display: none;
+    margin: 0 0 var(--space-3);
+    font-size: var(--text-caption);
+    color: var(--color-negative);
+  }
+  .err--center {
+    text-align: center;
+    margin-top: var(--space-3);
+  }
+  .form-foot {
+    margin: var(--space-4) 0 0;
+    text-align: center;
+    font-size: var(--text-caption);
+    color: var(--text-tertiary);
+  }
+  .hp {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+  }
+
+  .success {
+    text-align: center;
+    padding: var(--space-8) var(--space-4);
+  }
+  .success-ic {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    margin-bottom: var(--space-4);
+    border-radius: 50%;
+    background: var(--presu-emerald);
+    color: var(--text-on-accent);
+  }
+  .success h3 {
+    margin: 0 0 var(--space-2);
+    font-family: var(--font-display);
+    font-weight: var(--weight-bold);
+    font-size: var(--text-h2);
+    color: var(--text-primary);
+  }
+  .success p {
+    margin: 0;
+    color: var(--text-secondary);
+  }
+
+  /* ───────────────── Utilidades ───────────────── */
+  .hidden {
+    display: none !important;
+  }
+
+  /* Reveal on scroll — visible por defecto (sin JS); solo se oculta cuando
+     el JS marca <body class="reveal-ready"> y respeta reduced-motion. */
+  .reveal-ready .reveal {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.6s var(--ease-out), transform 0.6s var(--ease-out);
+  }
+  .reveal-ready .reveal.in {
+    opacity: 1;
+    transform: none;
+  }
+  .pop-in {
+    animation: presu-rise 0.4s var(--ease-out) both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal-ready .reveal {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
+
+  /* ───────────────── Responsive ───────────────── */
+  @media (max-width: 960px) {
+    .hero-grid {
+      grid-template-columns: 1fr;
+      gap: var(--space-10);
+    }
+    .hero-viz {
+      order: 2;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .cards,
+    .steps,
+    .plans,
+    .panel-cols {
+      grid-template-columns: 1fr;
+    }
+    .panel-cols {
+      gap: var(--space-6);
+    }
+  }
+
+  @media (max-width: 640px) {
+    .hero {
+      padding-top: var(--space-10);
+    }
+    .capture-row {
+      flex-direction: column;
+    }
+    .capture-btn {
+      width: 100%;
+    }
+    .cd-u {
+      min-width: 0;
+      flex: 1;
+    }
+    .cd-u b {
+      font-size: 1.4rem;
+    }
+    .cd-sep {
+      display: none;
+    }
+    .sec-head h2,
+    .privacy h2 {
+      font-size: var(--text-h2);
+    }
+  }
+</style>
+
+<script>
+  import { apiBase } from '../scripts/api.js';
+  import { send, isNuevaOla, enterNuevaOla } from '../scripts/waitlist.js';
+  import { BETA, target, parts } from '../scripts/countdown.js';
+
+  const REDUCE = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const API = apiBase(location.hostname);
+
+  // Código de referido entrante (?ref=) — se recuerda por si vuelve luego.
+  const REF = (() => {
+    try {
+      const u = new URLSearchParams(location.search).get('ref');
+      if (u) localStorage.setItem('presu_ref', u.toUpperCase());
+      return (localStorage.getItem('presu_ref') || '').toUpperCase();
+    } catch {
+      return '';
+    }
+  })();
+
+  const track = (perfil: string, origen: string) => {
+    if (typeof (window as any).gtag === 'function') (window as any).gtag('event', 'generate_lead', { perfil, origen });
+  };
+
+  // ── Count-up: la cifra cuenta hasta su valor (respeta reduced-motion). ──
+  function countUp(el: HTMLElement) {
+    if (el.dataset.counted) return;
+    el.dataset.counted = '1';
+    const raw = (el.textContent || '').trim();
+    const m = raw.match(/^([^\d-]*)(-?[\d.,]+)(.*)$/);
+    if (!m) return;
+    const pre = m[1];
+    const numStr = m[2];
+    const suf = m[3];
+    const hasComma = numStr.indexOf(',') >= 0;
+    const val = parseFloat(numStr.replace(/\./g, '').replace(',', '.'));
+    if (isNaN(val)) return;
+    const dec = hasComma ? (numStr.split(',')[1] || '').length : 0;
+    const fmt = (n: number) =>
+      pre + n.toLocaleString('es-CO', { minimumFractionDigits: dec, maximumFractionDigits: dec }) + suf;
+    const dur = 1100;
+    let t0: number | null = null;
+    const step = (ts: number) => {
+      if (t0 === null) t0 = ts;
+      const p = Math.min(1, (ts - t0) / dur);
+      el.textContent = fmt(val * (1 - Math.pow(1 - p, 3)));
+      if (p < 1) requestAnimationFrame(step);
+      else el.textContent = raw;
+    };
+    requestAnimationFrame(step);
+  }
+
+  // ── CTA tras inscribirse: convierte al nuevo inscrito en referidor. ──
+  function referralCTA(code: string) {
+    if (!code) return '';
+    return (
+      '<div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">' +
+      '<div style="font-weight:600;color:var(--text-primary);margin-bottom:6px">Ahora vuélvete Fundador 🚀</div>' +
+      '<div style="font-size:.9rem;color:var(--text-secondary);margin-bottom:12px">Invita amigos y desbloquea bonos extra. El Top 3 se lleva acompañamiento 1:1 + libro, gratis.</div>' +
+      '<a href="/fundador.html?code=' +
+      code +
+      '" style="display:inline-flex;align-items:center;gap:7px;background:var(--presu-emerald);color:var(--text-on-accent);font-weight:700;text-decoration:none;padding:11px 18px;border-radius:12px;font-size:.92rem">Ver mi panel e invitar →</a>' +
+      '</div>'
+    );
+  }
+
+  // ── Contador de registros en vivo (Worker/KV). ──
+  let lastCount = 0;
+  const fmtCount = (n: number) => {
+    try {
+      return n.toLocaleString('es-CO');
+    } catch {
+      return String(n);
+    }
+  };
+  function renderCount(total: number) {
+    if (total <= 0) return;
+    const first = lastCount === 0;
+    lastCount = total;
+    document.querySelectorAll<HTMLElement>('.count').forEach((el) => {
+      el.textContent = fmtCount(total);
+      if (first && !REDUCE) countUp(el);
+    });
+    document.querySelectorAll('.proof').forEach((el) => el.classList.remove('hidden'));
+  }
+  function loadCount() {
+    fetch(API + '/count', { cache: 'no-store' })
+      .then((r) => r.json())
+      .then((d) => {
+        if (d && typeof d.count === 'number') renderCount(d.count);
+      })
+      .catch(() => {});
+  }
+  function bumpCount() {
+    if (lastCount > 0) renderCount(lastCount + 1);
+    setTimeout(loadCount, 1800);
+  }
+  loadCount();
+  setInterval(loadCount, 15000);
+
+  // ── Countdown: usa las funciones puras portadas (BETA/target/parts) ──
+  (function () {
+    const cd = document.getElementById('countdown');
+    if (!cd) return;
+    const dEl = document.getElementById('cd-d');
+    const hEl = document.getElementById('cd-h');
+    const mEl = document.getElementById('cd-m');
+    const sEl = document.getElementById('cd-s');
+    const pad = (n: number) => String(n).padStart(2, '0');
+    let timer: number;
+    if (Date.now() >= BETA) enterNuevaOla(); // si la beta ya cerró, arranca en modo Nueva Ola
+    const tick = () => {
+      const now = Date.now();
+      if (now >= BETA) enterNuevaOla(); // idempotente
+      const diff = target(now) - now;
+      if (diff <= 0) {
+        cd.classList.add('is-live');
+        [dEl, hEl, mEl, sEl].forEach((e) => e && (e.textContent = '00'));
+        clearInterval(timer);
+        return;
+      }
+      const p = parts(diff);
+      if (dEl) dEl.textContent = pad(p.d);
+      if (hEl) hEl.textContent = pad(p.h);
+      if (mEl) mEl.textContent = pad(p.m);
+      if (sEl) sEl.textContent = pad(p.s);
+    };
+    tick();
+    timer = window.setInterval(tick, 1000);
+  })();
+
+  // ── Micro-feedback en formularios ──
+  function shakeErr(el: HTMLInputElement) {
+    el.classList.add('err');
+    const clear = () => {
+      el.classList.remove('err');
+      el.removeEventListener('input', clear);
+    };
+    el.addEventListener('input', clear);
+  }
+  function btnLoading(f: HTMLFormElement, on: boolean) {
+    const b = f.querySelector<HTMLButtonElement>('button[type=submit]');
+    if (b) {
+      b.classList.toggle('loading', on);
+      b.disabled = on;
+    }
+  }
+
+  // ── Hero capture ──
+  const heroForm = document.getElementById('hero-form') as HTMLFormElement | null;
+  if (heroForm) {
+    const heroEmail = document.getElementById('hero-email') as HTMLInputElement;
+    const heroErr = document.getElementById('hero-err') as HTMLElement;
+    const heroOk = document.getElementById('hero-ok') as HTMLElement;
+    heroForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = heroEmail.value.trim();
+      if (!EMAIL_RE.test(email)) {
+        heroErr.textContent = 'Revisa el correo —parece que le falta algo.';
+        heroErr.style.display = 'block';
+        shakeErr(heroEmail);
+        heroEmail.focus();
+        return;
+      }
+      heroErr.style.display = 'none';
+      btnLoading(heroForm, true);
+      const late = isNuevaOla();
+      send(
+        { perfil: 'persona', correo: email, origen: late ? 'tanda2' : 'hero', ref: REF },
+        (res) => {
+          heroForm.style.display = 'none';
+          if (late) {
+            heroOk.querySelector('strong')!.textContent = '¡Listo, estás en la Nueva Ola! 🌊';
+            heroOk.querySelector('span span')!.textContent =
+              'Abre el 15 de julio a las 4pm. Comparte tu link para subir en la fila.';
+          }
+          heroOk.classList.remove('hidden');
+          heroOk.classList.add('pop-in');
+          if (res && (res as any).ref) heroOk.insertAdjacentHTML('afterend', referralCTA((res as any).ref));
+          bumpCount();
+          track('persona', late ? 'tanda2' : 'hero');
+        },
+        () => {
+          btnLoading(heroForm, false);
+          heroErr.textContent = 'Algo falló de nuestro lado. Reintenta en un momento.';
+          heroErr.style.display = 'block';
+        },
+        () => {
+          heroForm.style.display = 'none';
+          heroOk.querySelector('strong')!.textContent = '¡Ya estás inscrito! 🎉';
+          heroOk.querySelector('span span')!.textContent = late
+            ? 'Si eres pionero, ya tienes acceso (revisa tu correo 📩).'
+            : 'Ese correo ya está inscrito. Te avisamos primero cuando abramos.';
+          heroOk.classList.remove('hidden');
+          heroOk.classList.add('pop-in');
+        }
+      );
+    });
+  }
+
+  // ── Formulario completo (Nueva Ola) ──
+  const form = document.getElementById('waitlist-form') as HTMLFormElement | null;
+  if (form) {
+    const empresaFields = document.getElementById('empresa-fields') as HTMLElement;
+    const empresaInput = document.getElementById('empresa') as HTMLInputElement;
+    const syncPerfil = () => {
+      const esEmpresa =
+        (form.querySelector('input[name=perfil]:checked') as HTMLInputElement).value === 'empresa';
+      empresaFields.classList.toggle('hidden', !esEmpresa);
+      if (empresaInput) empresaInput.required = esEmpresa;
+    };
+    form.querySelectorAll('input[name=perfil]').forEach((r) => r.addEventListener('change', syncPerfil));
+    const showError = (id: string, show: boolean) => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = show ? 'block' : 'none';
+    };
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if ((form as any).botcheck.value) return;
+      const email = (form as any).email.value.trim();
+      const emailOk = EMAIL_RE.test(email);
+      const consentOk = (form as any).consent.checked;
+      showError('email-err', !emailOk);
+      showError('consent-err', !consentOk);
+      if (!emailOk) {
+        shakeErr((form as any).email);
+        (form as any).email.focus();
+        return;
+      }
+      if (!consentOk) {
+        (form as any).consent.focus();
+        return;
+      }
+      showError('wl-err', false);
+      btnLoading(form, true);
+      const perfil = (form.querySelector('input[name=perfil]:checked') as HTMLInputElement).value;
+      send(
+        {
+          perfil,
+          correo: email,
+          nombre: (form as any).nombre.value.trim(),
+          empresa: perfil === 'empresa' ? (form as any).empresa.value.trim() : '',
+          empleados: perfil === 'empresa' ? (form as any).empleados.value.trim() : '',
+          ref: REF,
+        },
+        (res) => {
+          form.classList.add('hidden');
+          const s = document.getElementById('waitlist-success')!;
+          s.classList.remove('hidden');
+          s.classList.add('pop-in');
+          if (res && (res as any).ref) s.insertAdjacentHTML('beforeend', referralCTA((res as any).ref));
+          bumpCount();
+          track(perfil, 'form');
+        },
+        () => {
+          btnLoading(form, false);
+          showError('wl-err', true);
+        },
+        () => {
+          const s = document.getElementById('waitlist-success')!;
+          s.querySelector('h3')!.textContent = '¡Ya estás en la lista! 🎉';
+          s.querySelector('p')!.textContent =
+            'Ese correo ya está inscrito. Te avisamos primero cuando abramos cupos.';
+          form.classList.add('hidden');
+          s.classList.remove('hidden');
+          s.classList.add('pop-in');
+        }
+      );
+    });
+  }
+
+  // ── Reveal on scroll ──
+  const reveals = Array.from(document.querySelectorAll('.reveal'));
+  document.body.classList.add('reveal-ready');
+  if ('IntersectionObserver' in window && !REDUCE) {
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((en) => {
+          if (en.isIntersecting) {
+            en.target.classList.add('in');
+            io.unobserve(en.target);
+          }
+        });
+      },
+      { threshold: 0.08, rootMargin: '0px 0px -10% 0px' }
+    );
+    reveals.forEach((el) => io.observe(el));
+    // Red de seguridad: nada queda oculto si el observer falla.
+    setTimeout(() => reveals.forEach((el) => el.classList.add('in')), 1600);
+  } else {
+    reveals.forEach((el) => el.classList.add('in'));
+  }
+
+  // ── Count-up de la cifra firma del hero (arriba del pliegue) ──
+  if (!REDUCE) {
+    document
+      .querySelectorAll<HTMLElement>('.hero-viz .verdict-card__amount, .hero-viz .stat-card__value')
+      .forEach(countUp);
+  }
+</script>
