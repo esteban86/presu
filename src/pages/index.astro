@@ -13,6 +13,7 @@ import VerdictCard from '../components/ui/VerdictCard.astro';
 import StatCard from '../components/ui/StatCard.astro';
 import BudgetBar from '../components/ui/BudgetBar.astro';
 import CategoryDonut from '../components/ui/CategoryDonut.astro';
+import AppWindow from '../components/ui/AppWindow.astro';
 import BanksStrip from '../components/ui/BanksStrip.astro';
 import Showcase from '../components/ui/Showcase.astro';
 import FaqItem from '../components/ui/FaqItem.astro';
@@ -178,18 +179,8 @@ const faqs = [
       </div>
 
       <!-- Derecha: la pieza firma — VerdictCard + categorías -->
-      <div class="hero-viz reveal">
-        <div class="hero-viz-glow" aria-hidden="true"></div>
-        <VerdictCard label="Junio · vas bien" verdict="Te quedan para fin de mes" amount={balance} meta="5 bancos · COP" />
-        <div class="hero-stats">
-          <StatCard label="↗ Ingresos" value={ingresos} delta="↑ 9,2%" deltaTone="positive" />
-          <StatCard label="↘ Gastos" value={gastos} delta="↓ 8,4%" deltaTone="negative" />
-        </div>
-        <div class="hero-bars">
-          <BudgetBar label={CATEGORIES.mercado.label} emoji={CATEGORIES.mercado.emoji} spent="$900.000" total="$1.000.000" pct={90} color={CATEGORIES.mercado.color} />
-          <BudgetBar label={CATEGORIES.restaurantes.label} emoji={CATEGORIES.restaurantes.emoji} spent="$620.000" total="$550.000" pct={113} color={CATEGORIES.restaurantes.color} over="↑ te pasaste $70.000" />
-          <BudgetBar label={CATEGORIES.transporte.label} emoji={CATEGORIES.transporte.emoji} spent="$480.000" total="$600.000" pct={80} color={CATEGORIES.transporte.color} />
-        </div>
+      <div class="hero-viz">
+        <AppWindow />
       </div>
     </div>
   </section>
@@ -536,8 +527,8 @@ const faqs = [
     max-width: var(--content-max);
     margin: 0 auto;
     display: grid;
-    grid-template-columns: 1.05fr 0.95fr;
-    gap: var(--space-12);
+    grid-template-columns: 0.82fr 1.18fr;
+    gap: var(--space-10);
     align-items: center;
   }
   .hero-grid > * {
@@ -2154,7 +2145,7 @@ const faqs = [
   }
 
   // ── Count-up de cifras al entrar en viewport (hero + secciones inferiores) ──
-  const figSel = '.verdict-card__amount, .stat-card__value, .presu-showcase .sv';
+  const figSel = '.pw-sv, .stat-card__value, .presu-showcase .sv';
   if (!REDUCE) {
     if ('IntersectionObserver' in window) {
       const io2 = new IntersectionObserver(
