@@ -237,49 +237,6 @@ const faqs = [
     </div>
   </Section>
 
-  <!-- ══════════════════ 4 · MIRA POR DENTRO ══════════════════ -->
-  <Section eyebrow="Mira por dentro">
-    <div class="sec-head reveal">
-      <h2>Todo tu dinero, en <span class="mark">una sola vista</span>.</h2>
-      <p class="sec-lead">Ingresos, gastos, presupuestos y movimientos —sumados de todos tus bancos, al día.</p>
-    </div>
-
-    <div class="panel reveal">
-      <div class="panel-head">
-        <span class="panel-cap">Inicio · Junio 2026</span>
-        <span class="panel-date">01 → 30 jun · 5 cuentas</span>
-      </div>
-
-      <div class="panel-stats">
-        <StatCard label="↗ Ingresos" value={ingresos} delta="↑ 9,2%" deltaTone="positive" />
-        <StatCard label="↘ Gastos" value={gastos} delta="↓ 8,4%" deltaTone="negative" />
-        <StatCard label="▦ Balance" value={balance} delta="↑ 138,5%" deltaTone="positive" />
-      </div>
-
-      <div class="panel-cols">
-        <div class="panel-donut">
-          <span class="panel-sub">Gastos por categoría</span>
-          <CategoryDonut segments={spendByCategory} total={gastos} caption="Junio" />
-        </div>
-
-        <div class="panel-txns">
-          <span class="panel-sub">Últimos movimientos</span>
-          <ul class="txns">
-            {txns.map((t) => (
-              <li class="txn">
-                <span class="txn-ic">{t.emoji}</span>
-                <span class="txn-main">
-                  <span class="txn-name">{t.name}</span>
-                  <span class="txn-bank">{t.bank}</span>
-                </span>
-                <span class:list={['txn-amt', { 'txn-amt--in': t.income }]}>{t.amount}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-    </div>
-  </Section>
 
   <!-- ══════════════════ 5 · BANCOS QUE LEE ══════════════════ -->
   <Section eyebrow="Bancos que lee">
