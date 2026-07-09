@@ -3,6 +3,7 @@
 // Sección de vistas de la app (mockups en HTML/CSS/SVG). Autocontenida: trae sus
 // propios tokens y CSS con <style> scoped de Astro (aislado del resto del landing).
 // Portada desde la landing estática (main:index.html) a la migración Astro.
+import Logo from '../Logo.astro';
 ---
 
 <section class="presu-showcase">
@@ -24,7 +25,7 @@
           <div class="appwin__body">
             <aside class="aw-side">
               <div class="aw-brand">
-                <span class="aw-wm"><span class="aw-wmbar" aria-hidden="true"></span>presu</span>
+                <Logo size="1.2rem" href={null} />
                 <span class="aw-tag">Tu plata, clara</span>
               </div>
               <span class="aw-import">＋&nbsp;&nbsp;Importar</span>
@@ -294,10 +295,7 @@
   .presu-showcase .appwin__badge .gd{width:6px;height:6px;border-radius:50%;background:var(--mint);box-shadow:0 0 7px var(--mint)}
   .presu-showcase .appwin__body{display:grid;grid-template-columns:210px 1fr}
   .presu-showcase .aw-side{display:flex;flex-direction:column;gap:14px;padding:18px 14px;background:#0A0A0D;border-right:1px solid var(--line)}
-  .presu-showcase .aw-brand{display:flex;flex-direction:column;gap:3px}
-  .presu-showcase .aw-wm{position:relative;display:inline-flex;align-items:center;font-family:var(--head);font-weight:700;font-size:1.15rem;letter-spacing:-.05em;color:#fff;width:fit-content;line-height:1}
-  .presu-showcase .aw-wmbar{position:absolute;left:-4%;right:-8%;top:52%;height:.32em;border-radius:999px;background:var(--mint);transform:rotate(-9deg);z-index:0}
-  .presu-showcase .aw-wm{isolation:isolate}
+  .presu-showcase .aw-brand{display:flex;flex-direction:column;gap:4px}
   .presu-showcase .aw-tag{font-family:var(--mono);font-size:.52rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mut2)}
   .presu-showcase .aw-import{display:flex;align-items:center;justify-content:center;background:var(--mint);color:#06231A;font-family:var(--head);font-weight:700;font-size:.82rem;border-radius:11px;padding:10px;margin-top:2px}
   .presu-showcase .aw-nav{display:flex;flex-direction:column;gap:2px;margin-top:4px}
