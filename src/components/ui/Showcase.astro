@@ -235,6 +235,55 @@
   .presu-showcase .feat-extra .x{display:inline-flex;align-items:center;gap:8px;background:var(--bg-2);border:1px solid var(--line);border-radius:999px;padding:9px 16px;font-size:.86rem;color:var(--tx);font-weight:500}
   .presu-showcase .feat-extra .x svg{color:var(--mint-bright)}
 
+  /* ── Detalles dinámicos: se animan cuando la fila entra en viewport (.in) ──
+     Todo dentro de no-preference: con reduced-motion se ve el estado final estático. */
+  @media (prefers-reduced-motion: no-preference) {
+    /* B · la línea de gasto se dibuja sola */
+    .presu-showcase .grow-line { stroke-dasharray: 1; stroke-dashoffset: 1; }
+    .presu-showcase .show-row.in .grow-line { animation: sc-draw 1s cubic-bezier(.2,.7,.2,1) .25s forwards; }
+    @keyframes sc-draw { to { stroke-dashoffset: 0; } }
+
+    .presu-showcase .area-fade { opacity: 0; }
+    .presu-showcase .show-row.in .area-fade { animation: sc-fade .8s ease .95s forwards; }
+
+    .presu-showcase .land-dot { opacity: 0; }
+    .presu-showcase .show-row.in .land-dot { animation: sc-fade .35s ease 1.15s forwards; }
+    .presu-showcase .land-pulse { opacity: 0; }
+    .presu-showcase .show-row.in .land-pulse { animation: sc-landpulse 2.4s ease-out 1.35s infinite; }
+    @keyframes sc-landpulse { 0%{transform:scale(1);opacity:.35} 70%{transform:scale(2.6);opacity:0} 100%{opacity:0} }
+
+    .presu-showcase .chart-pill { opacity: 0; transform: translateY(6px) scale(.92); }
+    .presu-showcase .show-row.in .chart-pill { animation: sc-pop .5s cubic-bezier(.34,1.56,.64,1) 1.25s forwards; }
+    @keyframes sc-pop { to { opacity: 1; transform: none; } }
+    @keyframes sc-fade { to { opacity: 1; } }
+
+    /* C · barra de progreso avanza */
+    .presu-showcase .prog > i { width: 0; }
+    .presu-showcase .show-row.in .prog > i { animation: sc-prog 1s cubic-bezier(.2,.7,.2,1) .3s forwards; }
+    @keyframes sc-prog { to { width: 50%; } }
+
+    /* C · consola aparece línea por línea */
+    .presu-showcase .console > div { opacity: 0; transform: translateY(4px); }
+    .presu-showcase .show-row.in .console > div { animation: sc-line .38s ease forwards; }
+    .presu-showcase .show-row.in .console > div:nth-child(1) { animation-delay: .35s; }
+    .presu-showcase .show-row.in .console > div:nth-child(2) { animation-delay: .5s; }
+    .presu-showcase .show-row.in .console > div:nth-child(3) { animation-delay: .65s; }
+    .presu-showcase .show-row.in .console > div:nth-child(4) { animation-delay: .8s; }
+    .presu-showcase .show-row.in .console > div:nth-child(5) { animation-delay: .95s; }
+    .presu-showcase .show-row.in .console > div:nth-child(6) { animation-delay: 1.1s; }
+    @keyframes sc-line { to { opacity: 1; transform: none; } }
+  }
+
+  /* A · los anillos de presupuesto se llenan (requiere @property; si no, quedan estáticos llenos) */
+  @property --sc-fill { syntax: '<percentage>'; inherits: false; initial-value: 0%; }
+  @media (prefers-reduced-motion: no-preference) {
+    .presu-showcase .show-row.in .ring .rc {
+      background: conic-gradient(var(--rc-color, var(--mint)) var(--sc-fill), rgba(255,255,255,.08) 0);
+      animation: sc-ring 1s cubic-bezier(.2,.7,.2,1) calc(.15s + var(--k, 0) * .1s) both;
+    }
+    @keyframes sc-ring { from { --sc-fill: 0%; } to { --sc-fill: var(--target, 0%); } }
+  }
+
   @media(max-width:860px){
     .presu-showcase .show-row{grid-template-columns:1fr;gap:28px}
     .presu-showcase .show-row>*{min-width:0}
