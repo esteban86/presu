@@ -7,9 +7,10 @@ export interface Props {
   label: string;
   verdict: string;
   amount: string;
+  meta?: string;   // caption a la derecha del status, ej. "5 bancos · COP"
 }
 
-const { label, verdict, amount } = Astro.props;
+const { label, verdict, amount, meta } = Astro.props;
 ---
 
 <div class="verdict-card">
@@ -17,6 +18,7 @@ const { label, verdict, amount } = Astro.props;
   <div class="verdict-card__status">
     <span class="verdict-card__dot"></span>
     <span class="verdict-card__label">{label}</span>
+    {meta && <span class="verdict-card__meta">{meta}</span>}
   </div>
   <p class="verdict-card__sentence">{verdict}</p>
   <p class="verdict-card__amount">{amount}</p>
@@ -69,6 +71,16 @@ const { label, verdict, amount } = Astro.props;
     letter-spacing: var(--tracking-mono);
     text-transform: uppercase;
     color: var(--presu-emerald);
+  }
+
+  .verdict-card__meta {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    letter-spacing: var(--tracking-mono);
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    white-space: nowrap;
   }
 
   .verdict-card__sentence {
