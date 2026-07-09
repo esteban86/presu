@@ -179,9 +179,10 @@ const faqs = [
 
       <!-- Derecha: la pieza firma — VerdictCard + categorías -->
       <div class="hero-viz">
+        <div class="hero-shot-glow" aria-hidden="true"></div>
         <img
           class="hero-shot"
-          src="/hero-app.webp"
+          src="/hero-presu.webp"
           width="1536"
           height="1024"
           alt="Presu en macOS: la pantalla de Inicio con ingresos, gastos, balance y los presupuestos del mes por categoría"
@@ -889,11 +890,27 @@ const faqs = [
     gap: var(--space-4);
   }
   .hero-shot {
+    position: relative;
+    z-index: 1;
     width: 100%;
     height: auto;
     display: block;
     border-radius: var(--radius-xl);
     box-shadow: 0 40px 90px -40px rgba(0, 0, 0, 0.9);
+  }
+  .hero-shot-glow {
+    position: absolute;
+    z-index: 0;
+    inset: -12% -10%;
+    background: radial-gradient(
+      55% 55% at 52% 42%,
+      rgba(52, 211, 153, 0.5),
+      rgba(129, 140, 248, 0.28) 45%,
+      transparent 72%
+    );
+    filter: blur(72px);
+    opacity: 0.55;
+    pointer-events: none;
   }
   .hero-viz-glow {
     position: absolute;
