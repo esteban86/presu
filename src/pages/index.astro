@@ -26,16 +26,19 @@ const balance = formatCOPCompact(2810393); // "$2,81M"
 const problems = [
   {
     tone: 'negative',
+    icon: 'coins',
     title: 'La plata se va sin saber en qué',
     body: 'Ganas bien, pero a fin de mes no cuadra. Sin un panorama claro, decidir es adivinar.',
   },
   {
     tone: 'info',
+    icon: 'phone',
     title: 'Cuatro apps de bancos distintas',
     body: 'Bancolombia por aquí, Nu por allá, la tarjeta en otra. Nunca ves todo junto.',
   },
   {
     tone: 'positive',
+    icon: 'cloud',
     title: 'Las demás apps suben todo a la nube',
     body: 'Para organizarte te piden entregar tus datos financieros a un servidor ajeno. No, gracias.',
   },
@@ -190,7 +193,15 @@ const faqs = [
       {problems.map((p) => (
         <div class="card reveal">
           <span class={`card-ic card-ic--${p.tone}`}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"></path><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            {p.icon === 'coins' && (
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"></path><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            )}
+            {p.icon === 'phone' && (
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"></rect><path d="M12 18h.01"></path></svg>
+            )}
+            {p.icon === 'cloud' && (
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path></svg>
+            )}
           </span>
           <h3>{p.title}</h3>
           <p>{p.body}</p>
@@ -281,7 +292,7 @@ const faqs = [
     <div class="privacy reveal">
       <div class="privacy-glow" aria-hidden="true"></div>
       <h2>Tus datos viven en <span class="mark">tu equipo</span>. Punto.</h2>
-      <p class="privacy-lead">Presu funciona <strong>local-first</strong>: tu información financiera se guarda <strong>cifrada en tu computador</strong>. No en un servidor, no en la nube, no con nosotros. No necesitas crear una cuenta, y de tu equipo solo sale lo que tú decidas exportar.</p>
+      <p class="privacy-lead">Presu funciona <strong>local-first</strong>: tu información financiera se guarda <strong>cifrada en tu computador</strong>. No en un servidor, no en la nube, no con nosotros. No necesitas crear una cuenta, y de tu equipo solo sale lo que tú decidas exportar. <strong>Nadie más —ni Asimétrica— ve tus movimientos.</strong></p>
       <div class="privacy-pills">
         <span class="ppill">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
@@ -343,7 +354,29 @@ const faqs = [
     </div>
     <div class="offer reveal">
       <span class="os-eb" id="os-eb-date">¿Entras antes del 30 de junio? Eres pionero</span>
-      <p class="offer-lead"><strong>No pagas nada</strong> por la beta —y conservas tu <strong>precio de pionero</strong> cuando salga el plan completo.</p>
+      <p class="offer-lead"><strong>No pagas nada</strong> por la beta —y además te llevas esto:</p>
+      <ul class="offer-stack">
+        <li>
+          <span class="os-ic" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg></span>
+          <span><strong>Presu completo, gratis</strong> — todas las funciones de la beta, sin pagar nada.</span>
+        </li>
+        <li>
+          <span class="os-tag">Bono</span>
+          <span><strong>Guía para ordenar tu plata</strong> — un PDF corto de Asimétrica para dejar tus finanzas en orden, apenas entras.</span>
+        </li>
+        <li>
+          <span class="os-tag">Bono</span>
+          <span><strong>Sesión en vivo con Asimétrica</strong> — resuelves tus dudas de plata con el equipo, en directo.</span>
+        </li>
+        <li>
+          <span class="os-tag">Bono</span>
+          <span><strong>Tu precio de pionero, para siempre</strong> — cuando el plan completo sea de pago, mantienes una tarifa especial.</span>
+        </li>
+        <li>
+          <span class="os-tag">Bono</span>
+          <span><strong>Decides qué sigue</strong> — pides qué banco o función construimos después.</span>
+        </li>
+      </ul>
       <p class="offer-note">Los precios del plan completo se definen al lanzar. Quien entre por la lista lo sabrá primero.</p>
     </div>
   </Section>
@@ -1274,6 +1307,53 @@ const faqs = [
     margin: 0;
     font-size: var(--text-caption);
     color: var(--text-tertiary);
+  }
+  .offer-stack {
+    list-style: none;
+    margin: var(--space-5) auto;
+    padding: 0;
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    text-align: left;
+  }
+  .offer-stack li {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    font-size: var(--text-body);
+    line-height: var(--leading-snug);
+    color: var(--text-secondary);
+  }
+  .offer-stack strong {
+    color: var(--text-primary);
+    font-weight: var(--weight-semibold);
+  }
+  .os-ic {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: var(--radius-full);
+    background: rgba(52, 211, 153, 0.15);
+    color: var(--presu-emerald);
+  }
+  .os-tag {
+    flex-shrink: 0;
+    margin-top: 1px;
+    padding: 2px 9px;
+    border-radius: var(--radius-full);
+    background: var(--presu-emerald);
+    color: var(--text-on-accent);
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    font-weight: var(--weight-bold);
+    letter-spacing: var(--tracking-mono);
+    text-transform: uppercase;
+    line-height: 1.5;
   }
 
   /* ───────────────── 9 · CTA / Waitlist ───────────────── */
