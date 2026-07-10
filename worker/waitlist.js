@@ -22,6 +22,9 @@ const SITE = 'https://presu.io';
 const ALLOWED_ORIGINS = [SITE, 'https://www.presu.io', 'https://presu.asimetrica.co', 'https://presu.com.co', 'http://localhost:4821', 'http://localhost:4796'];
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const FROM = 'Presu · de Asimétrica <presu@asimetrica.co>';
+// Wordmark oficial (DS v2) para correos: imagen alojada en presu.io (la franja a -9° no
+// se renderiza confiable con CSS en Gmail/Outlook, así que va como <img>).
+const LOGO_IMG = '<img src="https://presu.io/presu-wordmark.png" alt="Presu" width="108" height="36" style="display:block;border:0;outline:none;text-decoration:none;height:36px;width:108px;margin-bottom:18px">';
 const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 const DISPOSABLE = ['mailinator.com', 'guerrillamail.com', '10minutemail.com', 'tempmail.com', 'temp-mail.org', 'yopmail.com', 'trashmail.com', 'getnada.com', 'sharklasers.com', 'maildrop.cc', 'dispostable.com', 'fakeinbox.com', 'mohmal.com'];
 const TIERS = [
@@ -734,7 +737,7 @@ function welcomeHtml(r) {
   const waMsg = encodeURIComponent('Me sumé a Presu 🌿 — reúne tus gastos de todos tus bancos y te dice si vas bien, privado y en tu equipo. La beta abre el 30 de junio y entrando antes es gratis. Te dejo mi link: ' + link);
   return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;background:#08080A;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#F4F4F3">
   <div style="max-width:540px;margin:0 auto;padding:32px 24px">
-    <div style="font-size:24px;font-weight:800;letter-spacing:-.02em;margin-bottom:18px">presu<span style="color:#34D399">.</span></div>
+    ${LOGO_IMG}
     <p style="font-size:16px;color:#A1A1A6;margin:0 0 6px">${hola}</p>
     <h1 style="font-size:30px;line-height:1.12;font-weight:800;letter-spacing:-.02em;margin:0 0 12px;color:#fff">¡Ya eres pionero! <span style="color:#34D399">🎉</span></h1>
     <p style="font-size:16px;line-height:1.55;color:#D4D4D6;margin:0 0 12px">Tus bonos ya están <b style="color:#fff">asegurados</b>. Ahora viene lo mejor: <b style="color:#34D399">comparte tu link y vuélvete Fundador</b> —cada amigo que entra te sube de nivel.</p>
@@ -769,7 +772,7 @@ function lateWelcomeHtml(r) {
   const waMsg = encodeURIComponent('Me metí a la lista de Presu 🌿 — reúne tus gastos de todos tus bancos, privado y en tu equipo. Entra tú también: ' + link);
   return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;background:#08080A;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#F4F4F3">
   <div style="max-width:540px;margin:0 auto;padding:32px 24px">
-    <div style="font-size:24px;font-weight:800;letter-spacing:-.02em;margin-bottom:18px">presu<span style="color:#34D399">.</span></div>
+    ${LOGO_IMG}
     <p style="font-size:16px;color:#A1A1A6;margin:0 0 6px">${hola}</p>
     <h1 style="font-size:28px;line-height:1.14;font-weight:800;letter-spacing:-.02em;margin:0 0 12px;color:#fff">Estás en la <span style="color:#34D399">Nueva Ola</span> 🌊</h1>
     <p style="font-size:16px;line-height:1.55;color:#D4D4D6;margin:0 0 14px">La beta de <b style="color:#fff">pioneros</b> ya está corriendo. La <b style="color:#fff">Nueva Ola</b> abre el <b style="color:#fff">15 de julio a las 4pm</b> y ya tienes tu lugar. Y si quieres entrar <b style="color:#fff">antes que el resto</b>, tienes dos formas de adelantarte:</p>
@@ -823,7 +826,7 @@ function tierEmailHtml(t, rec, env) {
       + '<p style="' + c + '">Con <b style="color:#34D399">15 referidos</b> te ganaste un cupo en la <b style="color:#F4F4F3">Masterclass de Asimétrica</b> —una sesión en vivo de nuestra firma de CFO sobre cómo poner tu plata en orden, solo para los Fundadores que más han corrido la voz. <b style="color:#F4F4F3">Te avisamos la fecha.</b></p>'
       + '<p style="' + c + '">Y estás peleando de frente por el <b style="color:#34D399">Top 3</b>: acompañamiento 1:1 en finanzas (3 meses) + libro (valor $1.500.000), gratis. <a href="' + panel + '" style="color:#5EEAB8">Ver el ranking →</a></p>';
   }
-  return '<!doctype html><html><head><meta charset="utf-8"></head><body style="margin:0;background:#08080A;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#F4F4F3"><div style="max-width:520px;margin:0 auto;padding:36px 28px"><div style="font-size:26px;font-weight:700;letter-spacing:-.02em;margin-bottom:22px">presu<span style="color:#34D399">.</span></div><p style="font-size:18px;margin:0 0 16px">' + hola + '</p>' + body + '<p style="font-size:13px;color:#8A8A90;margin:18px 0 0">Tu plata, clara.</p></div></body></html>';
+  return '<!doctype html><html><head><meta charset="utf-8"></head><body style="margin:0;background:#08080A;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#F4F4F3"><div style="max-width:520px;margin:0 auto;padding:36px 28px">' + LOGO_IMG + '<p style="font-size:18px;margin:0 0 16px">' + hola + '</p>' + body + '<p style="font-size:13px;color:#8A8A90;margin:18px 0 0">Tu plata, clara.</p></div></body></html>';
 }
 
 function surveyEmailHtml(r) {
@@ -831,7 +834,7 @@ function surveyEmailHtml(r) {
   const link = SITE + '/encuesta.html?e=' + encodeURIComponent(r.email || '');
   return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;background:#08080A;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#F4F4F3">
   <div style="max-width:540px;margin:0 auto;padding:32px 24px">
-    <div style="font-size:24px;font-weight:800;letter-spacing:-.02em;margin-bottom:18px">presu<span style="color:#34D399">.</span></div>
+    ${LOGO_IMG}
     <p style="font-size:16px;color:#A1A1A6;margin:0 0 6px">${hola}</p>
     <h1 style="font-size:28px;line-height:1.15;font-weight:800;letter-spacing:-.02em;margin:0 0 14px;color:#fff">Construyamos Presu <span style="color:#34D399">a tu medida</span></h1>
     <p style="font-size:16px;line-height:1.55;color:#D4D4D6;margin:0 0 14px">Llevas unos días con la beta, así que queremos oírte. Cuéntanos cómo te va con Presu —y si aún no la abres, qué te frenó: son <b style="color:#34D399">unas preguntas rápidas, menos de 3 minutos</b>.</p>
@@ -850,7 +853,7 @@ function followupHtml(r) {
   const survey = SITE + '/encuesta.html?e=' + encodeURIComponent(r.email || '');
   return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;background:#08080A;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#F4F4F3">
   <div style="max-width:540px;margin:0 auto;padding:32px 24px">
-    <div style="font-size:24px;font-weight:800;letter-spacing:-.02em;margin-bottom:18px">presu<span style="color:#34D399">.</span></div>
+    ${LOGO_IMG}
     <p style="font-size:16px;color:#A1A1A6;margin:0 0 6px">${hola}</p>
     <h1 style="font-size:28px;line-height:1.14;font-weight:800;letter-spacing:-.02em;margin:0 0 14px;color:#fff">Tu Presu ya está listo <span style="color:#34D399">🌿</span></h1>
     <p style="font-size:16px;line-height:1.55;color:#D4D4D6;margin:0 0 8px">Eres <b style="color:#fff">pionero</b> y la beta ya está abierta. Descarga Presu para <b style="color:#fff">Mac o Windows</b> —se instala en un minuto, y tus datos viven <b style="color:#fff">cifrados en tu equipo</b> (local-first, sin nube).</p>
