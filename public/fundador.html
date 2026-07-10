@@ -62,7 +62,21 @@
   .sh-nav a:hover{color:var(--tx)}
   .sh-cta{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:9px 20px;border-radius:999px;background:var(--mint);color:#06231A;font-family:"Hanken Grotesk",sans-serif;font-weight:700;font-size:.9rem;text-decoration:none;white-space:nowrap;transition:background .16s}
   .sh-cta:hover{background:var(--mint-bright)}
-  @media(max-width:640px){.sh-nav,.sh-endorse{display:none}.sh-wrap{padding:12px 16px}}
+  .sh-actions{display:flex;align-items:center;gap:10px}
+.sh-burger{display:none;flex-direction:column;justify-content:center;gap:5px;width:42px;height:42px;padding:0;background:none;border:1px solid var(--line);border-radius:11px;cursor:pointer}
+.sh-burger span{display:block;width:20px;height:2px;margin:0 auto;background:var(--tx);border-radius:2px;transition:transform .22s,opacity .22s}
+.sh-burger[aria-expanded="true"] span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.sh-burger[aria-expanded="true"] span:nth-child(2){opacity:0}
+.sh-burger[aria-expanded="true"] span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+@media(max-width:640px){
+  .sh-endorse{display:none}
+  .sh-burger{display:flex}
+  .sh-wrap{padding:12px 16px}
+  .sh-nav{position:absolute;top:100%;left:0;right:0;flex-direction:column;align-items:stretch;gap:0;padding:6px 16px 14px;background:var(--bg);border-bottom:1px solid var(--line);display:none}
+  .site-header.is-open .sh-nav{display:flex}
+  .sh-nav a{padding:14px 4px;font-size:1.05rem;border-bottom:1px solid var(--line)}
+  .sh-nav a:last-child{border-bottom:0}
+}
 </style>
 </head>
 <body>
@@ -72,13 +86,13 @@
       <a class="sh-logo" href="/" aria-label="Presu — inicio"><span class="wordmark"><span class="wm-bar" aria-hidden="true"></span><span class="wm-text">presu</span></span></a>
       <a class="sh-endorse" href="https://asimetrica.co" target="_blank" rel="noopener"><span>de</span><img src="/asimetrica-logo.webp" alt="Asimétrica"></a>
     </div>
-    <nav class="sh-nav">
+    <nav class="sh-nav" id="sh-nav">
       <a href="/#como">Cómo</a>
       <a href="/#privacidad">Privacidad</a>
       <a href="/#planes">Planes</a>
       <a href="/aporta">Aporta 🌱</a>
     </nav>
-    <a class="sh-cta" href="/#waitlist">Únete a la lista</a>
+    <div class="sh-actions"><a class="sh-cta" href="/#waitlist">Únete a la lista</a><button class="sh-burger" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="sh-nav"><span></span><span></span><span></span></button></div>
   </div>
 </header>
 <div class="wrap">
@@ -183,6 +197,9 @@
   document.getElementById('copyBtn').addEventListener('click', function(){ navigator.clipboard.writeText(shareLink).then(function(){toast('¡Link copiado!');}); });
   document.getElementById('copyMsg').addEventListener('click', function(){ navigator.clipboard.writeText(shareMsg).then(function(){toast('¡Mensaje copiado!');}); });
 })();
+</script>
+<script>
+(function(){var h=document.querySelector(".site-header"),b=h&&h.querySelector(".sh-burger");if(!h||!b)return;function c(){h.classList.remove("is-open");b.setAttribute("aria-expanded","false");}b.addEventListener("click",function(){var o=h.classList.toggle("is-open");b.setAttribute("aria-expanded",o?"true":"false");});h.querySelectorAll(".sh-nav a").forEach(function(a){a.addEventListener("click",c);});document.addEventListener("keydown",function(e){if(e.key==="Escape")c();});})();
 </script>
 </body>
 </html>

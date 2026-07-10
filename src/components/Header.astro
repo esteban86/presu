@@ -13,7 +13,7 @@ import Logo from './Logo.astro';
         </a>
       </div>
 
-      <nav class="nav-links" aria-label="Navegación principal">
+      <nav class="nav-links" id="nav-links" aria-label="Navegación principal">
         <a class="nav-link" href="/#como">Cómo</a>
         <a class="nav-link" href="/#privacidad">Privacidad</a>
         <a class="nav-link" href="/#planes">Planes</a>
@@ -22,6 +22,9 @@ import Logo from './Logo.astro';
 
       <div class="nav-actions">
         <a class="btn-cta" href="/#waitlist">Únete a la lista</a>
+        <button class="nav-burger" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="nav-links">
+          <span></span><span></span><span></span>
+        </button>
       </div>
     </div>
   </div>
@@ -111,8 +114,36 @@ import Logo from './Logo.astro';
   .nav-actions {
     display: flex;
     align-items: center;
+    gap: var(--space-3);
     flex-shrink: 0;
   }
+
+  /* Botón hamburguesa (solo visible en móvil) */
+  .nav-burger {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md, 12px);
+    cursor: pointer;
+  }
+  .nav-burger span {
+    display: block;
+    width: 20px;
+    height: 2px;
+    margin: 0 auto;
+    background: var(--text-primary);
+    border-radius: 2px;
+    transition: transform var(--dur-fast) var(--ease-out), opacity var(--dur-fast) var(--ease-out);
+  }
+  .nav-burger[aria-expanded="true"] span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .nav-burger[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+  .nav-burger[aria-expanded="true"] span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
   .btn-cta {
     display: inline-flex;
@@ -138,10 +169,9 @@ import Logo from './Logo.astro';
     box-shadow: var(--shadow-accent);
   }
 
-  /* Mobile: colapsa a lo esencial — marca + CTA (mirrors --bp-mobile: 640px) */
+  /* Mobile: marca + CTA + hamburguesa; el nav pasa a menú desplegable (--bp-mobile: 640px) */
   @media (max-width: 640px) {
-    .endorse,
-    .nav-links {
+    .endorse {
       display: none;
     }
 
@@ -153,5 +183,55 @@ import Logo from './Logo.astro';
       padding: var(--space-2) var(--space-4);
       font-size: var(--text-caption);
     }
+
+    .nav-burger {
+      display: flex;
+    }
+
+    .nav-links {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0;
+      padding: var(--space-2) var(--screen-pad) var(--space-4);
+      background: var(--bg-base, #08080A);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border-bottom: 1px solid var(--border);
+      display: none;
+    }
+
+    .site-header.is-open .nav-links {
+      display: flex;
+    }
+
+    .nav-link {
+      padding: var(--space-4) var(--space-1);
+      font-size: 1.05rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-link:last-child {
+      border-bottom: 0;
+    }
   }
 </style>
+
+<script>
+  const header = document.querySelector('.site-header');
+  const burger = header?.querySelector('.nav-burger');
+  if (header && burger) {
+    const close = () => {
+      header.classList.remove('is-open');
+      burger.setAttribute('aria-expanded', 'false');
+    };
+    burger.addEventListener('click', () => {
+      const open = header.classList.toggle('is-open');
+      burger.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+    header.querySelectorAll('.nav-links a').forEach((a) => a.addEventListener('click', close));
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+  }
+</script>
