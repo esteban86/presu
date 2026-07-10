@@ -8,10 +8,24 @@
 <style>
   :root{--mint:#34D399;--mint-bright:#5EEAB8;--ink:#08231A;--tx:#F4F4F3;--mut:#A1A1A6;--mut2:#6B6B72;--bg:#08080A;--bg2:#101014;--line:rgba(255,255,255,.1);--head:"Space Grotesk",sans-serif;--mono:"JetBrains Mono",monospace}
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--tx);font-family:"Hanken Grotesk",sans-serif;line-height:1.5;padding:48px 20px}
-  .wrap{max-width:680px;margin:0 auto;text-align:center}
-  .brand{font-family:var(--head);font-weight:700;font-size:24px;letter-spacing:-.02em;margin-bottom:8px}
-  .brand span{color:var(--mint)}
+  body{margin:0;background:var(--bg);color:var(--tx);font-family:"Hanken Grotesk",sans-serif;line-height:1.5}
+  .wrap{max-width:680px;margin:0 auto;text-align:center;padding:48px 20px 60px}
+  .wordmark{position:relative;display:inline-flex;align-items:center;line-height:.9}
+  .wm-text{position:relative;z-index:1;font-family:var(--head);font-weight:700;font-size:1.375rem;letter-spacing:-.05em;color:var(--tx);line-height:.9}
+  .wm-bar{position:absolute;left:-5%;right:-8%;top:53%;height:.36em;border-radius:999px;background:var(--mint);transform:rotate(-9deg);z-index:0}
+  /* Site header (igual al resto del sitio) */
+  .site-header{position:sticky;top:0;z-index:100;background:rgba(8,8,10,.72);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
+  .sh-wrap{max-width:1200px;margin:0 auto;padding:14px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px;text-align:left}
+  .sh-brand{display:flex;align-items:center;gap:12px;min-width:0}
+  .sh-logo{display:inline-flex;text-decoration:none}
+  .sh-endorse{display:inline-flex;align-items:center;gap:7px;padding-left:12px;border-left:1px solid var(--line);font-family:"Hanken Grotesk",sans-serif;font-size:.8rem;font-weight:500;color:var(--mut2);text-decoration:none;white-space:nowrap}
+  .sh-endorse img{height:.95rem;width:auto;display:block}
+  .sh-nav{display:flex;align-items:center;gap:26px}
+  .sh-nav a{font-family:"Hanken Grotesk",sans-serif;font-size:1rem;font-weight:500;color:var(--mut);text-decoration:none;transition:color .16s}
+  .sh-nav a:hover{color:var(--tx)}
+  .sh-cta{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:9px 20px;border-radius:999px;background:var(--mint);color:#06231A;font-family:"Hanken Grotesk",sans-serif;font-weight:700;font-size:.9rem;text-decoration:none;white-space:nowrap;transition:background .16s}
+  .sh-cta:hover{background:var(--mint-bright)}
+  @media(max-width:640px){.sh-nav,.sh-endorse{display:none}.sh-wrap{padding:12px 16px}}
   .eb{font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mint);margin-bottom:18px}
   h1{font-family:var(--head);font-weight:700;font-size:2.2rem;letter-spacing:-.02em;margin:0 0 10px}
   h2{font-family:var(--head);font-weight:700;font-size:1.65rem;letter-spacing:-.02em;margin:0 0 10px}
@@ -30,8 +44,22 @@
 </style>
 </head>
 <body>
+<header class="site-header">
+  <div class="sh-wrap">
+    <div class="sh-brand">
+      <a class="sh-logo" href="/" aria-label="Presu — inicio"><span class="wordmark"><span class="wm-bar" aria-hidden="true"></span><span class="wm-text">presu</span></span></a>
+      <a class="sh-endorse" href="https://asimetrica.co" target="_blank" rel="noopener"><span>de</span><img src="/asimetrica-logo.webp" alt="Asimétrica"></a>
+    </div>
+    <nav class="sh-nav">
+      <a href="/#como">Cómo</a>
+      <a href="/#privacidad">Privacidad</a>
+      <a href="/#planes">Planes</a>
+      <a href="/aporta">Aporta 🌱</a>
+    </nav>
+    <a class="sh-cta" href="/#waitlist">Únete a la lista</a>
+  </div>
+</header>
 <div class="wrap">
-  <div class="brand">presu<span>.</span></div>
   <div class="eb">Muro de Fundadores</div>
   <h1>Quienes están <span style="color:var(--mint)">construyendo</span> Presu</h1>
   <p class="sub">Pioneros que ya invitaron a 3+ amigos a la lista. Gracias por correr la voz 🌱</p>
