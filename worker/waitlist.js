@@ -25,6 +25,10 @@ const FROM = 'Presu · de Asimétrica <presu@asimetrica.co>';
 // Wordmark oficial (DS v2) para correos: imagen alojada en presu.io (la franja a -9° no
 // se renderiza confiable con CSS en Gmail/Outlook, así que va como <img>).
 const LOGO_IMG = '<img src="https://presu.io/presu-wordmark.png" alt="Presu" width="108" height="36" style="display:block;border:0;outline:none;text-decoration:none;height:36px;width:108px;margin-bottom:18px">';
+// Origen del propio worker (para links de correo con tracking vía /r).
+const SELF = 'https://presu-waitlist.asimetrica.workers.dev';
+// Destinos permitidos para /r (evita open-redirect).
+const REDIRECT_DEST = { descargar: '/descargar', encuesta: '/encuesta.html', inicio: '/' };
 const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 const DISPOSABLE = ['mailinator.com', 'guerrillamail.com', '10minutemail.com', 'tempmail.com', 'temp-mail.org', 'yopmail.com', 'trashmail.com', 'getnada.com', 'sharklasers.com', 'maildrop.cc', 'dispostable.com', 'fakeinbox.com', 'mohmal.com'];
 const TIERS = [
@@ -65,6 +69,8 @@ export default {
     if (path === '/admin/campaign-one') return adminCampaignOne(request, env, cors);
     if (request.method === 'GET' && path === '/admin/stats') return adminStats(request, env, cors);
     if (request.method === 'GET' && path === '/admin/waitlist') return adminWaitlist(request, env, cors, url);
+
+    if (request.method === 'GET' && path === '/r') return trackRedirect(request, env, url);
 
     if (request.method === 'GET' && path === '/count') {
       const count = parseInt((await env.WAITLIST.get('meta:count')) || '0', 10);
@@ -293,12 +299,15 @@ async function adminWaitlist(request, env, cors, url) {
         ref: r.ref || '',
         referredBy: r.referredBy || '',
         ts: r.ts || 0,
+        clickDevice: r.clickDevice || '',
+        clickedAt: r.clickedAt || 0,
+        clickCount: r.clickCount || 0,
       });
     }
   }
   rows.sort(function (a, b) { return (a.ts || 0) - (b.ts || 0); });
   if ((url.searchParams.get('format') || '') === 'csv') {
-    const cols = ['email', 'nombre', 'celular', 'perfil', 'empresa', 'origen', 'cohort', 'ref', 'referredBy', 'ts'];
+    const cols = ['email', 'nombre', 'celular', 'perfil', 'empresa', 'origen', 'cohort', 'ref', 'referredBy', 'ts', 'clickDevice', 'clickedAt', 'clickCount'];
     const q = function (s) { return '"' + String(s == null ? '' : s).replace(/"/g, '""') + '"'; };
     const lines = [cols.join(',')].concat(rows.map(function (r) { return cols.map(function (c) { return q(r[c]); }).join(','); }));
     return new Response(lines.join('\n'), { status: 200, headers: { 'Content-Type': 'text/csv; charset=utf-8', 'Content-Disposition': 'attachment; filename="presu-waitlist.csv"', ...cors } });
@@ -306,6 +315,32 @@ async function adminWaitlist(request, env, cors, url) {
   return json({ total: rows.length, rows }, 200, cors);
 }
 function authed(request, env) { return env.ADMIN_TOKEN && (request.headers.get('X-Admin-Token') || '') === env.ADMIN_TOKEN; }
+
+// GET /r?e=&to=&c= — link de correo con tracking: registra el clic (correo + device
+// + timestamp, todo server-side desde el User-Agent) en KV y redirige al destino.
+async function trackRedirect(request, env, url) {
+  const e = (url.searchParams.get('e') || '').trim().toLowerCase();
+  const to = (url.searchParams.get('to') || '').trim();
+  const c = (url.searchParams.get('c') || '').trim().slice(0, 40);
+  const path = REDIRECT_DEST[to] || '/';
+  let dest = SITE + path;
+  if (e) dest += (path.indexOf('?') > -1 ? '&' : '?') + 'e=' + encodeURIComponent(e) + (to === 'encuesta' ? '&nuevo=1' : '');
+  try {
+    if (e && EMAIL_RE.test(e)) {
+      const ua = request.headers.get('user-agent') || '';
+      const device = /iPad|Tablet/i.test(ua) ? 'tablet' : /Mobi|Android|iPhone|iPod|Windows Phone/i.test(ua) ? 'mobile' : 'desktop';
+      const ts = Date.now();
+      await env.WAITLIST.put('click:' + e + ':' + ts, JSON.stringify({ to, c, device, ts, ua: ua.slice(0, 180) }), { expirationTtl: 60 * 60 * 24 * 365 });
+      const raw = await env.WAITLIST.get('email:' + e);
+      if (raw) {
+        let r = {}; try { r = JSON.parse(raw); } catch (err) {}
+        r.clickedAt = ts; r.clickDevice = device; r.clickTo = to; r.clickCount = (r.clickCount || 0) + 1;
+        await env.WAITLIST.put('email:' + e, JSON.stringify(r));
+      }
+    }
+  } catch (err) { /* el tracking nunca debe romper la redirección */ }
+  return Response.redirect(dest, 302);
+}
 
 // ── Campaña de lanzamiento (cron + manual) ───────────────────
 async function runCampaignBatch(env, limit) {
@@ -849,8 +884,8 @@ function surveyEmailHtml(r) {
 // Seguimiento a pioneros: instalador (→ presu.io/descargar) + encuesta, en un solo correo.
 function followupHtml(r) {
   const hola = r.nombre ? 'Hola, ' + esc(r.nombre) + ' 👋' : 'Hola 👋';
-  const dl = SITE + '/descargar?e=' + encodeURIComponent(r.email || '');
-  const survey = SITE + '/encuesta.html?e=' + encodeURIComponent(r.email || '');
+  const dl = SELF + '/r?e=' + encodeURIComponent(r.email || '') + '&to=descargar&c=followup';
+  const survey = SELF + '/r?e=' + encodeURIComponent(r.email || '') + '&to=encuesta&c=followup';
   return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark"></head><body style="margin:0;background:#08080A;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#F4F4F3">
   <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:#08080A">Descárgala para Mac o Windows y cuéntanos cómo te va —te toma 3 minutos.</div>
   <div style="max-width:540px;margin:0 auto;padding:36px 24px">
