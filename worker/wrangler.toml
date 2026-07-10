@@ -2,6 +2,13 @@ name = "presu-waitlist"
 main = "waitlist.js"
 compatibility_date = "2024-11-01"
 
+# Ruta branded para el link de tracking del correo: presu.io/r → este worker.
+# El resto de presu.io lo sigue sirviendo Cloudflare Pages. Patrón EXACTO "/r"
+# (sin comodín) para no interceptar /ranking, /roadmap, /robots.txt, etc.
+routes = [
+  { pattern = "presu.io/r", zone_name = "presu.io" }
+]
+
 # El binding del KV se completa con el id tras crear el namespace:
 #   npx wrangler kv namespace create WAITLIST
 [[kv_namespaces]]
