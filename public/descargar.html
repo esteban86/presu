@@ -17,10 +17,10 @@
   *{box-sizing:border-box}
   body{
     margin:0;background:var(--bg);color:var(--tx);font-family:"Hanken Grotesk",sans-serif;
-    line-height:1.55;-webkit-font-smoothing:antialiased;padding:52px 22px 64px;
+    line-height:1.55;-webkit-font-smoothing:antialiased;
     background-image:radial-gradient(120% 70% at 50% -10%,rgba(52,211,153,.10),transparent 60%);background-attachment:fixed;
   }
-  .wrap{max-width:600px;margin:0 auto}
+  .wrap{max-width:600px;margin:0 auto;padding:52px 22px 60px}
   a{color:var(--mint-bright);text-decoration:none}
   a:hover{text-decoration:underline}
 
@@ -88,12 +88,39 @@
   .foot a{color:var(--mut)}
   .hidden{display:none}
   @media(prefers-reduced-motion:reduce){.dl-primary,.gate button{transition:none}.shake{animation:none}}
+
+  /* Site header (igual al resto del sitio) */
+  .site-header{position:sticky;top:0;z-index:100;background:rgba(8,8,10,.72);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
+  .sh-wrap{max-width:1200px;margin:0 auto;padding:14px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px;text-align:left}
+  .sh-brand{display:flex;align-items:center;gap:12px;min-width:0}
+  .sh-logo{display:inline-flex;text-decoration:none}
+  .sh-endorse{display:inline-flex;align-items:center;gap:7px;padding-left:12px;border-left:1px solid var(--line);font-family:"Hanken Grotesk",sans-serif;font-size:.8rem;font-weight:500;color:var(--mut2);text-decoration:none;white-space:nowrap}
+  .sh-endorse img{height:.95rem;width:auto;display:block}
+  .sh-nav{display:flex;align-items:center;gap:26px}
+  .sh-nav a{font-family:"Hanken Grotesk",sans-serif;font-size:1rem;font-weight:500;color:var(--mut);text-decoration:none;transition:color .16s}
+  .sh-nav a:hover{color:var(--tx)}
+  .sh-cta{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:9px 20px;border-radius:999px;background:var(--mint);color:#06231A;font-family:"Hanken Grotesk",sans-serif;font-weight:700;font-size:.9rem;text-decoration:none;white-space:nowrap;transition:background .16s}
+  .sh-cta:hover{background:var(--mint-bright)}
+  @media(max-width:640px){.sh-nav,.sh-endorse{display:none}.sh-wrap{padding:12px 16px}}
 </style>
 </head>
 <body>
+<header class="site-header">
+  <div class="sh-wrap">
+    <div class="sh-brand">
+      <a class="sh-logo" href="/" aria-label="Presu — inicio"><span class="wordmark"><span class="wm-bar" aria-hidden="true"></span><span class="wm-text">presu</span></span></a>
+      <a class="sh-endorse" href="https://asimetrica.co" target="_blank" rel="noopener"><span>de</span><img src="/asimetrica-logo.webp" alt="Asimétrica"></a>
+    </div>
+    <nav class="sh-nav">
+      <a href="/#como">Cómo</a>
+      <a href="/#privacidad">Privacidad</a>
+      <a href="/#planes">Planes</a>
+      <a href="/aporta">Aporta 🌱</a>
+    </nav>
+    <a class="sh-cta" href="/#waitlist">Únete a la lista</a>
+  </div>
+</header>
 <div class="wrap">
-  <a class="brand" href="/"><span class="wordmark"><span class="wm-bar"></span><span class="wm-text">presu</span></span></a>
-
   <div class="eb">Beta de pioneros</div>
   <h1>Descarga Presu 🌿</h1>
   <p class="lede">Tu copiloto de finanzas, <b style="color:var(--tx)">local-first</b>: tus datos viven cifrados en tu equipo. Confirma tu correo de pionero y empieza en un minuto.</p>
