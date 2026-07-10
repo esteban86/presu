@@ -6,7 +6,10 @@
 
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
+/* Evita scroll horizontal por glows/decoración que rebasan el viewport (clip no
+   rompe position:sticky, a diferencia de overflow:hidden). Clave en móvil. */
+html,body{overflow-x:clip}
 body{margin:0;background:var(--bg-base,#08080A);color:var(--text-primary,#F4F4F3);
-  font-family:var(--font-body,"Hanken Grotesk"),sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}
+  font-family:var(--font-body,"Hanken Grotesk"),sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased;max-width:100%}
 /* El grain firma lo provee el DS v2 (.presu-grain::before en tokens/effects.css) — no se duplica aquí. */
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
