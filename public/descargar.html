@@ -164,7 +164,7 @@
   <div id="app" class="hidden">
     <a class="dl-primary" id="dl-primary" href="https://presu-ai.asimetrica.workers.dev/download/mac-arm64">
       <span id="dl-ic"></span>
-      <span class="col"><span id="dl-label">Descargar para Mac</span><span class="dl-sub" id="dl-sublabel">Apple Silicon · M1–M4</span></span>
+      <span class="col"><span id="dl-label">Descargar para Mac</span><span class="dl-sub" id="dl-sublabel">Apple Silicon · M1 a M5</span></span>
     </a>
     <div class="alts" id="alts"></div>
 
@@ -294,8 +294,8 @@
       alts.innerHTML = MAC_ARM + MAC_INTEL; showSteps('win');
     } else {
       primary.href = BASE+'/mac-arm64'; ic.innerHTML = IC.apple;
-      label.textContent = 'Descargar para Mac'; sub.textContent = 'Apple Silicon · M1–M4';
-      alts.innerHTML = MAC_INTEL + WIN + altHtml(BASE, '', 'Todas', ''); showSteps('mac');
+      label.textContent = 'Descargar para Mac'; sub.textContent = 'Apple Silicon · M1 a M5';
+      alts.innerHTML = MAC_INTEL + WIN; showSteps('mac');
       if (os === 'other' || os === 'ios'){
         var lede = document.querySelector('.lede');
         if (lede && !lede.dataset.noted){ lede.dataset.noted='1'; lede.insertAdjacentHTML('beforeend', '<br><span style="color:var(--mut2);font-size:.92rem">Presu es una app de escritorio para <b style="color:var(--mut)">Mac y Windows</b>.</span>'); }
