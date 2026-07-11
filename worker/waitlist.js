@@ -38,7 +38,7 @@ const TIERS = [
   { min: 15, name: 'Masterclass' },
 ];
 const CAP = 1000; // cupos máximos antes del lanzamiento; al llegar, se cierran los registros.
-const CAMPAIGN_SUBJECT = 'Presu abrió 🚀 Tus gastos de todos tus bancos, claros';
+const CAMPAIGN_SUBJECT = 'Presu abrió 🌿 ya ves a dónde se va tu plata';
 const CAMPAIGN_BATCH = 30; // envíos por disparo del cron (bajo el límite de subrequests)
 // La tanda 1 (Pioneros) cerró el 30-jun-2026; desde el 1-jul es Nueva Ola.
 // Cohorte = Nueva Ola si se registró tras el corte O trae el tag origen=tanda2
@@ -164,7 +164,7 @@ export default {
     let mail = { welcome: null, notify: null };
     if (env.RESEND_API_KEY) {
       const isLate = record.origen === 'tanda2';
-      mail.welcome = await sendResend(env, { to: email, reply_to: env.NOTIFY_EMAIL || undefined, subject: isLate ? 'Estás dentro 🌊 El 15 empiezas a ver tu plata clara' : 'Ya estás dentro 🌿 Por fin vas a saber a dónde se va tu plata', html: isLate ? lateWelcomeHtml(record) : welcomeHtml(record) });
+      mail.welcome = await sendResend(env, { to: email, reply_to: env.NOTIFY_EMAIL || undefined, subject: isLate ? 'Estás dentro 🌊 el 15 ves tu plata clara' : 'Ya eres Pionero 🌿 tu plata por fin clara', html: isLate ? lateWelcomeHtml(record) : welcomeHtml(record) });
       if (mail.welcome && mail.welcome.ok) { await env.WAITLIST.put('welcomed:' + email, String(Date.now())); await env.WAITLIST.put('campaign:' + email, 'welcome'); }
       if (env.NOTIFY_EMAIL) mail.notify = await sendResend(env, { to: env.NOTIFY_EMAIL, reply_to: email, subject: 'Nuevo registro en la waitlist de Presu (' + record.perfil + ')', html: notifyHtml(record, total) });
     }
@@ -248,7 +248,7 @@ async function adminWelcome(request, env, cors) {
   const raw = await env.WAITLIST.get('email:' + email);
   if (raw) { try { rec = JSON.parse(raw); } catch (e) {} }
   if (!rec.ref) { rec.ref = await genCode(env); if (rec.ref) { await env.WAITLIST.put('code:' + rec.ref, email); await env.WAITLIST.put('email:' + email, JSON.stringify(rec)); } }
-  const res = await sendResend(env, { to: email, reply_to: env.NOTIFY_EMAIL || undefined, subject: 'Ya estás dentro 🌿 Por fin vas a saber a dónde se va tu plata', html: welcomeHtml(rec) });
+  const res = await sendResend(env, { to: email, reply_to: env.NOTIFY_EMAIL || undefined, subject: 'Ya eres Pionero 🌿 tu plata por fin clara', html: welcomeHtml(rec) });
   if (res.ok) { await env.WAITLIST.put('welcomed:' + email, String(Date.now())); return json({ status: 'sent', id: res.id }, 200, cors); }
   return json({ status: 'error', detail: res }, 502, cors);
 }
@@ -488,8 +488,8 @@ async function roadmapVote(request, env, cors) {
 // ── Encuesta de perfil (buyer persona) ───────────────────────
 const SURVEY_FIELDS = ['nombre', 'uso', 'features', 'valor', 'falta', 'freno', 'ayuda_config', 'edad', 'ciudad', 'ocupacion', 'ingreso_tipo', 'metodo', 'metas', 'bancos', 'bancos_otra', 'dispositivo', 'dolor', 'pago', 'ingreso', 'ayuda', 'celular'];
 const SURVEY_ARRAY_FIELDS = ['bancos', 'metas', 'ayuda', 'features'];
-const SURVEY_SUBJECT = '2 min: ayúdanos a ordenar mejor tu plata';
-const FOLLOWUP_SUBJECT = 'Instálalo y mira a dónde se va tu plata 🌿';
+const SURVEY_SUBJECT = '¿Qué le falta a tu Presu?';
+const FOLLOWUP_SUBJECT = 'En 3 min ves a dónde se va tu plata';
 
 // GET /es-pionero?e=correo → { pionero: bool } — puerta suave de la página /descargar (solo pioneros).
 async function esPioneroCheck(request, env, pub, url) {
@@ -912,7 +912,7 @@ function surveyEmailHtml(r) {
     <p style="font-size:16px;line-height:1.55;color:#D4D4D6;margin:0 0 14px">Llevas unos días con la beta, así que queremos oírte. Cuéntanos cómo te va con Presu —y si aún no la abres, qué te frenó: son <b style="color:#34D399">unas preguntas rápidas, menos de 3 minutos</b>.</p>
     <p style="font-size:15px;line-height:1.5;color:#5EEAB8;font-weight:600;margin:0 0 22px">🎯 Con tu feedback decidimos <b>qué construir primero</b>.</p>
     <div style="text-align:center;margin:0 0 24px">
-      <a href="${link}" style="display:inline-block;background:#34D399;color:#08231A;font-weight:800;font-size:17px;text-decoration:none;padding:16px 30px;border-radius:14px">Responder la encuesta →</a>
+      <a href="${link}" style="display:inline-block;background:#34D399;color:#08231A;font-weight:800;font-size:17px;text-decoration:none;padding:16px 30px;border-radius:14px">Dar mi opinión →</a>
     </div>
     <p style="font-size:12px;line-height:1.6;color:#6B6B72;margin:0;text-align:center">Solo lo usamos para mejorar Presu. No compartimos tus datos. <span style="color:#34D399">Tu plata, clara.</span></p>
   </div></body></html>`;
@@ -935,7 +935,7 @@ function followupHtml(r) {
   [data-ogsb] .btn-mint{background:#34D399!important}[data-ogsc] .btn-mint{color:#06231A!important}
   [data-ogsb] .btn-dark{background:#0C0C0F!important}[data-ogsc] .btn-dark{color:#ffffff!important}
   </style></head><body style="margin:0;background:#08080A;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#F4F4F3">
-  <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:#08080A">Descárgala para Mac o Windows y cuéntanos cómo te va —te toma 3 minutos.</div>
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:#08080A">Mac o Windows. La instalas, sumas tus movimientos y ves todo claro.</div>
   <div class="em-body" style="background:#08080A">
   ${EMAIL_HEADER}
   <div style="max-width:540px;margin:0 auto;padding:20px 24px 36px">
@@ -949,7 +949,7 @@ function followupHtml(r) {
       <div class="t-mint" style="font-size:12px;font-weight:700;letter-spacing:.06em;color:#34D399;margin:0 0 8px">PASO 2 · 3 MIN 🌱</div>
       <h2 class="t-white" style="font-size:20px;line-height:1.2;font-weight:700;color:#fff;margin:0 0 8px">Ayúdanos a decidir qué sigue</h2>
       <p class="t-body" style="font-size:15px;line-height:1.55;color:#C9C9CE;margin:0 0 16px">Eres pionero: <b class="t-white" style="color:#fff">tu voz manda</b>. Responde <b class="t-white" style="color:#fff">unas preguntas rápidas (te toma 3 min)</b> —ya la hayas abierto o no— y defines el próximo banco y la próxima función.</p>
-      <a class="btn-dark" href="${survey}" style="display:inline-block;background:#0C0C0F;border:1px solid rgba(255,255,255,.20);color:#fff;font-weight:700;font-size:15px;text-decoration:none;padding:13px 26px;border-radius:12px">Responder la encuesta →</a>
+      <a class="btn-dark" href="${survey}" style="display:inline-block;background:#0C0C0F;border:1px solid rgba(255,255,255,.20);color:#fff;font-weight:700;font-size:15px;text-decoration:none;padding:13px 26px;border-radius:12px">Dar mi opinión →</a>
     </div>
     <p class="t-mut" style="font-size:12px;line-height:1.6;color:#6B6B72;margin:28px 0 0">Gracias por construir Presu desde el día cero. <span class="t-mint" style="color:#34D399">Tu plata, clara.</span><br>Presu · de Asimétrica</p>
   </div></div></body></html>`;
