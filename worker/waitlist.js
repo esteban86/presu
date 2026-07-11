@@ -69,6 +69,7 @@ export default {
     if (path === '/admin/campaign-one') return adminCampaignOne(request, env, cors);
     if (request.method === 'GET' && path === '/admin/stats') return adminStats(request, env, cors);
     if (request.method === 'GET' && path === '/admin/waitlist') return adminWaitlist(request, env, cors, url);
+    if (request.method === 'GET' && path === '/admin/clicks') return adminClicks(request, env, cors);
 
     if (request.method === 'GET' && path === '/r') return trackRedirect(request, env, url);
 
@@ -315,6 +316,41 @@ async function adminWaitlist(request, env, cors, url) {
   return json({ total: rows.length, rows }, 200, cors);
 }
 function authed(request, env) { return env.ADMIN_TOKEN && (request.headers.get('X-Admin-Token') || '') === env.ADMIN_TOKEN; }
+
+// GET /admin/clicks — agrega los eventos click:<correo>:<ts> (device, destino, campaña). Token.
+async function adminClicks(request, env, cors) {
+  if (!authed(request, env)) return json({ error: 'unauthorized' }, 401, cors);
+  const names = [];
+  let cursor, done = false;
+  while (!done) {
+    const l = await env.WAITLIST.list({ prefix: 'click:', limit: 1000, cursor });
+    for (const k of l.keys) names.push(k.name);
+    if (l.list_complete) { done = true; } else { cursor = l.cursor; }
+  }
+  const byDevice = {}, byTo = {}, byCampaign = {}, perPerson = {};
+  const BATCH = 100;
+  for (let i = 0; i < names.length; i += BATCH) {
+    const vals = await Promise.all(names.slice(i, i + BATCH).map(function (n) {
+      return env.WAITLIST.get(n).then(function (v) {
+        let r = {}; try { r = JSON.parse(v || '{}'); } catch (e) {}
+        const rest = n.slice(6); const li = rest.lastIndexOf(':'); r.email = li > 0 ? rest.slice(0, li) : rest; // click:<email>:<ts>
+        return r;
+      });
+    }));
+    for (const e of vals) {
+      const dev = e.device || '?', to = e.to || '?', c = e.c || '(sin campaña)';
+      byDevice[dev] = (byDevice[dev] || 0) + 1;
+      byTo[to] = (byTo[to] || 0) + 1;
+      byCampaign[c] = (byCampaign[c] || 0) + 1;
+      const p = perPerson[e.email] || (perPerson[e.email] = { email: e.email, clicks: 0, lastAt: 0, lastDevice: '', tos: {} });
+      p.clicks++;
+      p.tos[to] = (p.tos[to] || 0) + 1;
+      if ((e.ts || 0) > p.lastAt) { p.lastAt = e.ts || 0; p.lastDevice = dev; }
+    }
+  }
+  const people = Object.keys(perPerson).map(function (k) { return perPerson[k]; }).sort(function (a, b) { return b.lastAt - a.lastAt; });
+  return json({ totalClicks: names.length, uniquePeople: people.length, byDevice, byTo, byCampaign, people }, 200, cors);
+}
 
 // GET /r?e=&to=&c= — link de correo con tracking: registra el clic (correo + device
 // + timestamp, todo server-side desde el User-Agent) en KV y redirige al destino.

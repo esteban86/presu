@@ -69,7 +69,7 @@
   var app = document.getElementById('app');
   var tok = sessionStorage.getItem('presu_admin_tok') || '';
   var GROUPS = {};
-  var view = location.hash === '#encuesta' ? 'encuesta' : (location.hash === '#registros' ? 'registros' : 'aportes');
+  var view = location.hash === '#encuesta' ? 'encuesta' : (location.hash === '#registros' ? 'registros' : (location.hash === '#clics' ? 'clics' : 'aportes'));
   function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c];});}
 
   // Junta las páginas de un envío en UN solo PDF (en el navegador).
@@ -132,7 +132,8 @@
     return '<div class="tabs">'+
       '<button class="tab'+(view==='aportes'?' on':'')+'" data-v="aportes">Aportes</button>'+
       '<button class="tab'+(view==='encuesta'?' on':'')+'" data-v="encuesta">Encuesta</button>'+
-      '<button class="tab'+(view==='registros'?' on':'')+'" data-v="registros">Registros</button></div>';
+      '<button class="tab'+(view==='registros'?' on':'')+'" data-v="registros">Registros</button>'+
+      '<button class="tab'+(view==='clics'?' on':'')+'" data-v="clics">Clics</button></div>';
   }
   function wireTabs(){
     Array.prototype.forEach.call(document.querySelectorAll('.tab'), function(b){
@@ -162,6 +163,13 @@
       fetch(API+'/admin/waitlist',{headers:{'X-Admin-Token':tok},cache:'no-store'})
         .then(function(r){ if(r.status===401) throw new Error('Token inválido'); return r.json(); })
         .then(function(d){ renderRegistros(d.rows||[]); })
+        .catch(function(e){ gate(e.message||'No se pudo cargar'); });
+      return;
+    }
+    if(view==='clics'){
+      fetch(API+'/admin/clicks',{headers:{'X-Admin-Token':tok},cache:'no-store'})
+        .then(function(r){ if(r.status===401) throw new Error('Token inválido'); return r.json(); })
+        .then(function(d){ renderClics(d); })
         .catch(function(e){ gate(e.message||'No se pudo cargar'); });
       return;
     }
@@ -319,6 +327,36 @@
           var a=document.createElement('a'); a.href=u; a.download='presu-registros.csv'; a.click(); URL.revokeObjectURL(u);
         });
     };
+    var rl=document.getElementById('reload'); if(rl) rl.onclick=load;
+    var lo=document.getElementById('logout'); if(lo) lo.onclick=function(){ sessionStorage.removeItem('presu_admin_tok'); tok=''; gate(); };
+  }
+
+  // ── Vista Clics (tracking del link del correo: quién, device, destino) ──
+  function clDate(ts){ return ts?new Date(ts).toLocaleString('es-CO',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):''; }
+  function clChips(o){ o=o||{}; var ks=Object.keys(o).sort(function(a,b){return o[b]-o[a];}); return ks.length?ks.map(function(k){return '<span class="chip">'+esc(k)+' <b>'+o[k]+'</b></span>';}).join(''):'—'; }
+  function renderClics(d){
+    d=d||{};
+    var people=d.people||[];
+    var html=tabs()+'<h1>Clics <span class="stat">'+(d.totalClicks||0)+' clics · '+(d.uniquePeople||0)+' personas</span></h1>'+
+      '<div class="row" style="margin:10px 0 6px"><button class="btn ghost" id="reload">Recargar</button> <button class="btn ghost" id="logout">Salir</button></div>'+
+      '<div class="group"><div class="ghead"><b>Resumen</b></div>'+
+      '<div class="agg-k">Dispositivo</div><div class="chips">'+clChips(d.byDevice)+'</div>'+
+      '<div class="agg-k">Destino</div><div class="chips">'+clChips(d.byTo)+'</div>'+
+      '<div class="agg-k">Campaña</div><div class="chips">'+clChips(d.byCampaign)+'</div></div>';
+    if(!people.length){ app.innerHTML=html+'<p class="empty">Aún no hay clics registrados.</p>'; wireClics(); return; }
+    html+='<div class="group"><div class="ghead"><b>Por persona</b></div>';
+    people.forEach(function(p){
+      var tos=Object.keys(p.tos||{}).map(function(t){return '<span class="tag">'+esc(t)+': '+p.tos[t]+'</span>';}).join(' ');
+      html+='<div style="border-bottom:1px solid var(--line);padding:9px 0"><b>'+esc(p.email)+'</b> '+
+        '<span class="tag">'+p.clicks+' clic'+(p.clicks!==1?'s':'')+'</span> '+
+        '<span class="tag">último: '+esc(p.lastDevice||'?')+'</span> '+
+        '<span class="tag">'+clDate(p.lastAt)+'</span> '+tos+'</div>';
+    });
+    html+='</div>';
+    app.innerHTML=html; wireClics();
+  }
+  function wireClics(){
+    wireTabs();
     var rl=document.getElementById('reload'); if(rl) rl.onclick=load;
     var lo=document.getElementById('logout'); if(lo) lo.onclick=function(){ sessionStorage.removeItem('presu_admin_tok'); tok=''; gate(); };
   }
