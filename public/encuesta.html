@@ -144,6 +144,16 @@
     .check svg path{stroke-dashoffset:0}
   }
 </style>
+<!-- GA4 (Consent Mode; respeta la cookie asi-consent de la landing) -->
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){ dataLayer.push(arguments); }
+  var _c = (document.cookie.match(/(?:^|; )asi-consent=(granted|denied)/) || [])[1];
+  gtag('consent','default',{'ad_storage':'denied','ad_user_data':'denied','ad_personalization':'denied','analytics_storage': _c === 'granted' ? 'granted' : 'denied','wait_for_update':500});
+  gtag('js', new Date());
+  gtag('config','G-DZPY2T152N');
+</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-DZPY2T152N"></script>
 </head>
 <body>
 <div class="progress"><i id="bar"></i></div>

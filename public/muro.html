@@ -56,6 +56,16 @@
   .back{display:inline-block;margin-top:34px;color:var(--mut);text-decoration:none;font-size:.9rem;border:1px solid var(--line);border-radius:999px;padding:9px 18px}
   .loading{color:var(--mut)}
 </style>
+<!-- GA4 (Consent Mode; respeta la cookie asi-consent de la landing) -->
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){ dataLayer.push(arguments); }
+  var _c = (document.cookie.match(/(?:^|; )asi-consent=(granted|denied)/) || [])[1];
+  gtag('consent','default',{'ad_storage':'denied','ad_user_data':'denied','ad_personalization':'denied','analytics_storage': _c === 'granted' ? 'granted' : 'denied','wait_for_update':500});
+  gtag('js', new Date());
+  gtag('config','G-DZPY2T152N');
+</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-DZPY2T152N"></script>
 </head>
 <body>
 <header class="site-header">
