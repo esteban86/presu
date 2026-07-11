@@ -24,7 +24,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const FROM = 'Presu · de Asimétrica <presu@asimetrica.co>';
 // Wordmark oficial (DS v2) para correos: imagen alojada en presu.io (la franja a -9° no
 // se renderiza confiable con CSS en Gmail/Outlook, así que va como <img>).
-const LOGO_IMG = '<img src="https://presu.io/presu-wordmark.png" alt="Presu" width="108" height="36" style="display:block;border:0;outline:none;text-decoration:none;height:36px;width:108px;margin-bottom:18px">';
+const LOGO_IMG = '<img src="https://presu.io/presu-wordmark.png?v=2" alt="Presu" width="108" height="36" style="display:block;border:0;outline:none;text-decoration:none;height:36px;width:108px;margin-bottom:18px">';
 // Destinos permitidos para /r (evita open-redirect). El link del correo usa
 // presu.io/r (endpoint on-demand en Pages, src/pages/r.js) que hace proxy a
 // este /r; así el enlace es branded sin apagar workers.dev.
