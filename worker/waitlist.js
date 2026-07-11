@@ -21,7 +21,7 @@
 const SITE = 'https://presu.io';
 const ALLOWED_ORIGINS = [SITE, 'https://www.presu.io', 'https://presu.asimetrica.co', 'https://presu.com.co', 'http://localhost:4821', 'http://localhost:4796'];
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const FROM = 'Presu <presu@asimetrica.co>';
+const FROM = 'Presu <presu@presu.io>';
 // Header de marca para correos: banner oscuro (#08080A) full-width con el wordmark,
 // como IMAGEN. Gmail invierte colores CSS pero NO imágenes → el header se mantiene
 // oscuro aunque el cliente fuerce el cuerpo a claro (dark-mode inversion).
