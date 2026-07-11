@@ -922,24 +922,36 @@ function followupHtml(r) {
   const hola = r.nombre ? 'Hola, ' + esc(r.nombre) + ' 👋' : 'Hola 👋';
   const dl = SITE + '/r?e=' + encodeURIComponent(r.email || '') + '&to=descargar&c=followup';
   const survey = SITE + '/r?e=' + encodeURIComponent(r.email || '') + '&to=encuesta&c=followup';
-  return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark"><meta name="supported-color-schemes" content="dark"><style>:root{color-scheme:dark}</style></head><body style="margin:0;background:#08080A;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#F4F4F3">
+  return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark"><meta name="supported-color-schemes" content="dark"><style>
+  :root{color-scheme:dark;supported-color-schemes:dark}
+  /* Gmail invierte y marca con data-ogsc (texto) / data-ogsb (fondo): los forzamos de vuelta al oscuro de marca */
+  [data-ogsb] .em-body{background:#08080A!important}
+  [data-ogsb] .em-card{background:#101014!important}
+  [data-ogsc] .t-white{color:#ffffff!important}
+  [data-ogsc] .t-body{color:#C9C9CE!important}
+  [data-ogsc] .t-mut{color:#8A8A90!important}
+  [data-ogsc] .t-mint{color:#34D399!important}
+  [data-ogsb] .btn-mint{background:#34D399!important}[data-ogsc] .btn-mint{color:#06231A!important}
+  [data-ogsb] .btn-dark{background:#0C0C0F!important}[data-ogsc] .btn-dark{color:#ffffff!important}
+  </style></head><body style="margin:0;background:#08080A;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#F4F4F3">
   <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:#08080A">Descárgala para Mac o Windows y cuéntanos cómo te va —te toma 3 minutos.</div>
+  <div class="em-body" style="background:#08080A">
   <div style="max-width:540px;margin:0 auto;padding:36px 24px">
     ${LOGO_IMG}
-    <div style="font-family:'Courier New',monospace;font-size:12px;letter-spacing:.14em;color:#34D399;margin:2px 0 16px">PIONERO · BETA ABIERTA</div>
-    <h1 style="font-size:28px;line-height:1.15;font-weight:800;letter-spacing:-.02em;margin:0 0 12px;color:#fff">Tu Presu ya está listo <span style="color:#34D399">🌿</span></h1>
-    <p style="font-size:16px;line-height:1.55;color:#C9C9CE;margin:0 0 26px">${hola} La beta ya está abierta. Descárgala para <b style="color:#fff">Mac o Windows</b> —se instala en un minuto y tus datos viven <b style="color:#fff">cifrados en tu equipo</b> (local-first, sin nube).</p>
-    <div style="font-size:12px;font-weight:700;letter-spacing:.06em;color:#8A8A90;margin:0 0 10px">PASO 1 · DESCÁRGALA</div>
-    <a href="${dl}" style="display:inline-block;background:#34D399;color:#06231A;font-weight:800;font-size:17px;text-decoration:none;padding:16px 34px;border-radius:14px">Descargar Presu →</a>
-    <p style="font-size:13px;line-height:1.5;color:#6B6B72;margin:12px 0 28px">Elige tu sistema en la página (Mac Intel, Apple Silicon o Windows); ahí te dejamos los pasos.</p>
-    <div style="background:#101014;border:1px solid rgba(255,255,255,.10);border-radius:16px;padding:22px">
-      <div style="font-size:12px;font-weight:700;letter-spacing:.06em;color:#34D399;margin:0 0 8px">PASO 2 · 3 MIN 🌱</div>
-      <h2 style="font-size:20px;line-height:1.2;font-weight:700;color:#fff;margin:0 0 8px">Ayúdanos a decidir qué sigue</h2>
-      <p style="font-size:15px;line-height:1.55;color:#C9C9CE;margin:0 0 16px">Eres pionero: <b style="color:#fff">tu voz manda</b>. Responde <b style="color:#fff">unas preguntas rápidas (te toma 3 min)</b> —ya la hayas abierto o no— y defines el próximo banco y la próxima función.</p>
-      <a href="${survey}" style="display:inline-block;background:#0C0C0F;border:1px solid rgba(255,255,255,.20);color:#fff;font-weight:700;font-size:15px;text-decoration:none;padding:13px 26px;border-radius:12px">Responder la encuesta →</a>
+    <div class="t-mint" style="font-family:'Courier New',monospace;font-size:12px;letter-spacing:.14em;color:#34D399;margin:2px 0 16px">PIONERO · BETA ABIERTA</div>
+    <h1 class="t-white" style="font-size:28px;line-height:1.15;font-weight:800;letter-spacing:-.02em;margin:0 0 12px;color:#fff">Tu Presu ya está listo <span class="t-mint" style="color:#34D399">🌿</span></h1>
+    <p class="t-body" style="font-size:16px;line-height:1.55;color:#C9C9CE;margin:0 0 26px">${hola} La beta ya está abierta. Descárgala para <b class="t-white" style="color:#fff">Mac o Windows</b> —se instala en un minuto y tus datos viven <b class="t-white" style="color:#fff">cifrados en tu equipo</b> (local-first, sin nube).</p>
+    <div class="t-mut" style="font-size:12px;font-weight:700;letter-spacing:.06em;color:#8A8A90;margin:0 0 10px">PASO 1 · DESCÁRGALA</div>
+    <a class="btn-mint" href="${dl}" style="display:inline-block;background:#34D399;color:#06231A;font-weight:800;font-size:17px;text-decoration:none;padding:16px 34px;border-radius:14px">Descargar Presu →</a>
+    <p class="t-mut" style="font-size:13px;line-height:1.5;color:#6B6B72;margin:12px 0 28px">Elige tu sistema en la página (Mac Intel, Apple Silicon o Windows); ahí te dejamos los pasos.</p>
+    <div class="em-card" style="background:#101014;border:1px solid rgba(255,255,255,.10);border-radius:16px;padding:22px">
+      <div class="t-mint" style="font-size:12px;font-weight:700;letter-spacing:.06em;color:#34D399;margin:0 0 8px">PASO 2 · 3 MIN 🌱</div>
+      <h2 class="t-white" style="font-size:20px;line-height:1.2;font-weight:700;color:#fff;margin:0 0 8px">Ayúdanos a decidir qué sigue</h2>
+      <p class="t-body" style="font-size:15px;line-height:1.55;color:#C9C9CE;margin:0 0 16px">Eres pionero: <b class="t-white" style="color:#fff">tu voz manda</b>. Responde <b class="t-white" style="color:#fff">unas preguntas rápidas (te toma 3 min)</b> —ya la hayas abierto o no— y defines el próximo banco y la próxima función.</p>
+      <a class="btn-dark" href="${survey}" style="display:inline-block;background:#0C0C0F;border:1px solid rgba(255,255,255,.20);color:#fff;font-weight:700;font-size:15px;text-decoration:none;padding:13px 26px;border-radius:12px">Responder la encuesta →</a>
     </div>
-    <p style="font-size:12px;line-height:1.6;color:#6B6B72;margin:28px 0 0">Gracias por construir Presu desde el día cero. <span style="color:#34D399">Tu plata, clara.</span><br>Presu · de Asimétrica</p>
-  </div></body></html>`;
+    <p class="t-mut" style="font-size:12px;line-height:1.6;color:#6B6B72;margin:28px 0 0">Gracias por construir Presu desde el día cero. <span class="t-mint" style="color:#34D399">Tu plata, clara.</span><br>Presu · de Asimétrica</p>
+  </div></div></body></html>`;
 }
 
 function notifyHtml(r, total) {
