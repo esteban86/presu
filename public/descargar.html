@@ -96,6 +96,11 @@
   .wa-help{display:inline-flex;align-items:center;gap:9px;margin:18px 0 0;padding:12px 20px;border-radius:12px;background:rgba(37,211,102,.12);border:1px solid rgba(37,211,102,.42);color:#25D366;font-weight:700;font-size:.98rem;text-decoration:none;transition:.16s}
   .wa-help:hover{background:rgba(37,211,102,.2);border-color:rgba(37,211,102,.6);text-decoration:none}
   .wa-help svg{width:21px;height:21px;flex:none}
+  .mob-title{font-family:var(--head,"Space Grotesk",sans-serif);font-size:1.55rem;font-weight:800;letter-spacing:-.02em;color:var(--tx);line-height:1.15;margin:0 0 12px}
+  .mob-soft{color:var(--mut2)}
+  .mob-lead{color:var(--mut);font-size:1.02rem;line-height:1.55;margin:0 0 22px}
+  .mob-lead b{color:var(--tx)}
+  .mob-hint{margin:12px 0 0;font-size:.9rem;color:var(--mut2)}
 
   .foot{margin-top:44px;padding-top:22px;border-top:1px solid var(--line);color:var(--mut2);font-size:.9rem;display:flex;gap:18px;flex-wrap:wrap;align-items:center}
   .foot a{color:var(--mut)}
@@ -165,6 +170,12 @@
 
   <!-- APP: descarga (oculta hasta validar) -->
   <div id="app" class="hidden">
+    <div id="mobile-msg" class="hidden">
+      <h2 class="mob-title">Presu es para tu computador <span class="mob-soft">(por ahora)</span></h2>
+      <p class="mob-lead">Este enlace instala Presu en <b>Mac o Windows</b> — en el celular no te va a servir. La app móvil viene en camino 🌱.</p>
+      <button type="button" id="copy-link" class="dl-primary" style="width:100%;border:0;cursor:pointer;font-family:inherit"><span id="copy-label">Copiar enlace para tu compu</span></button>
+      <p class="mob-hint">Ábrelo desde tu Mac o Windows y la descarga arranca sola.</p>
+    </div>
     <a class="dl-primary" id="dl-primary" href="https://presu-ai.asimetrica.workers.dev/download/mac-arm64">
       <span id="dl-ic"></span>
       <span class="col"><span id="dl-label">Descargar para Mac</span><span class="dl-sub" id="dl-sublabel">Apple Silicon · M1 a M5</span></span>
@@ -268,6 +279,14 @@
   function altHtml(href, icon, name, osname){
     return '<a class="alt" href="'+href+'">'+icon+'<span>'+name+' <span class="os">'+osname+'</span></span></a>';
   }
+  function isMobile(){
+    var ua = navigator.userAgent || '';
+    if (navigator.userAgentData && typeof navigator.userAgentData.mobile === 'boolean' && navigator.userAgentData.mobile) return true;
+    if (/Android|iPhone|iPod|Windows Phone|Mobile/i.test(ua)) return true;
+    if (/iPad/i.test(ua)) return true;
+    if (/Macintosh/i.test(ua) && (navigator.maxTouchPoints || 0) > 1) return true; // iPad en modo escritorio
+    return false;
+  }
   function detectOS(){
     var p = ((navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || '').toLowerCase();
     var ua = (navigator.userAgent || '').toLowerCase();
@@ -283,6 +302,19 @@
     shownSteps = which;
   }
   function setupDownload(){
+    if (isMobile()){
+      ['dl-primary','alts','steps-mac','steps-win'].forEach(function(id){ var el=document.getElementById(id); if(el) el.classList.add('hidden'); });
+      var tog = document.getElementById('toggle-os'); if (tog && tog.closest('p')) tog.closest('p').classList.add('hidden');
+      var mm = document.getElementById('mobile-msg'); if (mm) mm.classList.remove('hidden');
+      var btn = document.getElementById('copy-link');
+      if (btn) btn.onclick = function(){
+        var done = function(){ var l = document.getElementById('copy-label'); if (l) l.textContent = '¡Enlace copiado! 🎉'; };
+        var url = location.href;
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done, done);
+        else { try { var t = document.createElement('textarea'); t.value = url; document.body.appendChild(t); t.focus(); t.select(); document.execCommand('copy'); t.remove(); done(); } catch(e){} }
+      };
+      return;
+    }
     var os = detectOS();
     var primary = document.getElementById('dl-primary');
     var ic = document.getElementById('dl-ic');
