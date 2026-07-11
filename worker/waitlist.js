@@ -21,7 +21,7 @@
 const SITE = 'https://presu.io';
 const ALLOWED_ORIGINS = [SITE, 'https://www.presu.io', 'https://presu.asimetrica.co', 'https://presu.com.co', 'http://localhost:4821', 'http://localhost:4796'];
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const FROM = 'Presu · de Asimétrica <presu@asimetrica.co>';
+const FROM = 'Presu <presu@asimetrica.co>';
 // Header de marca para correos: banner oscuro (#08080A) full-width con el wordmark,
 // como IMAGEN. Gmail invierte colores CSS pero NO imágenes → el header se mantiene
 // oscuro aunque el cliente fuerce el cuerpo a claro (dark-mode inversion).
@@ -38,7 +38,7 @@ const TIERS = [
   { min: 15, name: 'Masterclass' },
 ];
 const CAP = 1000; // cupos máximos antes del lanzamiento; al llegar, se cierran los registros.
-const CAMPAIGN_SUBJECT = 'Tu link de Fundador ya está aquí 🚀';
+const CAMPAIGN_SUBJECT = 'Presu abrió 🚀 Tus gastos de todos tus bancos, claros';
 const CAMPAIGN_BATCH = 30; // envíos por disparo del cron (bajo el límite de subrequests)
 // La tanda 1 (Pioneros) cerró el 30-jun-2026; desde el 1-jul es Nueva Ola.
 // Cohorte = Nueva Ola si se registró tras el corte O trae el tag origen=tanda2
@@ -164,7 +164,7 @@ export default {
     let mail = { welcome: null, notify: null };
     if (env.RESEND_API_KEY) {
       const isLate = record.origen === 'tanda2';
-      mail.welcome = await sendResend(env, { to: email, reply_to: env.NOTIFY_EMAIL || undefined, subject: isLate ? 'Estás en la Nueva Ola de Presu 🌊 (abre el 15 de julio)' : '¡Ya eres pionero de Presu! 🎉', html: isLate ? lateWelcomeHtml(record) : welcomeHtml(record) });
+      mail.welcome = await sendResend(env, { to: email, reply_to: env.NOTIFY_EMAIL || undefined, subject: isLate ? 'Estás dentro 🌊 El 15 empiezas a ver tu plata clara' : 'Ya estás dentro 🌿 Por fin vas a saber a dónde se va tu plata', html: isLate ? lateWelcomeHtml(record) : welcomeHtml(record) });
       if (mail.welcome && mail.welcome.ok) { await env.WAITLIST.put('welcomed:' + email, String(Date.now())); await env.WAITLIST.put('campaign:' + email, 'welcome'); }
       if (env.NOTIFY_EMAIL) mail.notify = await sendResend(env, { to: env.NOTIFY_EMAIL, reply_to: email, subject: 'Nuevo registro en la waitlist de Presu (' + record.perfil + ')', html: notifyHtml(record, total) });
     }
@@ -248,7 +248,7 @@ async function adminWelcome(request, env, cors) {
   const raw = await env.WAITLIST.get('email:' + email);
   if (raw) { try { rec = JSON.parse(raw); } catch (e) {} }
   if (!rec.ref) { rec.ref = await genCode(env); if (rec.ref) { await env.WAITLIST.put('code:' + rec.ref, email); await env.WAITLIST.put('email:' + email, JSON.stringify(rec)); } }
-  const res = await sendResend(env, { to: email, reply_to: env.NOTIFY_EMAIL || undefined, subject: '¡Ya eres pionero de Presu! 🎉', html: welcomeHtml(rec) });
+  const res = await sendResend(env, { to: email, reply_to: env.NOTIFY_EMAIL || undefined, subject: 'Ya estás dentro 🌿 Por fin vas a saber a dónde se va tu plata', html: welcomeHtml(rec) });
   if (res.ok) { await env.WAITLIST.put('welcomed:' + email, String(Date.now())); return json({ status: 'sent', id: res.id }, 200, cors); }
   return json({ status: 'error', detail: res }, 502, cors);
 }
@@ -488,8 +488,8 @@ async function roadmapVote(request, env, cors) {
 // ── Encuesta de perfil (buyer persona) ───────────────────────
 const SURVEY_FIELDS = ['nombre', 'uso', 'features', 'valor', 'falta', 'freno', 'ayuda_config', 'edad', 'ciudad', 'ocupacion', 'ingreso_tipo', 'metodo', 'metas', 'bancos', 'bancos_otra', 'dispositivo', 'dolor', 'pago', 'ingreso', 'ayuda', 'celular'];
 const SURVEY_ARRAY_FIELDS = ['bancos', 'metas', 'ayuda', 'features'];
-const SURVEY_SUBJECT = 'Llevas unos días con Presu — cuéntanos cómo te va 🌿';
-const FOLLOWUP_SUBJECT = 'Tu Presu ya está listo para instalar 🌿';
+const SURVEY_SUBJECT = '2 min: ayúdanos a ordenar mejor tu plata';
+const FOLLOWUP_SUBJECT = 'Instálalo y mira a dónde se va tu plata 🌿';
 
 // GET /es-pionero?e=correo → { pionero: bool } — puerta suave de la página /descargar (solo pioneros).
 async function esPioneroCheck(request, env, pub, url) {
