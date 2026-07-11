@@ -25,11 +25,9 @@ const FROM = 'Presu · de Asimétrica <presu@asimetrica.co>';
 // Wordmark oficial (DS v2) para correos: imagen alojada en presu.io (la franja a -9° no
 // se renderiza confiable con CSS en Gmail/Outlook, así que va como <img>).
 const LOGO_IMG = '<img src="https://presu.io/presu-wordmark.png" alt="Presu" width="108" height="36" style="display:block;border:0;outline:none;text-decoration:none;height:36px;width:108px;margin-bottom:18px">';
-// Origen del propio worker (para el link de tracking del correo). Branding a
-// presu.io/r se hará luego con un Pages Function (route no sirve: Pages gana y
-// apaga workers.dev).
-const SELF = 'https://presu-waitlist.asimetrica.workers.dev';
-// Destinos permitidos para /r (evita open-redirect).
+// Destinos permitidos para /r (evita open-redirect). El link del correo usa
+// presu.io/r (endpoint on-demand en Pages, src/pages/r.js) que hace proxy a
+// este /r; así el enlace es branded sin apagar workers.dev.
 const REDIRECT_DEST = { descargar: '/descargar', encuesta: '/encuesta.html', inicio: '/' };
 const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 const DISPOSABLE = ['mailinator.com', 'guerrillamail.com', '10minutemail.com', 'tempmail.com', 'temp-mail.org', 'yopmail.com', 'trashmail.com', 'getnada.com', 'sharklasers.com', 'maildrop.cc', 'dispostable.com', 'fakeinbox.com', 'mohmal.com'];
@@ -886,8 +884,8 @@ function surveyEmailHtml(r) {
 // Seguimiento a pioneros: instalador (→ presu.io/descargar) + encuesta, en un solo correo.
 function followupHtml(r) {
   const hola = r.nombre ? 'Hola, ' + esc(r.nombre) + ' 👋' : 'Hola 👋';
-  const dl = SELF + '/r?e=' + encodeURIComponent(r.email || '') + '&to=descargar&c=followup';
-  const survey = SELF + '/r?e=' + encodeURIComponent(r.email || '') + '&to=encuesta&c=followup';
+  const dl = SITE + '/r?e=' + encodeURIComponent(r.email || '') + '&to=descargar&c=followup';
+  const survey = SITE + '/r?e=' + encodeURIComponent(r.email || '') + '&to=encuesta&c=followup';
   return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark"></head><body style="margin:0;background:#08080A;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#F4F4F3">
   <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:#08080A">Descárgala para Mac o Windows y cuéntanos cómo te va —te toma 3 minutos.</div>
   <div style="max-width:540px;margin:0 auto;padding:36px 24px">
