@@ -166,7 +166,7 @@ export default {
       const isLate = record.origen === 'tanda2';
       mail.welcome = await sendResend(env, { to: email, reply_to: env.NOTIFY_EMAIL || undefined, subject: isLate ? 'Estás dentro 🌊 el 15 ves tu plata clara' : 'Ya eres Pionero 🌿 tu plata por fin clara', html: isLate ? lateWelcomeHtml(record) : welcomeHtml(record) });
       if (mail.welcome && mail.welcome.ok) { await env.WAITLIST.put('welcomed:' + email, String(Date.now())); await env.WAITLIST.put('campaign:' + email, 'welcome'); }
-      if (env.NOTIFY_EMAIL) mail.notify = await sendResend(env, { to: env.NOTIFY_EMAIL, reply_to: email, subject: 'Nuevo registro en la waitlist de Presu (' + record.perfil + ')', html: notifyHtml(record, total) });
+      if (env.NOTIFY_EMAIL) mail.notify = await sendResend(env, { to: env.NOTIFY_EMAIL, reply_to: email, subject: '📥 Nuevo registro en la waitlist de Presu (' + record.perfil + ')', html: notifyHtml(record, total) });
     }
 
     const resp = { status: 'ok', total, ref: code };
@@ -488,8 +488,8 @@ async function roadmapVote(request, env, cors) {
 // ── Encuesta de perfil (buyer persona) ───────────────────────
 const SURVEY_FIELDS = ['nombre', 'uso', 'features', 'valor', 'falta', 'freno', 'ayuda_config', 'edad', 'ciudad', 'ocupacion', 'ingreso_tipo', 'metodo', 'metas', 'bancos', 'bancos_otra', 'dispositivo', 'dolor', 'pago', 'ingreso', 'ayuda', 'celular'];
 const SURVEY_ARRAY_FIELDS = ['bancos', 'metas', 'ayuda', 'features'];
-const SURVEY_SUBJECT = '¿Qué le falta a tu Presu?';
-const FOLLOWUP_SUBJECT = 'En 3 min ves a dónde se va tu plata';
+const SURVEY_SUBJECT = '¿Qué le falta a tu Presu? 💬';
+const FOLLOWUP_SUBJECT = 'En 3 min ves a dónde se va tu plata 👀';
 
 // GET /es-pionero?e=correo → { pionero: bool } — puerta suave de la página /descargar (solo pioneros).
 async function esPioneroCheck(request, env, pub, url) {
@@ -721,7 +721,7 @@ async function contribSubmit(request, env, cors) {
     await contribBumpWall(env, 'anon:' + slug(nombre), nombre, ids.length);
   }
   if (env.RESEND_API_KEY && env.NOTIFY_EMAIL) {
-    try { await sendResend(env, { to: env.NOTIFY_EMAIL, subject: 'Nuevo aporte de documento (' + banco + ')', html: '<p>' + ids.length + ' documento(s) · <b>' + esc(banco) + '</b> · ' + esc(pais) + ' · ' + esc(tipo) + (email ? (' · por ' + esc(email)) : '') + '</p>' }); } catch (e) {}
+    try { await sendResend(env, { to: env.NOTIFY_EMAIL, subject: '📄 Nuevo aporte de documento (' + banco + ')', html: '<p>' + ids.length + ' documento(s) · <b>' + esc(banco) + '</b> · ' + esc(pais) + ' · ' + esc(tipo) + (email ? (' · por ' + esc(email)) : '') + '</p>' }); } catch (e) {}
   }
   return json({ status: 'ok', n: ids.length, progress: { total, goal: CONTRIB_GOAL }, contributor }, 200, cors);
 }
