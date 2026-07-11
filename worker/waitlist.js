@@ -936,8 +936,8 @@ function followupHtml(r) {
   </style></head><body style="margin:0;background:#08080A;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#F4F4F3">
   <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:#08080A">Descárgala para Mac o Windows y cuéntanos cómo te va —te toma 3 minutos.</div>
   <div class="em-body" style="background:#08080A">
-  <div style="max-width:540px;margin:0 auto;padding:36px 24px">
-    ${LOGO_IMG}
+  <img src="https://presu.io/presu-email-header.png?v=1" alt="Presu" width="600" style="display:block;width:100%;max-width:600px;height:auto;border:0;outline:none;text-decoration:none;margin:0 auto">
+  <div style="max-width:540px;margin:0 auto;padding:20px 24px 36px">
     <div class="t-mint" style="font-family:'Courier New',monospace;font-size:12px;letter-spacing:.14em;color:#34D399;margin:2px 0 16px">PIONERO · BETA ABIERTA</div>
     <h1 class="t-white" style="font-size:28px;line-height:1.15;font-weight:800;letter-spacing:-.02em;margin:0 0 12px;color:#fff">Tu Presu ya está listo <span class="t-mint" style="color:#34D399">🌿</span></h1>
     <p class="t-body" style="font-size:16px;line-height:1.55;color:#C9C9CE;margin:0 0 26px">${hola} La beta ya está abierta. Descárgala para <b class="t-white" style="color:#fff">Mac o Windows</b> —se instala en un minuto y tus datos viven <b class="t-white" style="color:#fff">cifrados en tu equipo</b> (local-first, sin nube).</p>
