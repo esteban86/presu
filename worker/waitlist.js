@@ -71,6 +71,7 @@ export default {
     if (request.method === 'GET' && path === '/admin/stats') return adminStats(request, env, cors);
     if (request.method === 'GET' && path === '/admin/waitlist') return adminWaitlist(request, env, cors, url);
     if (request.method === 'GET' && path === '/admin/clicks') return adminClicks(request, env, cors);
+    if (request.method === 'POST' && path === '/resend/webhook') return handleResendWebhook(request, env);
 
     if (request.method === 'GET' && path === '/r') return trackRedirect(request, env, url);
 
@@ -1006,4 +1007,36 @@ export async function verifySvix(secret, headers, rawBody) {
     }
     return false;
   } catch (e) { return false; }
+}
+
+// POST /resend/webhook — eventos de Resend (Svix): entregas/aperturas/rebotes/quejas por usuario.
+// Nunca debe romper el ack ante Resend: solo firma inválida devuelve 401; todo lo demás → {ok:true}.
+async function handleResendWebhook(request, env) {
+  const raw = await request.text();
+  const ok = await verifySvix(env.RESEND_WEBHOOK_SECRET, request.headers, raw);
+  if (!ok) return new Response('invalid signature', { status: 401 });
+  let evt = {}; try { evt = JSON.parse(raw); } catch (e) { return json({ ok: true, ignored: 'bad_json' }, 200); }
+  const MAP = { 'email.delivered': 'delivered', 'email.opened': 'opened', 'email.bounced': 'bounced', 'email.complained': 'complained' };
+  const t = MAP[evt.type || ''];
+  if (!t) return json({ ok: true, ignored: evt.type || '?' }, 200);
+  const data = evt.data || {};
+  const to = String(Array.isArray(data.to) ? (data.to[0] || '') : (data.to || '')).trim().toLowerCase();
+  if (!to || !EMAIL_RE.test(to)) return json({ ok: true, ignored: 'no_email' }, 200);
+  const emailId = data.email_id || data.id || '';
+  const ts = Date.parse(data.created_at || '') || Date.now();
+  let campaign = '';
+  if (emailId) { const m = await env.WAITLIST.get('msg:' + emailId); if (m) { try { campaign = JSON.parse(m).c || ''; } catch (e) {} } }
+  try {
+    await env.WAITLIST.put('mailevt:' + to + ':' + ts, JSON.stringify({ t: t, c: campaign, id: emailId }), { expirationTtl: 60 * 60 * 24 * 365 });
+    const rawR = await env.WAITLIST.get('email:' + to);
+    if (rawR) {
+      let r = {}; try { r = JSON.parse(rawR); } catch (e) {}
+      if (t === 'delivered') r.deliveredAt = r.deliveredAt || ts;
+      else if (t === 'opened') { r.openedAt = r.openedAt || ts; r.lastOpenAt = ts; r.openCount = (r.openCount || 0) + 1; }
+      else if (t === 'bounced') r.bouncedAt = ts;
+      else if (t === 'complained') r.complainedAt = ts;
+      await env.WAITLIST.put('email:' + to, JSON.stringify(r));
+    }
+  } catch (e) { /* tracking nunca rompe; ackear igual */ }
+  return json({ ok: true }, 200);
 }
