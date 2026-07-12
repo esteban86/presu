@@ -65,6 +65,14 @@
   .utable th,.utable td{text-align:left;padding:8px;border-bottom:1px solid #222}
   .utable td.c{text-align:center}
   .urow{cursor:pointer}.urow:hover{background:#161616}
+  .umodal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+  .ubox{background:#0f0f12;border:1px solid #2a2a30;border-radius:16px;max-width:560px;width:100%;max-height:85vh;overflow:auto;padding:24px;position:relative}
+  .uclose{position:absolute;top:12px;right:14px;background:none;border:0;color:#888;font-size:1.1rem;cursor:pointer}
+  .umeta{color:#9a9a9a;font-size:.86rem;margin:2px 0 10px}
+  .uwarn{background:#3a1414;border:1px solid #5a2020;color:#f3a;border-radius:8px;padding:8px 12px;margin:8px 0;font-size:.85rem}
+  .ustats{display:flex;gap:16px;margin:10px 0;font-size:.9rem;color:#bbb}.ustats b{color:#fff}
+  .uev{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #1c1c1c;font-size:.88rem}
+  .uet{min-width:120px}.uec{color:#34D399;flex:1}.uedate{color:#777;font-size:.8rem}
 </style>
 </head>
 <body>
@@ -397,7 +405,7 @@
     var body = rows.map(function(u){
       var enc = u.survey.completed?'✓':(u.survey.answered?'parcial':'—');
       var warn = (u.bounced||u.complained)?' ⚠️':'';
-      return '<tr data-e="'+esc(u.email)+'" class="urow">'+
+      return '<tr data-e="'+esc(u.email)+'" data-n="'+esc((u.nombre||'').toLowerCase())+'" class="urow">'+
         '<td>'+esc(u.email)+warn+'</td>'+
         '<td>'+esc(u.cohort)+'</td>'+
         '<td class="c">'+ico(u.sent.welcome)+ico(u.sent.encuesta)+ico(u.sent.followup)+'</td>'+
@@ -420,12 +428,40 @@
     if (search) search.oninput = function(){
       var q = search.value.trim().toLowerCase();
       document.querySelectorAll('#ubody tr').forEach(function(tr){
-        tr.style.display = tr.getAttribute('data-e').toLowerCase().indexOf(q) > -1 ? '' : 'none';
+        var hit = tr.getAttribute('data-e').toLowerCase().indexOf(q) > -1 || tr.getAttribute('data-n').indexOf(q) > -1;
+        tr.style.display = hit ? '' : 'none';
       });
     };
     document.querySelectorAll('#ubody tr.urow').forEach(function(tr){
       tr.onclick = function(){ openUserProfile(tr.getAttribute('data-e')); };
     });
+  }
+
+  // ── Perfil de usuario (modal): registro + línea de tiempo de correo/clics ──
+  function openUserProfile(email){
+    var overlay = document.createElement('div'); overlay.className='umodal';
+    overlay.innerHTML = '<div class="ubox"><button class="uclose">✕</button><div id="uprofile" class="muted">Cargando…</div></div>';
+    document.body.appendChild(overlay);
+    overlay.querySelector('.uclose').onclick = function(){ overlay.remove(); };
+    overlay.onclick = function(e){ if(e.target===overlay) overlay.remove(); };
+    fetch(API+'/admin/user?e='+encodeURIComponent(email),{headers:{'X-Admin-Token':tok},cache:'no-store'})
+      .then(function(r){return r.json();}).then(function(d){
+        var TL = { delivered:'📬 Entregado', opened:'👀 Abierto', clicked:'🖱️ Clic', bounced:'⛔ Rebote', complained:'🚩 Spam' };
+        var CL = { welcome:'Bienvenida', encuesta:'Encuesta', followup:'Seguimiento', campaign:'Lanzamiento', '':'—' };
+        function fdate(ts){ if(!ts) return ''; var d=new Date(ts); return d.toLocaleString('es-CO'); }
+        var tl = (d.timeline||[]).map(function(ev){
+          return '<div class="uev"><span class="uet">'+(TL[ev.t]||ev.t)+'</span> <span class="uec">'+esc(CL[ev.c]!=null?CL[ev.c]:ev.c)+'</span><span class="uedate">'+fdate(ev.ts)+'</span></div>';
+        }).join('') || '<p class="muted">Sin eventos de correo todavía.</p>';
+        var u = d.user||{};
+        var warn = (u.bouncedAt||u.complainedAt) ? '<div class="uwarn">⚠️ '+(u.bouncedAt?'Rebotó':'')+(u.complainedAt?' · marcó spam':'')+'</div>' : '';
+        document.getElementById('uprofile').className='';
+        document.getElementById('uprofile').innerHTML =
+          '<h2>'+esc(u.nombre||u.email)+'</h2>'+
+          '<p class="umeta">'+esc(u.email)+' · '+esc(d.cohort||'')+' · registrado '+fdate(u.signupTs)+'</p>'+
+          warn+
+          '<div class="ustats"><span>Aperturas: <b>'+(u.openCount||0)+'</b></span> <span>Encuesta: <b>'+(d.survey&&d.survey.completed?'completa':(d.survey&&d.survey.answered?'parcial':'—'))+'</b></span></div>'+
+          '<h3>Línea de tiempo</h3>'+tl;
+      }).catch(function(){ document.getElementById('uprofile').innerHTML='Error cargando el perfil.'; });
   }
 
   function render(rows){
