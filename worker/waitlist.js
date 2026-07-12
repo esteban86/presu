@@ -164,7 +164,7 @@ export default {
     let mail = { welcome: null, notify: null };
     if (env.RESEND_API_KEY) {
       const isLate = record.origen === 'tanda2';
-      mail.welcome = await sendResend(env, { to: email, reply_to: env.NOTIFY_EMAIL || undefined, subject: isLate ? 'Estás dentro 🌊 el 15 ves tu plata clara' : 'Ya eres Pionero 🌿 tu plata por fin clara', html: isLate ? lateWelcomeHtml(record) : welcomeHtml(record) });
+      mail.welcome = await sendResend(env, { to: email, reply_to: env.NOTIFY_EMAIL || undefined, subject: isLate ? 'Estás dentro 🌊 el 15 ves tu plata clara' : 'Ya eres Pionero 🌿 tu plata por fin clara', html: isLate ? lateWelcomeHtml(record) : welcomeHtml(record), campaign: 'welcome' });
       if (mail.welcome && mail.welcome.ok) { await env.WAITLIST.put('welcomed:' + email, String(Date.now())); await env.WAITLIST.put('campaign:' + email, 'welcome'); }
       if (env.NOTIFY_EMAIL) mail.notify = await sendResend(env, { to: env.NOTIFY_EMAIL, reply_to: email, subject: '📥 Nuevo registro en la waitlist de Presu (' + record.perfil + ')', html: notifyHtml(record, total) });
     }
@@ -248,7 +248,7 @@ async function adminWelcome(request, env, cors) {
   const raw = await env.WAITLIST.get('email:' + email);
   if (raw) { try { rec = JSON.parse(raw); } catch (e) {} }
   if (!rec.ref) { rec.ref = await genCode(env); if (rec.ref) { await env.WAITLIST.put('code:' + rec.ref, email); await env.WAITLIST.put('email:' + email, JSON.stringify(rec)); } }
-  const res = await sendResend(env, { to: email, reply_to: env.NOTIFY_EMAIL || undefined, subject: 'Ya eres Pionero 🌿 tu plata por fin clara', html: welcomeHtml(rec) });
+  const res = await sendResend(env, { to: email, reply_to: env.NOTIFY_EMAIL || undefined, subject: 'Ya eres Pionero 🌿 tu plata por fin clara', html: welcomeHtml(rec), campaign: 'welcome' });
   if (res.ok) { await env.WAITLIST.put('welcomed:' + email, String(Date.now())); return json({ status: 'sent', id: res.id }, 200, cors); }
   return json({ status: 'error', detail: res }, 502, cors);
 }
@@ -392,7 +392,7 @@ async function runCampaignBatch(env, limit) {
     rec.email = email;
     if (!rec.ref) { rec.ref = await genCode(env); if (rec.ref) { await env.WAITLIST.put('code:' + rec.ref, email); await env.WAITLIST.put('email:' + email, JSON.stringify(rec)); } }
     if (!env.RESEND_API_KEY) { errors++; continue; }
-    const res = await sendResend(env, { to: email, reply_to: env.NOTIFY_EMAIL || undefined, subject: CAMPAIGN_SUBJECT, html: welcomeHtml(rec) });
+    const res = await sendResend(env, { to: email, reply_to: env.NOTIFY_EMAIL || undefined, subject: CAMPAIGN_SUBJECT, html: welcomeHtml(rec), campaign: 'campaign' });
     if (res.ok) { await env.WAITLIST.put('campaign:' + email, String(Date.now())); sent++; } else errors++;
   }
   return { sent, skipped, errors, scanned: list.keys.length };
@@ -414,7 +414,7 @@ async function adminCampaignOne(request, env, cors) {
   if (raw) { try { rec = JSON.parse(raw); } catch (e) {} }
   rec.email = email;
   if (!rec.ref) { rec.ref = await genCode(env); if (rec.ref) { await env.WAITLIST.put('code:' + rec.ref, email); await env.WAITLIST.put('email:' + email, JSON.stringify(rec)); } }
-  const res = await sendResend(env, { to: email, reply_to: env.NOTIFY_EMAIL || undefined, subject: CAMPAIGN_SUBJECT, html: welcomeHtml(rec) });
+  const res = await sendResend(env, { to: email, reply_to: env.NOTIFY_EMAIL || undefined, subject: CAMPAIGN_SUBJECT, html: welcomeHtml(rec), campaign: 'campaign' });
   if (res.ok) { await env.WAITLIST.put('campaign:' + email, String(Date.now())); return json({ status: 'sent', id: res.id }, 200, cors); }
   return json({ status: 'error', detail: res }, 502, cors);
 }
@@ -577,7 +577,7 @@ async function runSurveyBatch(env, limit) {
     let rec = {}; try { rec = JSON.parse((await env.WAITLIST.get('email:' + email)) || '{}'); } catch (e) {}
     rec.email = email;
     if (!env.RESEND_API_KEY) { errors++; continue; }
-    const res = await sendResend(env, { to: email, reply_to: env.NOTIFY_EMAIL || undefined, subject: SURVEY_SUBJECT, html: surveyEmailHtml(rec) });
+    const res = await sendResend(env, { to: email, reply_to: env.NOTIFY_EMAIL || undefined, subject: SURVEY_SUBJECT, html: surveyEmailHtml(rec), campaign: 'encuesta' });
     if (res.ok) { await env.WAITLIST.put('survey_sent:' + email, String(Date.now())); sent++; } else errors++;
   }
   return { sent, skipped, errors, scanned: list.keys.length };
@@ -597,7 +597,7 @@ async function runFollowupBatch(env, limit) {
     rec.email = email;
     if (cohortOf(rec) !== 'pionero') { await env.WAITLIST.put('followup_sent:' + email, 'skip'); skipped++; continue; } // Nueva Ola: excluida
     if (!env.RESEND_API_KEY) { errors++; continue; }
-    const res = await sendResend(env, { to: email, reply_to: env.NOTIFY_EMAIL || undefined, subject: FOLLOWUP_SUBJECT, html: followupHtml(rec) });
+    const res = await sendResend(env, { to: email, reply_to: env.NOTIFY_EMAIL || undefined, subject: FOLLOWUP_SUBJECT, html: followupHtml(rec), campaign: 'followup' });
     if (res.ok) { await env.WAITLIST.put('followup_sent:' + email, String(Date.now())); sent++; } else errors++;
   }
   return { sent, skipped, errors, scanned: list.keys.length };
@@ -618,7 +618,7 @@ async function adminSurveyOne(request, env, cors) {
   let rec = {}; const raw = await env.WAITLIST.get('email:' + email);
   if (raw) { try { rec = JSON.parse(raw); } catch (e) {} }
   rec.email = email;
-  const res = await sendResend(env, { to: email, reply_to: env.NOTIFY_EMAIL || undefined, subject: SURVEY_SUBJECT, html: surveyEmailHtml(rec) });
+  const res = await sendResend(env, { to: email, reply_to: env.NOTIFY_EMAIL || undefined, subject: SURVEY_SUBJECT, html: surveyEmailHtml(rec), campaign: 'encuesta' });
   if (res.ok) { await env.WAITLIST.put('survey_sent:' + email, String(Date.now())); return json({ status: 'sent', id: res.id }, 200, cors); }
   return json({ status: 'error', detail: res }, 502, cors);
 }
@@ -640,7 +640,7 @@ async function adminFollowupOne(request, env, cors) {
   let rec = {}; const raw = await env.WAITLIST.get('email:' + email);
   if (raw) { try { rec = JSON.parse(raw); } catch (e) {} }
   rec.email = email;
-  const res = await sendResend(env, { to: email, reply_to: env.NOTIFY_EMAIL || undefined, subject: FOLLOWUP_SUBJECT, html: followupHtml(rec) });
+  const res = await sendResend(env, { to: email, reply_to: env.NOTIFY_EMAIL || undefined, subject: FOLLOWUP_SUBJECT, html: followupHtml(rec), campaign: 'followup' });
   if (res.ok) { await env.WAITLIST.put('followup_sent:' + email, String(Date.now())); return json({ status: 'sent', id: res.id }, 200, cors); }
   return json({ status: 'error', detail: res }, 502, cors);
 }
@@ -789,12 +789,16 @@ async function adminDoc(request, env, url) {
 }
 
 // ── Resend ───────────────────────────────────────────────────
-async function sendResend(env, { to, subject, html, reply_to }) {
+async function sendResend(env, { to, subject, html, reply_to, campaign }) {
   try {
     const body = { from: FROM, to: [to], subject, html };
     if (reply_to) body.reply_to = reply_to;
+    if (campaign) body.tags = [{ name: 'campaign', value: campaign }];
     const r = await fetch('https://api.resend.com/emails', { method: 'POST', headers: { 'Authorization': 'Bearer ' + env.RESEND_API_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
     const j = await r.json().catch(function () { return {}; });
+    if (r.ok && j.id && campaign && to) {
+      try { await env.WAITLIST.put('msg:' + j.id, JSON.stringify({ e: String(to).toLowerCase(), c: campaign, ts: Date.now() }), { expirationTtl: 60 * 60 * 24 * 60 }); } catch (e) {}
+    }
     return { ok: r.ok, status: r.status, id: j.id || null, message: j.message || j.error || '' };
   } catch (e) { return { ok: false, status: 0, message: 'fetch error: ' + String(e) }; }
 }
@@ -903,7 +907,7 @@ function tierEmailHtml(t, rec, env) {
 
 function surveyEmailHtml(r) {
   const hola = r.nombre ? 'Hola, ' + esc(r.nombre) + ' 👋' : 'Hola 👋';
-  const link = SITE + '/encuesta.html?e=' + encodeURIComponent(r.email || '');
+  const survey = SITE + '/r?e=' + encodeURIComponent(r.email || '') + '&to=encuesta&c=encuesta';
   return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark"><meta name="supported-color-schemes" content="dark"><style>:root{color-scheme:dark}</style></head><body style="margin:0;background:#08080A;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#F4F4F3">
   ${EMAIL_HEADER}
   <div style="max-width:540px;margin:0 auto;padding:20px 24px 32px">
@@ -912,7 +916,7 @@ function surveyEmailHtml(r) {
     <p style="font-size:16px;line-height:1.55;color:#D4D4D6;margin:0 0 14px">Llevas unos días con la beta, así que queremos oírte. Cuéntanos cómo te va con Presu —y si aún no la abres, qué te frenó: son <b style="color:#34D399">unas preguntas rápidas, menos de 3 minutos</b>.</p>
     <p style="font-size:15px;line-height:1.5;color:#5EEAB8;font-weight:600;margin:0 0 22px">🎯 Con tu feedback decidimos <b>qué construir primero</b>.</p>
     <div style="text-align:center;margin:0 0 24px">
-      <a href="${link}" style="display:inline-block;background:#34D399;color:#08231A;font-weight:800;font-size:17px;text-decoration:none;padding:16px 30px;border-radius:14px">Dar mi opinión →</a>
+      <a href="${survey}" style="display:inline-block;background:#34D399;color:#08231A;font-weight:800;font-size:17px;text-decoration:none;padding:16px 30px;border-radius:14px">Dar mi opinión →</a>
     </div>
     <p style="font-size:12px;line-height:1.6;color:#6B6B72;margin:0;text-align:center">Solo lo usamos para mejorar Presu. No compartimos tus datos. <span style="color:#34D399">Tu plata, clara.</span></p>
   </div></body></html>`;
