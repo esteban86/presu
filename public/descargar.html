@@ -105,6 +105,10 @@
   .mob-url-label{display:block;font-size:.82rem;color:var(--mut2);margin:0 0 6px}
   .mob-url-value{display:block;font-family:var(--mono,"JetBrains Mono",monospace);font-size:1.18rem;font-weight:700;color:var(--mint);word-break:break-word}
   .mob-url-note{display:block;font-size:.82rem;color:var(--mut2);margin:6px 0 0}
+  .survey-card{margin:24px 0 0;background:linear-gradient(180deg,rgba(52,211,153,.10),rgba(52,211,153,.035));border:1px solid rgba(52,211,153,.30);border-radius:16px;padding:18px 20px}
+  .sc-lead{margin:0 0 14px;color:var(--tx);font-size:1rem;line-height:1.5}
+  .sc-btn{display:inline-flex;align-items:center;gap:8px;background:var(--mint);color:var(--ink);font-family:var(--head);font-weight:700;font-size:.95rem;padding:11px 18px;border-radius:12px;text-decoration:none;transition:background .16s,transform .16s}
+  .sc-btn:hover{background:var(--mint-bright);transform:translateY(-1px);text-decoration:none}
 
   .foot{margin-top:44px;padding-top:22px;border-top:1px solid var(--line);color:var(--mut2);font-size:.9rem;display:flex;gap:18px;flex-wrap:wrap;align-items:center}
   .foot a{color:var(--mut)}
@@ -191,6 +195,11 @@
     </a>
     <div class="alts" id="alts"></div>
 
+    <div id="survey-card" class="survey-card hidden">
+      <p class="sc-lead" id="sc-lead">Tu descarga arrancó 🎉 — mientras baja, ayúdanos con esta data.</p>
+      <a class="sc-btn" id="sc-btn" href="/encuesta.html" target="_blank" rel="noopener">Responder la encuesta · 2 min →</a>
+    </div>
+
     <div class="steps" id="steps-mac">
       <h2>Instalar en Mac</h2>
       <ol>
@@ -229,6 +238,7 @@
     : 'https://presu-waitlist-staging.asimetrica.workers.dev';
   var BASE = 'https://presu-ai.asimetrica.workers.dev/download';
   var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  var pioneerEmail = '';
   var IC = {
     apple: '<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M16.36 12.9c.02 2.45 2.15 3.27 2.18 3.28-.02.06-.34 1.17-1.12 2.31-.67.99-1.37 1.97-2.47 1.99-1.08.02-1.43-.64-2.66-.64-1.24 0-1.62.62-2.64.66-1.06.04-1.87-1.07-2.55-2.06-1.38-2-2.44-5.66-1.02-8.13.7-1.23 1.96-2 3.33-2.02 1.04-.02 2.02.7 2.66.7.63 0 1.83-.87 3.08-.74.52.02 1.99.21 2.93 1.59-.08.05-1.75 1.02-1.73 3.03M14.4 5.6c.56-.68.94-1.62.84-2.56-.81.03-1.79.54-2.37 1.22-.52.6-.97 1.56-.85 2.48.9.07 1.82-.46 2.38-1.14"/></svg>',
     win: '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.4 10.2 4.4v6.9H3zM10.2 12.1v6.9L3 18V12.1zM11.1 4.3 21 3v8.3h-9.9zM21 12.1V21l-9.9-1.3v-7.6z"/></svg>'
@@ -251,11 +261,13 @@
       .then(function(r){ return r.json(); })
       .then(function(d){ return !!(d && d.pionero); });
   }
-  function unlock(){
-    try { sessionStorage.setItem('presu_dl_ok','1'); } catch(e){}
+  function unlock(email){
+    pioneerEmail = email || pioneerEmail || '';
+    try { sessionStorage.setItem('presu_dl_ok','1'); if (pioneerEmail) sessionStorage.setItem('presu_dl_email', pioneerEmail); } catch(e){}
     gate.classList.add('hidden');
     document.getElementById('app').classList.remove('hidden');
     setupDownload();
+    setupSurvey();
   }
   gate.addEventListener('submit', function(e){
     e.preventDefault();
@@ -265,7 +277,7 @@
     gateBtn.disabled = true; gateBtn.textContent = 'Verificando…';
     check(email).then(function(ok){
       gateBtn.disabled = false; gateBtn.textContent = 'Continuar';
-      if (ok) unlock();
+      if (ok) unlock(email);
       else fail('Ese correo no está en la lista de pioneros. Si te registraste con otro, prueba ese — o <a href="/#waitlist">únete a la lista</a>.');
     }).catch(function(){
       gateBtn.disabled = false; gateBtn.textContent = 'Continuar';
@@ -276,10 +288,10 @@
   // Auto-desbloqueo: ?e= del correo, o sesión ya validada
   (function(){
     var qEmail = (new URLSearchParams(location.search).get('e') || '').trim().toLowerCase();
-    try { if (sessionStorage.getItem('presu_dl_ok') === '1') { unlock(); return; } } catch(e){}
+    try { if (sessionStorage.getItem('presu_dl_ok') === '1') { unlock(sessionStorage.getItem('presu_dl_email') || qEmail || ''); return; } } catch(e){}
     if (qEmail && EMAIL_RE.test(qEmail)) {
       gateEmail.value = qEmail;
-      check(qEmail).then(function(ok){ if (ok) unlock(); });
+      check(qEmail).then(function(ok){ if (ok) unlock(qEmail); });
     }
   })();
 
@@ -309,6 +321,33 @@
     document.getElementById('steps-win').classList.toggle('hidden', which !== 'win');
     document.getElementById('toggle-label').textContent = which === 'mac' ? 'Windows' : 'Mac';
     shownSteps = which;
+  }
+  function setupSurvey(){
+    var card = document.getElementById('survey-card');
+    var btn = document.getElementById('sc-btn');
+    var lead = document.getElementById('sc-lead');
+    if (!card || !btn) return;
+    btn.href = '/encuesta.html' + (pioneerEmail ? '?e=' + encodeURIComponent(pioneerEmail) : '');
+    var mobile = isMobile();
+    if (lead) lead.textContent = mobile
+      ? 'Mientras la abres en tu compu, ayúdanos con esta data.'
+      : 'Tu descarga arrancó 🎉 — mientras baja, ayúdanos con esta data.';
+    function reveal(){ card.classList.remove('hidden'); }
+    function show(){
+      if (mobile) { reveal(); return; }
+      var primary = document.getElementById('dl-primary');
+      if (primary) primary.addEventListener('click', reveal, { once: true });
+      var altsEl = document.getElementById('alts');
+      if (altsEl) altsEl.addEventListener('click', function(e){ if (e.target && e.target.closest && e.target.closest('a')) reveal(); });
+    }
+    if (pioneerEmail) {
+      fetch(API + '/survey?e=' + encodeURIComponent(pioneerEmail), {cache:'no-store'})
+        .then(function(r){ return r.json(); })
+        .then(function(d){ if (!(d && d.completed)) show(); })
+        .catch(function(){ show(); });
+    } else {
+      show();
+    }
   }
   function setupDownload(){
     if (isMobile()){
