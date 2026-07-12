@@ -194,8 +194,8 @@
     }
     if(view==='usuarios'){
       fetch(API+'/admin/users',{headers:{'X-Admin-Token':tok},cache:'no-store'})
-        .then(function(r){return r.json();}).then(function(d){ renderUsuarios(d); })
-        .catch(function(){ app.innerHTML = tabs()+'<p class="muted">Error cargando usuarios.</p>'; });
+        .then(function(r){ if(r.status===401) throw new Error('Token inválido'); return r.json(); }).then(function(d){ renderUsuarios(d); })
+        .catch(function(e){ gate(e.message||'Error cargando usuarios'); });
       return;
     }
     fetch(API+'/admin/contrib',{headers:{'X-Admin-Token':tok},cache:'no-store'})
@@ -446,6 +446,7 @@
     overlay.onclick = function(e){ if(e.target===overlay) overlay.remove(); };
     fetch(API+'/admin/user?e='+encodeURIComponent(email),{headers:{'X-Admin-Token':tok},cache:'no-store'})
       .then(function(r){return r.json();}).then(function(d){
+        var prof = document.getElementById('uprofile'); if(!prof) return; // modal cerrado antes de resolver
         var TL = { delivered:'📬 Entregado', opened:'👀 Abierto', clicked:'🖱️ Clic', bounced:'⛔ Rebote', complained:'🚩 Spam' };
         var CL = { welcome:'Bienvenida', encuesta:'Encuesta', followup:'Seguimiento', campaign:'Lanzamiento', '':'—' };
         function fdate(ts){ if(!ts) return ''; var d=new Date(ts); return d.toLocaleString('es-CO'); }
@@ -454,14 +455,14 @@
         }).join('') || '<p class="muted">Sin eventos de correo todavía.</p>';
         var u = d.user||{};
         var warn = (u.bouncedAt||u.complainedAt) ? '<div class="uwarn">⚠️ '+(u.bouncedAt?'Rebotó':'')+(u.complainedAt?' · marcó spam':'')+'</div>' : '';
-        document.getElementById('uprofile').className='';
-        document.getElementById('uprofile').innerHTML =
+        prof.className='';
+        prof.innerHTML =
           '<h2>'+esc(u.nombre||u.email)+'</h2>'+
           '<p class="umeta">'+esc(u.email)+' · '+esc(d.cohort||'')+' · registrado '+fdate(u.signupTs)+'</p>'+
           warn+
           '<div class="ustats"><span>Aperturas: <b>'+(u.openCount||0)+'</b></span> <span>Encuesta: <b>'+(d.survey&&d.survey.completed?'completa':(d.survey&&d.survey.answered?'parcial':'—'))+'</b></span></div>'+
           '<h3>Línea de tiempo</h3>'+tl;
-      }).catch(function(){ document.getElementById('uprofile').innerHTML='Error cargando el perfil.'; });
+      }).catch(function(){ var p=document.getElementById('uprofile'); if(p) p.innerHTML='Error cargando el perfil.'; });
   }
 
   function render(rows){
