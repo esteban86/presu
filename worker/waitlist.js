@@ -71,6 +71,8 @@ export default {
     if (request.method === 'GET' && path === '/admin/stats') return adminStats(request, env, cors);
     if (request.method === 'GET' && path === '/admin/waitlist') return adminWaitlist(request, env, cors, url);
     if (request.method === 'GET' && path === '/admin/clicks') return adminClicks(request, env, cors);
+    if (request.method === 'GET' && path === '/admin/users') return adminUsers(request, env, cors);
+    if (request.method === 'GET' && path === '/admin/user') return adminUser(request, env, cors, url);
     if (request.method === 'POST' && path === '/resend/webhook') return handleResendWebhook(request, env);
 
     if (request.method === 'GET' && path === '/r') return trackRedirect(request, env, url);
@@ -352,6 +354,110 @@ async function adminClicks(request, env, cors) {
   }
   const people = Object.keys(perPerson).map(function (k) { return perPerson[k]; }).sort(function (a, b) { return b.lastAt - a.lastAt; });
   return json({ totalClicks: names.length, uniquePeople: people.length, byDevice, byTo, byCampaign, people }, 200, cors);
+}
+
+// ── Helpers de listado paginado (mismo patrón que adminClicks) ──
+async function listAll(env, prefix) {
+  const names = []; let cursor, done = false;
+  while (!done) {
+    const l = await env.WAITLIST.list({ prefix: prefix, limit: 1000, cursor: cursor });
+    for (const k of l.keys) names.push(k.name);
+    if (l.list_complete) done = true; else cursor = l.cursor;
+  }
+  return names;
+}
+async function getMany(env, names) {
+  const out = []; const B = 100;
+  for (let i = 0; i < names.length; i += B) {
+    const vals = await Promise.all(names.slice(i, i + B).map(function (n) { return env.WAITLIST.get(n).then(function (v) { return { n: n, v: v }; }); }));
+    for (const x of vals) out.push(x);
+  }
+  return out;
+}
+
+// GET /admin/users — vista consolidada por usuario (registro + envíos + delivery/opens/clicks + encuesta + referidos)
+// más un resumen por campaña (delivered/opened/clicked únicos, bounced/complained). Token.
+async function adminUsers(request, env, cors) {
+  if (!authed(request, env)) return json({ error: 'unauthorized' }, 401, cors);
+  // 1) registros
+  const emailNames = await listAll(env, 'email:');
+  const users = {}; // correo -> row
+  for (const x of await getMany(env, emailNames)) {
+    let r = {}; try { r = JSON.parse(x.v || '{}'); } catch (e) {}
+    const email = x.n.slice(6);
+    users[email] = {
+      email: email, nombre: r.nombre || '', cohort: cohortOf(r), signupTs: r.ts || 0, ref: r.ref || '',
+      referrals: 0,
+      sent: { welcome: false, encuesta: false, followup: false },
+      delivered: !!r.deliveredAt, opens: r.openCount || 0, lastOpenAt: r.lastOpenAt || 0,
+      clicks: r.clickCount || 0, lastClickAt: r.clickedAt || 0,
+      bounced: !!r.bouncedAt, complained: !!r.complainedAt,
+      survey: { answered: false, completed: false }
+    };
+  }
+  // 2) flags de envío
+  for (const n of await listAll(env, 'survey_sent:')) { const e = n.slice(12); if (users[e]) users[e].sent.encuesta = true; }
+  for (const n of await listAll(env, 'followup_sent:')) { const e = n.slice(14); if (users[e]) users[e].sent.followup = true; }
+  // 3) referidos reales: clave referrals:<correo> (prefijo 10 chars)
+  for (const x of await getMany(env, await listAll(env, 'referrals:'))) { const e = x.n.slice(10); if (users[e]) users[e].referrals = parseInt(x.v || '0', 10) || 0; }
+  // welcome: se envía a todos al registrarse → marcar true si hay registro. Simplif.: true.
+  for (const e in users) users[e].sent.welcome = true;
+  // 4) encuesta
+  for (const x of await getMany(env, await listAll(env, 'survey:'))) {
+    const e = x.n.slice(7); if (!users[e]) continue;
+    let s = {}; try { s = JSON.parse(x.v || '{}'); } catch (er) {}
+    users[e].survey = { answered: true, completed: !!s.completed };
+  }
+  // 5) resumen por campaña desde mailevt (dedup único por correo+campaña) + clics
+  const camp = {}; // key -> {deliveredU:Set, openedU:Set, clickedU:Set, bounced:n, complained:n}
+  function C(k) { return camp[k] || (camp[k] = { deliveredU: new Set(), openedU: new Set(), clickedU: new Set(), bounced: 0, complained: 0 }); }
+  for (const x of await getMany(env, await listAll(env, 'mailevt:'))) {
+    let ev = {}; try { ev = JSON.parse(x.v || '{}'); } catch (er) {}
+    const rest = x.n.slice(8); const li = rest.lastIndexOf(':'); const e = li > 0 ? rest.slice(0, li) : rest;
+    const k = ev.c || '(sin campaña)';
+    if (ev.t === 'delivered') C(k).deliveredU.add(e);
+    else if (ev.t === 'opened') C(k).openedU.add(e);
+    else if (ev.t === 'bounced') C(k).bounced++;
+    else if (ev.t === 'complained') C(k).complained++;
+  }
+  for (const x of await getMany(env, await listAll(env, 'click:'))) {
+    let ev = {}; try { ev = JSON.parse(x.v || '{}'); } catch (er) {}
+    const rest = x.n.slice(6); const li = rest.lastIndexOf(':'); const e = li > 0 ? rest.slice(0, li) : rest;
+    C(ev.c || '(sin campaña)').clickedU.add(e);
+  }
+  const campaigns = Object.keys(camp).map(function (k) {
+    const c = camp[k];
+    return { key: k, delivered: c.deliveredU.size, openedUnique: c.openedU.size, clickedUnique: c.clickedU.size, bounced: c.bounced, complained: c.complained };
+  });
+  const rows = Object.keys(users).map(function (e) { return users[e]; }).sort(function (a, b) { return (b.signupTs || 0) - (a.signupTs || 0); });
+  return json({ rows: rows, campaigns: campaigns }, 200, cors);
+}
+
+// GET /admin/user?e=<correo> — perfil consolidado de un usuario + timeline (mailevt + click, desc por ts). Token.
+async function adminUser(request, env, cors, url) {
+  if (!authed(request, env)) return json({ error: 'unauthorized' }, 401, cors);
+  const e = (url.searchParams.get('e') || '').trim().toLowerCase();
+  if (!e || !EMAIL_RE.test(e)) return json({ error: 'bad_email' }, 400, cors);
+  let user = {}; try { user = JSON.parse((await env.WAITLIST.get('email:' + e)) || '{}'); } catch (er) {}
+  let survey = {}; const svRaw = await env.WAITLIST.get('survey:' + e);
+  if (svRaw) { try { survey = JSON.parse(svRaw); } catch (er) {} }
+  const timeline = [];
+  for (const n of await listAll(env, 'mailevt:' + e + ':')) {
+    let ev = {}; try { ev = JSON.parse((await env.WAITLIST.get(n)) || '{}'); } catch (er) {}
+    const ts = parseInt(n.slice(n.lastIndexOf(':') + 1), 10) || 0;
+    timeline.push({ t: ev.t, c: ev.c || '', ts: ts });
+  }
+  for (const n of await listAll(env, 'click:' + e + ':')) {
+    let ev = {}; try { ev = JSON.parse((await env.WAITLIST.get(n)) || '{}'); } catch (er) {}
+    const ts = parseInt(n.slice(n.lastIndexOf(':') + 1), 10) || 0;
+    timeline.push({ t: 'clicked', c: ev.c || '', ts: ts, to: ev.to || '', device: ev.device || '' });
+  }
+  timeline.sort(function (a, b) { return b.ts - a.ts; });
+  return json({
+    user: { email: e, nombre: user.nombre || '', ref: user.ref || '', signupTs: user.ts || 0, celular: user.celular || '',
+      deliveredAt: user.deliveredAt || 0, openedAt: user.openedAt || 0, openCount: user.openCount || 0, bouncedAt: user.bouncedAt || 0, complainedAt: user.complainedAt || 0 },
+    cohort: cohortOf(user), survey: { answered: !!svRaw, completed: !!survey.completed }, timeline: timeline
+  }, 200, cors);
 }
 
 // GET /r?e=&to=&c= — link de correo con tracking: registra el clic (correo + device
