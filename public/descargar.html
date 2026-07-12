@@ -100,7 +100,11 @@
   .mob-soft{color:var(--mut2)}
   .mob-lead{color:var(--mut);font-size:1.02rem;line-height:1.55;margin:0 0 22px}
   .mob-lead b{color:var(--tx)}
-  .mob-hint{margin:12px 0 0;font-size:.9rem;color:var(--mut2)}
+  .mob-hint{margin:12px 0 0;font-size:.9rem;color:var(--mut2);text-align:center}
+  .mob-url{background:var(--bg2);border:1px solid var(--line2);border-radius:14px;padding:16px 18px;margin:0 0 16px;text-align:center}
+  .mob-url-label{display:block;font-size:.82rem;color:var(--mut2);margin:0 0 6px}
+  .mob-url-value{display:block;font-family:var(--mono,"JetBrains Mono",monospace);font-size:1.18rem;font-weight:700;color:var(--mint);word-break:break-word}
+  .mob-url-note{display:block;font-size:.82rem;color:var(--mut2);margin:6px 0 0}
 
   .foot{margin-top:44px;padding-top:22px;border-top:1px solid var(--line);color:var(--mut2);font-size:.9rem;display:flex;gap:18px;flex-wrap:wrap;align-items:center}
   .foot a{color:var(--mut)}
@@ -172,9 +176,14 @@
   <div id="app" class="hidden">
     <div id="mobile-msg" class="hidden">
       <h2 class="mob-title">Presu es para tu computador <span class="mob-soft">(por ahora)</span></h2>
-      <p class="mob-lead">Este enlace instala Presu en <b>Mac o Windows</b> — en el celular no te va a servir. La app móvil viene en camino 🌱.</p>
-      <button type="button" id="copy-link" class="dl-primary" style="width:100%;border:0;cursor:pointer;font-family:inherit"><span id="copy-label">Copiar enlace para tu compu</span></button>
-      <p class="mob-hint">Ábrelo desde tu Mac o Windows y la descarga arranca sola.</p>
+      <p class="mob-lead">Presu se instala en <b>Mac o Windows</b> — en el celular todavía no te sirve. La app móvil viene en camino 🌱.</p>
+      <div class="mob-url">
+        <span class="mob-url-label">Desde tu computador, entra a</span>
+        <span class="mob-url-value">presu.io/descargar</span>
+        <span class="mob-url-note">y la descarga arranca sola.</span>
+      </div>
+      <button type="button" id="share-link" class="dl-primary" style="width:100%;border:0;cursor:pointer;font-family:inherit"><span id="share-label">Enviar el enlace a mi compu</span></button>
+      <p class="mob-hint" id="share-hint">Por AirDrop, correo o WhatsApp — para abrirlo en tu Mac o Windows.</p>
     </div>
     <a class="dl-primary" id="dl-primary" href="https://presu-ai.asimetrica.workers.dev/download/mac-arm64">
       <span id="dl-ic"></span>
@@ -306,12 +315,13 @@
       ['dl-primary','alts','steps-mac','steps-win'].forEach(function(id){ var el=document.getElementById(id); if(el) el.classList.add('hidden'); });
       var tog = document.getElementById('toggle-os'); if (tog && tog.closest('p')) tog.closest('p').classList.add('hidden');
       var mm = document.getElementById('mobile-msg'); if (mm) mm.classList.remove('hidden');
-      var btn = document.getElementById('copy-link');
+      var btn = document.getElementById('share-link');
       if (btn) btn.onclick = function(){
-        var done = function(){ var l = document.getElementById('copy-label'); if (l) l.textContent = '¡Enlace copiado! 🎉'; };
         var url = location.href;
-        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done, done);
-        else { try { var t = document.createElement('textarea'); t.value = url; document.body.appendChild(t); t.focus(); t.select(); document.execCommand('copy'); t.remove(); done(); } catch(e){} }
+        var copied = function(){ var l = document.getElementById('share-label'); if (l) l.textContent = '¡Enlace copiado! 🎉'; var h = document.getElementById('share-hint'); if (h) h.textContent = 'Pégalo en tu Mac o Windows.'; };
+        if (navigator.share){ navigator.share({ title: 'Descargar Presu', text: 'Instala Presu en tu computador (Mac o Windows):', url: url }).catch(function(){}); }
+        else if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(copied, copied);
+        else { try { var t = document.createElement('textarea'); t.value = url; document.body.appendChild(t); t.focus(); t.select(); document.execCommand('copy'); t.remove(); copied(); } catch(e){} }
       };
       return;
     }
