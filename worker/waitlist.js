@@ -974,3 +974,36 @@ function notifyHtml(r, total) {
 function json(obj, status, headers) {
   return new Response(JSON.stringify(obj), { status, headers: { 'Content-Type': 'application/json', ...headers } });
 }
+
+// ── Webhook Resend (Svix) ─────────────────────────────────────
+function timingSafeEqual(a, b) {
+  if (typeof a !== 'string' || typeof b !== 'string' || a.length !== b.length) return false;
+  let r = 0;
+  for (let i = 0; i < a.length; i++) r |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return r === 0;
+}
+
+export async function verifySvix(secret, headers, rawBody) {
+  try {
+    if (!secret) return false;
+    const id = headers.get('svix-id');
+    const ts = headers.get('svix-timestamp');
+    const sigHeader = headers.get('svix-signature');
+    if (!id || !ts || !sigHeader) return false;
+    const t = parseInt(ts, 10);
+    if (!Number.isFinite(t) || Math.abs(Math.floor(Date.now() / 1000) - t) > 300) return false;
+    const b64 = secret.startsWith('whsec_') ? secret.slice(6) : secret;
+    const keyBytes = Uint8Array.from(atob(b64), function (c) { return c.charCodeAt(0); });
+    const key = await crypto.subtle.importKey('raw', keyBytes, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+    const data = new TextEncoder().encode(id + '.' + ts + '.' + rawBody);
+    const sig = await crypto.subtle.sign('HMAC', key, data);
+    const expected = btoa(String.fromCharCode.apply(null, new Uint8Array(sig)));
+    const parts = sigHeader.split(' ');
+    for (const p of parts) {
+      const idx = p.indexOf(',');
+      if (idx < 0) continue;
+      if (p.slice(0, idx) === 'v1' && timingSafeEqual(p.slice(idx + 1), expected)) return true;
+    }
+    return false;
+  } catch (e) { return false; }
+}
