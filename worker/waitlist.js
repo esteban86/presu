@@ -1052,7 +1052,10 @@ function followupHtml(r) {
   <div style="max-width:540px;margin:0 auto;padding:20px 24px 36px">
     <div class="t-mint" style="font-family:'Courier New',monospace;font-size:12px;letter-spacing:.14em;color:#34D399;margin:2px 0 16px">PIONERO · BETA ABIERTA</div>
     <h1 class="t-white" style="font-size:28px;line-height:1.15;font-weight:800;letter-spacing:-.02em;margin:0 0 12px;color:#fff">Tu Presu ya está listo <span class="t-mint" style="color:#34D399">🌿</span></h1>
-    <p class="t-body" style="font-size:16px;line-height:1.55;color:#C9C9CE;margin:0 0 26px">${hola} La beta ya está abierta. Descárgala para <b class="t-white" style="color:#fff">Mac o Windows</b> —se instala en un minuto y tus datos viven <b class="t-white" style="color:#fff">cifrados en tu equipo</b> (local-first, sin nube).</p>
+    <p class="t-body" style="font-size:16px;line-height:1.55;color:#C9C9CE;margin:0 0 18px">${hola} La beta ya está abierta. Descárgala para <b class="t-white" style="color:#fff">Mac o Windows</b> —se instala en un minuto y tus datos viven <b class="t-white" style="color:#fff">cifrados en tu equipo</b> (local-first, sin nube).</p>
+    <div style="background:#0E2A20;border:1px solid rgba(52,211,153,.5);border-radius:16px;padding:16px 20px;margin:0 0 26px">
+      <p class="t-body" style="font-size:16px;line-height:1.5;color:#D4D4D6;margin:0">🎁 Como pionero tienes <b class="t-mint" style="color:#34D399">Presu Pro gratis por 2 meses</b> —sin tarjeta, sin nada. Tu tiempo gratis <b class="t-white" style="color:#fff">arranca cuando la abras por primera vez</b>.</p>
+    </div>
     <div class="t-mut" style="font-size:12px;font-weight:700;letter-spacing:.06em;color:#8A8A90;margin:0 0 10px">PASO 1 · DESCÁRGALA</div>
     <a class="btn-mint" href="${dl}" style="display:inline-block;background:#34D399;color:#06231A;font-weight:800;font-size:17px;text-decoration:none;padding:16px 34px;border-radius:14px">Descargar Presu →</a>
     <p class="t-mut" style="font-size:13px;line-height:1.5;color:#6B6B72;margin:12px 0 28px">Elige tu sistema en la página (Mac Intel, Apple Silicon o Windows); ahí te dejamos los pasos.</p>
