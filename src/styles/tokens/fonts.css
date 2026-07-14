@@ -1,6 +1,4 @@
-/* Presu typefaces — all three are open-source and hosted on Google Fonts.
-   Space Grotesk  → display, titles, financial numbers (tabular)
-   Hanken Grotesk → body, labels, interface
-   JetBrains Mono → data, metadata, logs, microcopy
-   Imported here so consumers get the webfonts by linking styles.css. */
-@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap");
+/* Presu typefaces — Space Grotesk / Hanken Grotesk / JetBrains Mono.
+   Las @font-face ahora se cargan SELF-HOST vía `src/styles/fonts.js` (@fontsource),
+   importado por los layouts Base.astro y StaticPage.astro. Antes se cargaban con un
+   @import a fonts.googleapis.com aquí, que bloqueaba el render (mal LCP). */

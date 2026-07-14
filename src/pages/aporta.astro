@@ -9,7 +9,6 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '';
   ogTitle="Ayuda a que Presu lea tu banco 🌱"
   ogDescription="Aporta un documento financiero anonimizado en tu propio equipo. El original nunca sale de tu dispositivo. Tu plata, clara."
 >
-  <link slot="head" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
   {TURNSTILE_SITE_KEY && <meta slot="head" name="ts-sitekey" content={TURNSTILE_SITE_KEY} />}
   {TURNSTILE_SITE_KEY && <script slot="head" is:inline async defer src="https://challenges.cloudflare.com/turnstile/v0/api.js"></script>}
 

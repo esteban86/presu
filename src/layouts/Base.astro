@@ -1,4 +1,5 @@
 ---
+import '../styles/fonts.js';
 import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
@@ -14,6 +15,9 @@ const {
   description = 'Presu — tus gastos personales, claros.',
   ogImage = 'https://presu.io/presu-og.png',
 } = Astro.props;
+// URL canónica limpia: contra Astro.site (siempre presu.io, nunca el host de staging)
+// y sin `.html` (build.format:'file' genera /aporta.html que redirige 308).
+const canonical = new URL(Astro.url.pathname.replace(/index\.html$/, '').replace(/\.html$/, ''), Astro.site).href;
 ---
 
 <!doctype html>
@@ -29,7 +33,7 @@ const {
     <meta name="apple-mobile-web-app-title" content="Presu" />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     <meta name="theme-color" content="#08080A" />
-    <link rel="canonical" href={Astro.url.href} />
+    <link rel="canonical" href={canonical} />
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Presu" />
@@ -40,7 +44,7 @@ const {
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="Presu — tus gastos personales, claros" />
-    <meta property="og:url" content={Astro.url.href} />
+    <meta property="og:url" content={canonical} />
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />

@@ -1,4 +1,5 @@
 ---
+import '../styles/fonts.js';
 // StaticPage.astro — layout para páginas migradas "fiel": aporta el <head> y la
 // analítica unificados (igual que Base) PERO sin Header/Footer ni global.css, para
 // no alterar el look propio de cada página. Cada página trae sus fuentes por el
@@ -23,6 +24,8 @@ const {
 // páginas traen un copy social propio); por defecto caen a title/description.
 const ogTitle = Astro.props.ogTitle ?? title;
 const ogDescription = Astro.props.ogDescription ?? description;
+// URL canónica limpia (contra Astro.site, sin `.html`) — igual que Base.
+const canonical = new URL(Astro.url.pathname.replace(/index\.html$/, '').replace(/\.html$/, ''), Astro.site).href;
 ---
 <!doctype html>
 <html lang="es">
@@ -38,7 +41,7 @@ const ogDescription = Astro.props.ogDescription ?? description;
       ? <meta name="robots" content="noindex, nofollow" />
       : <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />}
     <meta name="theme-color" content="#08080A" />
-    <link rel="canonical" href={Astro.url.href} />
+    <link rel="canonical" href={canonical} />
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Presu" />
@@ -46,7 +49,7 @@ const ogDescription = Astro.props.ogDescription ?? description;
     <meta property="og:title" content={ogTitle} />
     <meta property="og:description" content={ogDescription} />
     <meta property="og:image" content={ogImage} />
-    <meta property="og:url" content={Astro.url.href} />
+    <meta property="og:url" content={canonical} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={ogTitle} />
     <meta name="twitter:description" content={ogDescription} />

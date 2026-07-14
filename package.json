@@ -19,6 +19,9 @@
     "wrangler": "^4.109.0"
   },
   "dependencies": {
-    "@astrojs/cloudflare": "12"
+    "@astrojs/cloudflare": "12",
+    "@fontsource/hanken-grotesk": "^5.2.8",
+    "@fontsource/jetbrains-mono": "^5.2.8",
+    "@fontsource/space-grotesk": "^5.2.10"
   }
 }
