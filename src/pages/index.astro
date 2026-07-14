@@ -1761,6 +1761,19 @@ const faqs = [
     const el = form && form.querySelector('[name="cf-turnstile-response"]');
     return el ? (el as HTMLInputElement).value : '';
   };
+  // Espera a que el widget resuelva (hasta ~8s) antes de enviar, para que un submit
+  // rápido no falle con el token aún vacío. Sin widget → resuelve de una.
+  const tsTokenReady = (form: HTMLFormElement | null): Promise<string> =>
+    new Promise((resolve) => {
+      if (!(window as any).turnstile) return resolve(tsToken(form));
+      const t = tsToken(form);
+      if (t) return resolve(t);
+      let n = 0;
+      const iv = setInterval(() => {
+        const v = tsToken(form);
+        if (v || ++n > 40) { clearInterval(iv); resolve(v); }
+      }, 200);
+    });
   const tsReset = (form: HTMLFormElement | null) => {
     try { (window as any).turnstile && (window as any).turnstile.reset(form?.querySelector('.cf-turnstile')); } catch {}
   };
@@ -2036,8 +2049,8 @@ const faqs = [
       heroErr.style.display = 'none';
       btnLoading(heroForm, true);
       const late = isNuevaOla();
-      send(
-        { perfil: 'persona', correo: email, origen: late ? 'tanda2' : 'hero', ref: REF, turnstile: tsToken(heroForm) },
+      tsTokenReady(heroForm).then((tok) => send(
+        { perfil: 'persona', correo: email, origen: late ? 'tanda2' : 'hero', ref: REF, turnstile: tok },
         (res) => {
           heroForm.style.display = 'none';
           if (late) {
@@ -2069,7 +2082,7 @@ const faqs = [
           heroOk.classList.add('pop-in');
           openConnect(email);
         }
-      );
+      ));
     });
   }
 
@@ -2115,7 +2128,7 @@ const faqs = [
       showError('wl-err', false);
       btnLoading(form, true);
       const perfil = (form.querySelector('input[name=perfil]:checked') as HTMLInputElement).value;
-      send(
+      tsTokenReady(form).then((tok) => send(
         {
           perfil,
           correo: email,
@@ -2123,7 +2136,7 @@ const faqs = [
           empresa: perfil === 'empresa' ? (form as any).empresa.value.trim() : '',
           empleados: perfil === 'empresa' ? (form as any).empleados.value.trim() : '',
           ref: REF,
-          turnstile: tsToken(form),
+          turnstile: tok,
         },
         (res) => {
           form.classList.add('hidden');
@@ -2151,7 +2164,7 @@ const faqs = [
           s.classList.add('pop-in');
           openConnect(email);
         }
-      );
+      ));
     });
   }
 
