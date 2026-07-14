@@ -1,0 +1,679 @@
+---
+import StaticPage from '../layouts/StaticPage.astro';
+---
+<StaticPage title="Construyamos Presu a tu medida" description="Encuesta del piloto de Presu: con tu feedback decidimos qué construir primero." noindex={true}>
+  <link slot="head" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
+
+  <div class="progress"><i id="bar"></i></div>
+  <button class="back" id="backBtn" aria-label="Atrás">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    Atrás
+  </button>
+  <div class="conf" id="conf" aria-hidden="true"></div>
+
+  <div class="stage">
+    <div class="step" id="step"></div>
+  </div>
+
+  <style is:global>
+    :root{
+      --mint:#34D399;--mint-bright:#5EEAB8;--ink:#08231A;--tx:#F4F4F3;--mut:#A1A1A6;--mut2:#6B6B72;
+      --bg:#08080A;--bg2:#101014;--bg3:#16161A;--line:rgba(255,255,255,.1);--line2:rgba(255,255,255,.16);
+      --head:"Space Grotesk",sans-serif;--mono:"JetBrains Mono",monospace
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    html{color-scheme:dark;background:var(--bg)}
+    body{
+      margin:0;background:var(--bg);color:var(--tx);font-family:"Hanken Grotesk",sans-serif;
+      line-height:1.5;-webkit-font-smoothing:antialiased;
+      background-image:radial-gradient(120% 80% at 50% -10%,rgba(52,211,153,.10),transparent 60%);
+      background-attachment:fixed;
+    }
+
+    /* Barra de progreso fija */
+    .progress{position:fixed;top:0;left:0;right:0;height:4px;background:rgba(255,255,255,.06);z-index:50}
+    .progress > i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--mint),var(--mint-bright));
+      border-radius:0 4px 4px 0;transition:width .5s cubic-bezier(.2,.7,.2,1)}
+
+    /* Botón atrás */
+    .back{position:fixed;top:18px;left:18px;z-index:40;display:none;align-items:center;gap:6px;
+      background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--mut);
+      border-radius:999px;padding:8px 14px 8px 11px;font-size:.85rem;font-family:inherit;cursor:pointer;transition:.18s}
+    .back:hover{color:var(--tx);border-color:var(--line2);background:rgba(255,255,255,.08)}
+    .back svg{width:14px;height:14px}
+
+    /* Escenario centrado */
+    .stage{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:64px 22px}
+    /* Modo embed (dentro del modal/iframe de la landing): sin alto de viewport completo */
+    body.embed{background:var(--bg)}
+    body.embed .stage{min-height:auto;padding:20px 22px 40px}
+    /* En embed (modal), el botón Atrás va en flujo (no fixed) para no pisar el wordmark */
+    body.embed .back{position:static;margin:6px 0 4px 22px}
+    .step{width:100%;max-width:560px;min-width:0;margin:0 auto}
+    .step.anim{animation:stepIn .45s cubic-bezier(.2,.7,.2,1) both}
+    @keyframes stepIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+    /* Wordmark oficial de Presu — minúscula + franja esmeralda tipo resaltador */
+    .brand{display:inline-flex;margin-bottom:30px}
+    .wordmark{position:relative;display:inline-flex;align-items:center;line-height:.9}
+    .wm-text{position:relative;z-index:1;font-family:var(--head);font-weight:700;font-size:1.6rem;letter-spacing:-.05em;color:var(--tx);line-height:.9}
+    .wm-bar{position:absolute;left:-5%;right:-8%;top:53%;height:.36em;border-radius:999px;background:var(--mint);transform:rotate(-9deg);z-index:0}
+
+    .eb{font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mint);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+    .eb .opt{color:var(--mut2)}
+    .q{font-family:var(--head);font-weight:700;font-size:clamp(1.55rem,4.2vw,2.15rem);line-height:1.14;letter-spacing:-.02em;color:#fff;margin:0 0 8px}
+    .help{color:var(--mut);font-size:1rem;margin:0 0 26px}
+
+    /* Opciones */
+    .opts{display:flex;flex-direction:column;gap:11px;margin:0 0 8px}
+    .opt-btn{display:flex;align-items:center;gap:13px;width:100%;text-align:left;
+      background:var(--bg2);border:1.5px solid var(--line);border-radius:15px;padding:16px 17px;
+      color:var(--tx);font-family:inherit;font-size:1.05rem;font-weight:500;cursor:pointer;transition:.16s;position:relative}
+    .opt-btn:hover{border-color:var(--line2);background:var(--bg3);transform:translateY(-1px)}
+    .opt-btn .key{flex:none;width:26px;height:26px;border-radius:7px;background:rgba(255,255,255,.06);
+      border:1px solid var(--line);display:grid;place-items:center;font-family:var(--mono);font-size:.78rem;color:var(--mut);transition:.16s}
+    .opt-btn .tick{margin-left:auto;width:22px;height:22px;border-radius:50%;border:1.5px solid var(--line2);
+      display:grid;place-items:center;flex:none;color:var(--ink);font-size:13px;opacity:0;transform:scale(.6);transition:.16s}
+    .opt-btn.sel{border-color:var(--mint);background:rgba(52,211,153,.10)}
+    .opt-btn.sel .key{background:var(--mint);border-color:var(--mint);color:var(--ink);font-weight:700}
+    .opt-btn.sel .tick{background:var(--mint);border-color:var(--mint);opacity:1;transform:scale(1)}
+
+    /* Campo de texto */
+    .field{width:100%;background:transparent;border:0;border-bottom:2px solid var(--line2);
+      color:#fff;font-family:var(--head);font-weight:500;font-size:clamp(1.3rem,3.5vw,1.7rem);
+      padding:8px 2px 12px;outline:none;transition:.18s;letter-spacing:-.01em}
+    .field::placeholder{color:var(--mut2);font-weight:400}
+    .field:focus{border-color:var(--mint)}
+    .field2{width:100%;background:var(--bg2);border:1.5px solid var(--line);border-radius:12px;color:#fff;font-family:inherit;font-size:1rem;padding:13px 14px;outline:none;transition:.16s}
+    .field2::placeholder{color:var(--mut2)}
+    .field2:focus{border-color:var(--mint);background:var(--bg3)}
+    /* Control colapsable para listas largas (se abre al tocar) */
+    .listtoggle{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;text-align:left;background:var(--bg2);border:1.5px solid var(--line);border-radius:15px;padding:16px 17px;color:var(--tx);font-family:inherit;font-size:1.05rem;font-weight:500;cursor:pointer;transition:.16s}
+    .listtoggle:hover{border-color:var(--line2)}
+    .listtoggle.sel{border-color:var(--mint);background:rgba(52,211,153,.08)}
+    .listtoggle .lt-sum{color:var(--mut2);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .listtoggle.sel .lt-sum{color:var(--tx)}
+    .listtoggle .chev{flex:none;color:var(--mut);transition:transform .2s}
+    .listtoggle.open .chev{transform:rotate(180deg)}
+    .optswrap{margin-top:11px}
+    /* Chips (bancos): comunes visibles + buscar */
+    .chip-search{margin-bottom:14px}
+    .chips{display:flex;flex-wrap:wrap;gap:9px;margin:2px 0 4px}
+    .chip-opt{background:var(--bg2);border:1.5px solid var(--line);border-radius:999px;padding:10px 15px;color:var(--tx);font-family:inherit;font-size:.98rem;font-weight:500;cursor:pointer;transition:.14s}
+    .chip-opt:hover{border-color:var(--line2)}
+    .chip-opt.sel{border-color:var(--mint);background:rgba(52,211,153,.14);color:var(--mint-bright);font-weight:600}
+    /* Teléfono con prefijo +57 */
+    .phonewrap{display:flex;align-items:baseline;gap:9px;border-bottom:2px solid var(--line2);transition:border-color .18s}
+    .phonewrap:focus-within{border-color:var(--mint)}
+    .phonewrap .cc{font-family:var(--head);font-weight:600;font-size:clamp(1.3rem,3.5vw,1.7rem);color:var(--mut);padding-bottom:12px;letter-spacing:-.01em}
+    .field.phone-in{border-bottom:0;flex:1;min-width:0;padding-left:0}
+
+    /* Navegación */
+    .nav{display:flex;align-items:center;gap:14px;margin-top:26px}
+    .btn{border:0;border-radius:13px;padding:14px 26px;font-weight:700;font-size:1rem;cursor:pointer;
+      font-family:inherit;transition:.16s;display:inline-flex;align-items:center;gap:9px}
+    .btn-mint{background:var(--mint);color:var(--ink)}
+    .btn-mint:hover{background:var(--mint-bright)}
+    .btn-mint:disabled{background:#1d3a30;color:#5a6b63;cursor:not-allowed}
+    .btn .kbd{font-size:.78rem;opacity:.7;font-weight:600}
+    .skip{background:none;border:0;color:var(--mut2);font-size:.92rem;cursor:pointer;font-family:inherit;text-decoration:underline;text-underline-offset:3px}
+    .skip:hover{color:var(--mut)}
+    .hintline{margin-top:18px;font-size:.82rem;color:var(--mut2);display:flex;align-items:center;gap:7px}
+    .hintline kbd{font-family:var(--mono);font-size:.72rem;background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:5px;padding:2px 6px;color:var(--mut)}
+
+    /* Intro / estados */
+    .lead{font-size:1.08rem;line-height:1.6;color:#D4D4D6;margin:0 0 18px}
+    .lead b{color:#fff}
+    .pill{display:inline-flex;align-items:center;gap:8px;background:rgba(52,211,153,.10);
+      border:1px solid rgba(52,211,153,.4);color:var(--mint-bright);border-radius:999px;
+      padding:9px 15px;font-size:.92rem;font-weight:600;margin:0 0 26px}
+    .consent{font-size:.85rem;color:var(--mut2);margin:20px 0 0;line-height:1.5}
+    .center{text-align:center}
+    /* Badge de confirmación (post-registro): deja claro que ya quedó en la lista */
+    .confirmed{display:flex;width:fit-content;align-items:center;gap:9px;background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.45);color:var(--mint-bright);border-radius:999px;padding:8px 15px 8px 9px;font-size:.95rem;font-weight:700;margin:0 0 16px}
+    .confirmed .cd-check{display:grid;place-items:center;flex:none;width:20px;height:20px;border-radius:50%;background:var(--mint);color:var(--ink);font-size:12px;font-weight:800}
+
+    /* Pantalla final */
+    .check{width:84px;height:84px;margin:0 auto 22px;border-radius:50%;background:rgba(52,211,153,.12);
+      border:1.5px solid rgba(52,211,153,.5);display:grid;place-items:center;animation:pop .5s cubic-bezier(.2,.9,.3,1.3) both}
+    .check svg{width:42px;height:42px;stroke:var(--mint);fill:none;stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round}
+    .check svg path{stroke-dasharray:40;stroke-dashoffset:40;animation:draw .5s .25s ease forwards}
+    @keyframes pop{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
+    @keyframes draw{to{stroke-dashoffset:0}}
+    .conf{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:5}
+    .conf i{position:absolute;top:-12px;width:9px;height:9px;border-radius:2px;opacity:.9;animation:fall linear forwards}
+    @keyframes fall{to{transform:translateY(105dvh) rotate(540deg);opacity:0}}
+
+    .err{color:#FCA5A5;font-size:.9rem;margin-top:12px;min-height:1em}
+
+    @media (pointer: coarse){ .hintline{display:none} }
+    @media (prefers-reduced-motion: reduce){
+      .step.anim,.check,.check svg path,.conf i{animation:none!important}
+      .check svg path{stroke-dashoffset:0}
+    }
+  </style>
+
+  <script is:inline>
+  (function(){
+    var API = ['presu.asimetrica.co','presu.io','www.presu.io','presu.com.co'].indexOf(location.hostname) !== -1
+      ? 'https://presu-waitlist.asimetrica.workers.dev'
+      : 'https://presu-waitlist-staging.asimetrica.workers.dev';
+    var qs = new URLSearchParams(location.search);
+    var email = (qs.get('e') || qs.get('email') || '').trim().toLowerCase();
+    var nombre = '';
+    var MODE_NUEVO = qs.get('nuevo') === '1';  // post-registro: sin bloque beta, WhatsApp temprano
+    var EMBED = qs.get('embed') === '1';       // dentro del modal/iframe de la landing
+    if (EMBED) { try { document.body.classList.add('embed'); } catch(e){} }
+    // Orden del flujo post-registro: Nombre (si falta) → WhatsApp → perfil (sin bloque beta)
+    // Esenciales primero → WhatsApp (con motivo) tras invertir un poco → extras opcionales. Sin 'dolor'.
+    var NUEVO_ORDER = ['nombre','edad','ciudad','ocupacion','ingreso_tipo','metodo','metas','bancos','celular','dispositivo','ayuda','ingreso','pago'];
+
+    // Ciudades de Colombia para autocompletar (datalist nativo, sin dependencias)
+    var CITIES = ['Bogotá','Medellín','Cali','Barranquilla','Cartagena','Cúcuta','Bucaramanga','Pereira','Santa Marta','Ibagué','Manizales','Villavicencio','Pasto','Montería','Neiva','Armenia','Popayán','Sincelejo','Valledupar','Tunja','Riohacha','Florencia','Quibdó','Yopal','Bello','Envigado','Itagüí','Rionegro','Soacha','Palmira','Buenaventura','Soledad','Floridablanca','Girón','Piedecuesta','Tuluá','Cartago','Dosquebradas','Fusagasugá','Maicao','Vivo fuera de Colombia'];
+
+    // Bancos y fintech relevantes en Colombia
+    var BANKS = ['Bancolombia','Nu','Nequi','Daviplata','Davivienda','Banco de Bogotá','BBVA','Banco de Occidente','Scotiabank Colpatria','Banco Caja Social','Banco Popular','Banco Falabella','AV Villas','Lulo Bank','RappiPay (Rappicard)','Ualá','Movii','Bancoomeva','Otra'];
+
+    // ── Definición de la encuesta ──────────────────────────────
+    // when:'noName' → solo se muestra si NO tenemos el nombre en la lista.
+    var STEPS = [
+      { id:'nombre', type:'text', when:'noName', q:'¿Cómo te llamas?', autocomplete:'name',
+        help:'Tu nombre y apellido — para hablarte por tu nombre.', placeholder:'Nombre y apellido' },
+
+      // ── Bloque de uso del piloto — bifurca según si ya la usa ──
+      { id:'uso', type:'single', q:'¿Ya estás usando Presu?',
+        help:'Llevas unos días con la beta — cuéntanos cómo va.',
+        options:['La uso seguido','La probé un par de veces','Aún no la he usado'] },
+      { id:'features', type:'multi', when:function(a){ return USA(a); },
+        q:'¿Qué has usado de Presu?', help:'Elige todo lo que hayas probado.',
+        options:['Importar extractos (PDF o pantallazo)','Categorización automática','Panel de gastos','Presupuestos','Flujo de caja','Patrimonio','Metas de ahorro'] },
+      { id:'valor', type:'text', when:function(a){ return USA(a); }, optional:true,
+        q:'¿Qué es lo que más te ha servido?', placeholder:'Lo que más te ha gustado o ayudado…' },
+      { id:'falta', type:'text', when:function(a){ return USA(a); }, optional:true,
+        q:'¿Qué le falta o qué cambiarías?', placeholder:'Lo que te frenó, confundió o te gustaría ver…' },
+      { id:'freno', type:'single', when:function(a){ return NOUSA(a); },
+        q:'¿Qué te ha frenado para empezar?',
+        options:['No he tenido tiempo','No entendí cómo configurarla','Tuve un problema técnico','No me quedó claro para qué me sirve','Otra cosa'] },
+      { id:'ayuda_config', type:'single', when:function(a){ return a.uso && a.uso!=='La uso seguido'; },
+        q:'¿Quieres que te ayudemos a ponerla a andar?',
+        help:'Te escribimos por WhatsApp y te acompañamos en la configuración. Sin compromiso.',
+        options:['Sí, me vendría bien','No, yo me las arreglo'] },
+
+      { id:'edad', type:'single', q:'¿Cuántos años tienes?',
+        options:['18–24','25–34','35–44','45–54','55–64','65 o más'] },
+      { id:'ciudad', type:'text', q:'¿En qué ciudad vives?', optional:true, autocomplete:'address-level2',
+        placeholder:'Empieza a escribir tu ciudad…', list:true },
+      { id:'ocupacion', type:'single', q:'¿A qué te dedicas?',
+        options:['Empleado/a','Independiente o freelance','Tengo mi negocio / emprendo','Estudiante','Pensionado/a','Entre trabajos'] },
+      { id:'ingreso_tipo', type:'single', q:'¿Cómo recibes tu plata?',
+        help:'Esto cambia mucho cómo te ayudamos a organizarte.',
+        options:['Sueldo fijo cada mes','Ingresos variables','Un poco de ambos'] },
+      { id:'metodo', type:'single', q:'Hoy, ¿cómo manejas tu plata?',
+        options:['No la organizo','En mi cabeza','Notas o Excel','Una app'] },
+      { id:'metas', type:'multi', q:'¿Qué quieres lograr con Presu?',
+        help:'Elige las que quieras.',
+        options:['Controlar en qué se me va','Ahorrar para una meta','Salir de deudas','Armar un fondo de emergencia','Empezar a invertir','Verlo todo en un solo lugar'] },
+      { id:'bancos', type:'multi', q:'¿Qué bancos o apps usas?',
+        help:'Elige todas las que uses.', other:true, chips:true, search:true, options:BANKS },
+      { id:'dispositivo', type:'single', q:'¿Qué teléfono usas?',
+        help:'Hoy Presu funciona en escritorio; la app móvil sale hacia julio. Tu teléfono nos dice con cuál empezar.',
+        options:['iPhone (iOS)','Android'] },
+      { id:'dolor', type:'text', q:'¿Qué es lo que más te frustra de organizar tu plata?',
+        placeholder:'Escribe lo primero que se te venga…', optional:true },
+      { id:'pago', type:'single', q:'Si Presu te sirviera de verdad, ¿cuánto pagarías al mes?',
+        help:'No hay respuesta correcta — solo queremos entender.', optional:true,
+        options:['No pagaría','Menos de $5.000','$5.000–$10.000','$10.000–$15.000','$15.000–$20.000','Más de $20.000'] },
+      { id:'ingreso', type:'single', q:'¿En qué rango está tu ingreso mensual?',
+        help:'Solo lo usamos agregado; nunca lo mostramos ni lo compartimos.',
+        options:['Menos de $1.3M','$1.3M–$2M','$2M–$3.5M','$3.5M–$6M','$6M–$10M','Más de $10M','Prefiero no decir'] },
+      { id:'ayuda', type:'multi', q:'¿Nos ayudas a hacer Presu mejor?', optional:true,
+        help:'Le estamos enseñando a Presu a leer los movimientos de cada banco — tu ayuda acelera que funcione con el tuyo. Te contactamos solo si dices que sí.',
+        options:[
+          'Sí, dar feedback y probar versiones nuevas',
+          'Sí, compartir un extracto anonimizado',
+          'Sí, reenviar un correo de confirmación de mi banco',
+          'Me gustaría una llamada corta con el equipo'
+        ] },
+      { id:'celular', type:'text', phone:true, optional:true, inputmode:'tel', autocomplete:'tel',
+        q:'¿Nos dejas tu WhatsApp?',
+        help:'Opcional. Solo para avisarte cuando se abra tu cupo o coordinar si nos ayudas. Cero spam.',
+        placeholder:'300 123 4567' }
+    ];
+
+    // Predicados de la bifurcación de uso
+    function USA(a){ return a.uso==='La uso seguido' || a.uso==='La probé un par de veces'; }
+    function NOUSA(a){ return a.uso==='Aún no la he usado'; }
+
+    var STEP_BY_ID = {}; STEPS.forEach(function(s){ STEP_BY_ID[s.id] = s; });
+    var flow = STEPS.slice();     // pasos efectivos (se recalcula según el nombre y la rama de uso)
+    // Un paso es visible si: no tiene 'when'; o when==='noName' y NO tenemos nombre;
+    // o when es una función que devuelve true para las respuestas actuales.
+    function buildFlow(){
+      if(MODE_NUEVO){
+        // Post-registro: orden fijo (Nombre→WhatsApp→perfil), sin el bloque beta.
+        flow = NUEVO_ORDER.map(function(id){ return STEP_BY_ID[id]; }).filter(function(s){
+          if(!s) return false;
+          if(s.when==='noName') return !nombre;
+          return true;
+        });
+        return;
+      }
+      flow = STEPS.filter(function(s){
+        if(s.when==='noName') return !nombre;
+        if(typeof s.when==='function') return s.when(answers);
+        return true;
+      });
+    }
+    function cityDatalist(){ return '<datalist id="presu-cities">'+CITIES.map(function(c){return '<option value="'+esc(c)+'">';}).join('')+'</datalist>'; }
+    // Teléfono CO: 10 dígitos agrupados 3-3-4 (ej. 310 841 6012)
+    function coDigits(v){ return String(v||'').replace(/\D/g,'').replace(/^57/,'').slice(0,10); }
+    function formatCO(d){ d=String(d||'').replace(/\D/g,'').slice(0,10); return [d.slice(0,3),d.slice(3,6),d.slice(6,10)].filter(Boolean).join(' '); }
+    // Chips (bancos): toggle + buscar
+    function chipToggle(s, btn){
+      var val=btn.getAttribute('data-o');
+      var arr=Array.isArray(answers[s.id])?answers[s.id].slice():[];
+      var i=arr.indexOf(val); if(i>=0) arr.splice(i,1); else arr.push(val);
+      answers[s.id]=arr; btn.classList.toggle('sel', arr.indexOf(val)>=0);
+      if(s.other){ updateOther(s); if(arr.indexOf('Otra')>=0){ var ot=document.getElementById('otherTxt'); if(ot) ot.focus(); } }
+    }
+    function filterChips(q){
+      q=(q||'').trim().toLowerCase();
+      Array.prototype.forEach.call(stepEl.querySelectorAll('.chip-opt'), function(btn){
+        var t=btn.getAttribute('data-o').toLowerCase();
+        btn.style.display = (!q || t.indexOf(q)>=0 || t==='otra') ? '' : 'none';
+      });
+    }
+
+    var answers = {};
+    var idx = -1;            // -1 = intro; 0..n = preguntas; n = final
+    var phase = 'loading';   // loading | gate | intro | q | done | already
+
+    var stepEl = document.getElementById('step');
+    var barEl = document.getElementById('bar');
+    var backEl = document.getElementById('backBtn');
+    var confEl = document.getElementById('conf');
+
+    function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c];});}
+
+    // ── Arranque: validar correo contra la waitlist ────────────
+    function boot(){
+      render(); // muestra "cargando…"
+      if(!email){ phase='gate'; render(); return; }
+      fetch(API+'/survey?e='+encodeURIComponent(email),{cache:'no-store'})
+        .then(function(r){return r.json();})
+        .then(function(d){
+          if(!d || !d.found){ phase='gate'; render(); return; }
+          nombre = d.nombre || '';
+          if(d.answers && typeof d.answers==='object') answers = d.answers;
+          if(d.celular && !answers.celular) answers.celular = d.celular;
+          lastSaved = JSON.stringify(answers); // no re-enviar lo que ya vino del servidor
+          if(d.completed){ phase='already'; render(); return; } // solo si YA la completó
+          phase='intro'; render();                              // parcial → reanuda con lo previo
+        })
+        .catch(function(){ phase='gate'; render(); });
+    }
+
+    // ── Render por fase ────────────────────────────────────────
+    function render(){
+      backEl.style.display = (phase==='q' && idx>=0) ? 'inline-flex' : 'none';
+      if(phase==='loading'){ stepEl.innerHTML = '<div class="center" style="color:var(--mut)">Cargando…</div>'; return; }
+      if(phase==='gate'){ renderGate(); return; }
+      if(phase==='already'){ renderAlready(); return; }
+      if(phase==='intro'){ renderIntro(); return; }
+      if(phase==='q'){ renderQuestion(); return; }
+      if(phase==='done'){ renderDone(); return; }
+    }
+
+    function shell(inner){
+      stepEl.className = 'step anim';
+      stepEl.innerHTML = '<div class="brand"><span class="wordmark" aria-label="Presu"><span class="wm-bar" aria-hidden="true"></span><span class="wm-text">presu</span></span></div>' + inner;
+      // re-trigger animación
+      void stepEl.offsetWidth;
+    }
+
+    function setBar(p){ barEl.style.width = Math.max(0,Math.min(100,p))+'%'; }
+
+    // Correo no encontrado / sin correo
+    function renderGate(){
+      setBar(0);
+      shell(
+        '<div class="eb">Encuesta de Fundadores</div>'+
+        '<h1 class="q">Confirma tu correo</h1>'+
+        '<p class="help">Esta encuesta es solo para quienes ya están en la lista de espera. Usa el mismo correo con el que te inscribiste.</p>'+
+        '<input class="field" id="gateInput" type="email" inputmode="email" autocomplete="email" placeholder="tu@correo.com" value="'+esc(email)+'">'+
+        '<div class="err" id="gateErr"></div>'+
+        '<div class="nav"><button class="btn btn-mint" id="gateBtn">Continuar <span class="kbd">↵</span></button></div>'
+      );
+      var inp = document.getElementById('gateInput');
+      inp.focus();
+      function go(){
+        var v = inp.value.trim().toLowerCase();
+        var errEl = document.getElementById('gateErr');
+        if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)){ errEl.textContent='Escribe un correo válido.'; return; }
+        errEl.textContent='Verificando…';
+        fetch(API+'/survey?e='+encodeURIComponent(v),{cache:'no-store'}).then(function(r){return r.json();}).then(function(d){
+          if(!d || !d.found){ errEl.textContent='Ese correo no está en la lista. ¿Usaste otro al inscribirte?'; return; }
+          email=v; nombre=d.nombre||'';
+          if(d.answers && typeof d.answers==='object') answers = d.answers;
+          if(d.celular && !answers.celular) answers.celular = d.celular;
+          lastSaved = JSON.stringify(answers);
+          if(d.completed){ phase='already'; render(); return; }
+          phase='intro'; render();
+        }).catch(function(){ errEl.textContent='No pudimos verificar. Intenta de nuevo.'; });
+      }
+      document.getElementById('gateBtn').addEventListener('click', go);
+      inp.addEventListener('keydown', function(e){ if(e.key==='Enter') go(); });
+    }
+
+    // Ya respondió
+    function renderAlready(){
+      setBar(100);
+      var hola = nombre ? ('Gracias, '+esc(nombre)) : 'Gracias';
+      shell(
+        '<div class="check"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></div>'+
+        '<h1 class="q center">'+hola+' 🌿</h1>'+
+        '<p class="lead center">Ya tenemos tus respuestas. Quedaste en las <b>primeras invitaciones</b> de la beta. ¿Quieres ajustar algo?</p>'+
+        '<div class="nav center" style="justify-content:center"><button class="btn btn-mint" id="editBtn">Editar mis respuestas</button></div>'
+      );
+      document.getElementById('editBtn').addEventListener('click', function(){ idx=-1; phase='intro'; render(); });
+    }
+
+    // Intro
+    function renderIntro(){
+      setBar(0);
+      var qn, mins;
+      if(MODE_NUEVO){
+        buildFlow(); qn = flow.length; mins = Math.max(2, Math.ceil(qn/5));
+      } else {
+        // Conteo "techo": la rama de uso con acompañamiento es la más larga; la usamos para el estimado.
+        var savedUso = answers.uso; answers.uso = 'La probé un par de veces'; buildFlow();
+        qn = flow.length; mins = Math.max(2, Math.ceil(qn/5));
+        if(savedUso==null) delete answers.uso; else answers.uso = savedUso;
+        buildFlow();
+      }
+      var hola = nombre ? ('Hola, '+esc(nombre)+' 👋') : 'Hola 👋';
+      if(MODE_NUEVO){
+        shell(
+          '<div class="confirmed"><span class="cd-check">✓</span> ¡Ya estás en la lista de espera!</div>'+
+          '<div class="eb">Encuesta opcional · unas preguntas rápidas</div>'+
+          '<p class="lead">'+hola+' Tu lugar ya está guardado. 🎉</p>'+
+          '<h1 class="q">Ahora, <span style="color:var(--mint)">conectemos más de cerca</span></h1>'+
+          '<p class="lead">Somos un equipo pequeño construyendo Presu contigo. Déjanos tu WhatsApp y cuéntanos un poco: te acompañamos de cerca y escuchamos tu feedback. <b>Sin spam.</b></p>'+
+          '<div class="pill">🌿 Opcional — ya guardamos tu lugar</div>'+
+          '<div class="nav"><button class="btn btn-mint" id="startBtn">Empecemos <span class="kbd">↵</span></button></div>'+
+          '<p class="consent">Es opcional y puedes parar cuando quieras — guardamos lo que respondas.</p>'
+        );
+      } else {
+        shell(
+          '<div class="eb">Encuesta del piloto · '+qn+' preguntas · ~'+mins+' min</div>'+
+          '<p class="lead">'+hola+'</p>'+
+          '<h1 class="q">Construyamos Presu <span style="color:var(--mint)">a tu medida</span></h1>'+
+          '<p class="lead">Llevas unos días con la beta. Cuéntanos cómo te va: con tu feedback decidimos <b>qué construir primero</b>.</p>'+
+          '<div class="pill">🎯 Tu feedback decide qué construimos primero</div>'+
+          '<div class="nav"><button class="btn btn-mint" id="startBtn">Empecemos <span class="kbd">↵</span></button></div>'+
+          '<p class="consent">Solo lo usamos para mejorar Presu. No compartimos tus datos con nadie.</p>'
+        );
+      }
+      document.getElementById('startBtn').addEventListener('click', function(){ idx=0; phase='q'; render(); });
+    }
+
+    // Pregunta
+    function renderQuestion(){
+      var s = flow[idx];
+      setBar(Math.round((idx/flow.length)*100));
+      var head = '<div class="eb">Pregunta '+(idx+1)+' de '+flow.length+(s.optional?' <span class="opt">· opcional</span>':'')+'</div>'+
+        '<h1 class="q">'+esc(s.q)+'</h1>'+ (s.help?('<p class="help">'+esc(s.help)+'</p>'):'');
+
+      if(s.type==='single' || s.type==='multi'){
+        var cur = answers[s.id];
+        var opts = s.options.map(function(o,i){
+          var sel = (s.type==='multi') ? (Array.isArray(cur)&&cur.indexOf(o)>=0) : (cur===o);
+          var key = (i<9)?(i+1):'';
+          return '<button class="opt-btn'+(sel?' sel':'')+'" data-o="'+esc(o)+'">'+
+            '<span class="key">'+key+'</span><span>'+esc(o)+'</span>'+
+            '<span class="tick">✓</span></button>';
+        }).join('');
+        var other = '';
+        if(s.other){
+          var ov = answers[s.id+'_otra']||'';
+          other = '<div id="otherWrap" style="display:none;margin-top:11px"><input class="field2" id="otherTxt" type="text" autocomplete="off" placeholder="¿Cuál? Sepáralas con comas" value="'+esc(ov)+'"></div>';
+        }
+        var nav = (s.type==='multi')
+          ? '<div class="nav"><button class="btn btn-mint" id="contBtn">Continuar <span class="kbd">↵</span></button>'+(s.optional?'<button class="skip" id="skipBtn">Saltar</button>':'')+'</div>'
+          : (s.optional?'<div class="nav"><button class="skip" id="skipBtn">Prefiero no decir</button></div>':'');
+        var body, hint;
+        if(s.chips){
+          var searchHtml = s.search ? '<input class="field2 chip-search" id="chipSearch" type="text" autocomplete="off" placeholder="Buscar tu banco o app…">' : '';
+          var chipsHtml = s.options.map(function(o){
+            var csel = Array.isArray(cur)&&cur.indexOf(o)>=0;
+            return '<button type="button" class="chip-opt'+(csel?' sel':'')+'" data-o="'+esc(o)+'">'+esc(o)+'</button>';
+          }).join('');
+          body = searchHtml + '<div class="chips" id="chips">'+chipsHtml+'</div>' + other;
+          hint = '<div class="hintline">Elige las que uses · <kbd>↵</kbd> para seguir</div>';
+        } else if(s.collapse){
+          var sm = multiSummary(cur);
+          body = '<button type="button" class="listtoggle'+(sm.sel?' sel':'')+'" id="listToggle" aria-expanded="false">'
+            + '<span class="lt-sum">'+esc(sm.text)+'</span><span class="chev">▾</span></button>'
+            + '<div class="optswrap" id="optsWrap" style="display:none"><div class="opts">'+opts+'</div>'+other+'</div>';
+          hint = '<div class="hintline">Toca la lista para ver las opciones · <kbd>↵</kbd> para seguir</div>';
+        } else {
+          body = '<div class="opts">'+opts+'</div>'+other;
+          hint = '<div class="hintline"><kbd>1</kbd>–<kbd>'+Math.min(9,s.options.length)+'</kbd> para elegir · <kbd>↵</kbd> para seguir</div>';
+        }
+        shell(head+body+nav+hint);
+
+        Array.prototype.forEach.call(stepEl.querySelectorAll('.opt-btn'), function(btn){
+          btn.addEventListener('click', function(){ pick(s, btn.getAttribute('data-o')); });
+        });
+        if(s.type==='multi'){ document.getElementById('contBtn').addEventListener('click', next); }
+        var sk = document.getElementById('skipBtn'); if(sk) sk.addEventListener('click', function(){ delete answers[s.id]; next(); });
+        if(s.other){
+          var ot=document.getElementById('otherTxt');
+          if(ot) ot.addEventListener('input', function(){ answers[s.id+'_otra']=ot.value; });
+          updateOther(s);
+        }
+        var lt=document.getElementById('listToggle');
+        if(lt) lt.addEventListener('click', toggleList);
+        if(s.chips){
+          Array.prototype.forEach.call(stepEl.querySelectorAll('.chip-opt'), function(btn){
+            btn.addEventListener('click', function(){ chipToggle(s, btn); });
+          });
+          var srch=document.getElementById('chipSearch');
+          if(srch) srch.addEventListener('input', function(){ filterChips(srch.value); });
+        }
+
+      } else { // text
+        var val = answers[s.id]||'';
+        var inputHtml;
+        if(s.phone){
+          inputHtml = '<div class="phonewrap"><span class="cc">+57</span>'
+            + '<input class="field phone-in" id="txt" type="text" inputmode="tel" autocomplete="tel" placeholder="'+esc(s.placeholder||'')+'" value="'+esc(formatCO(coDigits(val)))+'"></div>';
+        } else {
+          var attrs = '';
+          if(s.list) attrs += ' list="presu-cities"';
+          if(s.inputmode) attrs += ' inputmode="'+s.inputmode+'"';
+          inputHtml = '<input class="field" id="txt" type="text" autocomplete="'+(s.autocomplete||'off')+'"'+attrs+' placeholder="'+esc(s.placeholder||'')+'" value="'+esc(val)+'">'
+            + (s.list ? cityDatalist() : '');
+        }
+        shell(head+ inputHtml +
+          '<div class="nav"><button class="btn btn-mint" id="contBtn">Continuar <span class="kbd">↵</span></button>'+
+          (s.optional?'<button class="skip" id="skipBtn">Saltar</button>':'')+'</div>');
+        var t = document.getElementById('txt');
+        t.focus(); t.setSelectionRange(t.value.length,t.value.length);
+        if(s.phone){ t.addEventListener('input', function(){ var c=coDigits(t.value); t.value=formatCO(c); }); }
+        document.getElementById('contBtn').addEventListener('click', function(){ commitText(s); });
+        t.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); commitText(s); } });
+        var sk2 = document.getElementById('skipBtn'); if(sk2) sk2.addEventListener('click', function(){ delete answers[s.id]; next(); });
+      }
+    }
+
+    function updateOther(s){
+      var ow=document.getElementById('otherWrap'); if(!ow) return;
+      var cur=answers[s.id]; var on=Array.isArray(cur)&&cur.indexOf('Otra')>=0;
+      ow.style.display=on?'block':'none';
+    }
+    // Listas largas colapsables (se abren al tocar)
+    function multiSummary(cur){
+      var arr = Array.isArray(cur)?cur:[];
+      if(!arr.length) return {sel:false, text:'Toca para elegir'};
+      var t = arr.slice(0,3).join(', ');
+      if(arr.length>3) t += ' +'+(arr.length-3);
+      return {sel:true, text:t};
+    }
+    function toggleList(){
+      var w=document.getElementById('optsWrap'), lt=document.getElementById('listToggle');
+      if(!w||!lt) return;
+      var open = w.style.display!=='none';
+      w.style.display = open?'none':'block';
+      lt.classList.toggle('open', !open);
+      lt.setAttribute('aria-expanded', String(!open));
+    }
+    function expandList(){
+      var w=document.getElementById('optsWrap'), lt=document.getElementById('listToggle');
+      if(w && w.style.display==='none'){ w.style.display='block'; if(lt){ lt.classList.add('open'); lt.setAttribute('aria-expanded','true'); } }
+    }
+
+    function pick(s, val){
+      if(s.type==='multi'){
+        var arr = Array.isArray(answers[s.id])?answers[s.id].slice():[];
+        var i = arr.indexOf(val);
+        if(i>=0) arr.splice(i,1); else arr.push(val);
+        answers[s.id]=arr;
+        // re-render para reflejar selección sin perder foco de teclado
+        var sel = arr;
+        Array.prototype.forEach.call(stepEl.querySelectorAll('.opt-btn'), function(btn){
+          var on = sel.indexOf(btn.getAttribute('data-o'))>=0;
+          btn.classList.toggle('sel', on);
+        });
+        if(s.other){ updateOther(s); if(arr.indexOf('Otra')>=0){ var ot=document.getElementById('otherTxt'); if(ot) ot.focus(); } }
+        var lt=document.getElementById('listToggle');
+        if(lt){ var sm=multiSummary(arr); var el=lt.querySelector('.lt-sum'); if(el) el.textContent=sm.text; lt.classList.toggle('sel', sm.sel); }
+      } else {
+        answers[s.id]=val;
+        if(s.id==='uso'){ // al cambiar la rama, descarta lo de la rama contraria
+          if(NOUSA(answers)){ delete answers.features; delete answers.valor; delete answers.falta; }
+          else { delete answers.freno; }
+          if(val==='La uso seguido') delete answers.ayuda_config;
+        }
+        Array.prototype.forEach.call(stepEl.querySelectorAll('.opt-btn'), function(btn){
+          btn.classList.toggle('sel', btn.getAttribute('data-o')===val);
+        });
+        setTimeout(next, 240); // auto-avance con feedback visual
+      }
+    }
+
+    function commitText(s){
+      var t = document.getElementById('txt');
+      if(s.phone){
+        var d = coDigits(t.value);
+        if(d){ answers[s.id] = '+57 ' + formatCO(d); }
+        else { if(s.optional){ delete answers[s.id]; } else { t.focus(); return; } }
+        next(); return;
+      }
+      var v = (t.value||'').trim();
+      if(v) answers[s.id]=v; else { if(s.optional){ delete answers[s.id]; } else { t.focus(); return; } }
+      if(!s.optional && !v){ t.focus(); return; }
+      next();
+    }
+
+    // Guardado incremental: persiste lo respondido apenas se avanza (no bloqueante).
+    var lastSaved = '';
+    function saveProgress(){
+      try {
+        if(!email) return;
+        var payload = JSON.stringify(answers);
+        if(payload === lastSaved) return;   // nada cambió desde el último guardado
+        lastSaved = payload;
+        fetch(API+'/survey',{method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({email:email, answers:answers})}).catch(function(){});
+      } catch(e){}
+    }
+
+    function next(){
+      buildFlow(); // recalcula la rama según la respuesta recién dada (p. ej. "¿ya la usas?")
+      if(idx >= flow.length-1){ submit(); return; }
+      idx++; saveProgress(); render();
+    }
+    function back(){
+      buildFlow();
+      if(idx<=0){ idx=-1; phase='intro'; render(); return; }
+      idx--; render();
+    }
+
+    // ── Envío ──────────────────────────────────────────────────
+    function submit(){
+      phase='done'; setBar(100); renderSending();
+      fetch(API+'/survey',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({email:email, answers:answers, complete:true})})
+        .then(function(r){return r.json();})
+        .then(function(d){
+          if(d && (d.status==='ok'||d.status==='updated')){ renderDone(); }
+          else { renderError(d && d.reason); }
+        })
+        .catch(function(){ renderError('network'); });
+    }
+    function renderSending(){ backEl.style.display='none'; shell('<div class="center" style="color:var(--mut)">Guardando tus respuestas…</div>'); }
+    function renderError(reason){
+      var msg = reason==='not_in_list' ? 'Ese correo no está en la lista.' : 'No pudimos guardar. Revisa tu conexión.';
+      shell('<h1 class="q center">Ups 😅</h1><p class="lead center">'+msg+'</p>'+
+        '<div class="nav center" style="justify-content:center"><button class="btn btn-mint" id="retry">Reintentar</button></div>');
+      document.getElementById('retry').addEventListener('click', submit);
+    }
+    function renderDone(){
+      confetti();
+      try { if(EMBED && window.parent) window.parent.postMessage({presu:'survey-complete'}, '*'); } catch(e){}
+      var cta = EMBED
+        ? '<button class="btn btn-mint" id="closeBtn">Listo</button>'
+        : '<a class="btn btn-mint" href="https://presu.io">Volver a Presu</a>';
+      shell(
+        '<div class="check"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></div>'+
+        '<h1 class="q center">¡Listo! Gracias 🌿</h1>'+
+        '<p class="lead center">Tus respuestas nos ayudan a construir un Presu que de verdad te sirva. '+
+        'Con esto <b>decides qué construimos primero</b> 🙌.</p>'+
+        '<div class="nav center" style="justify-content:center">'+cta+'</div>'+
+        '<p class="consent center">Tu plata, clara.</p>'
+      );
+      var cb = document.getElementById('closeBtn');
+      if(cb) cb.addEventListener('click', function(){ try { window.parent.postMessage({presu:'survey-close'}, '*'); } catch(e){} });
+    }
+
+    function confetti(){
+      var colors=['#34D399','#5EEAB8','#F4F4F3','#0E9F6E'];
+      for(var i=0;i<26;i++){
+        var c=document.createElement('i');
+        c.style.left=(Math.random()*100)+'%';
+        c.style.background=colors[i%colors.length];
+        c.style.animationDuration=(1.6+Math.random()*1.4)+'s';
+        c.style.animationDelay=(Math.random()*.25)+'s';
+        c.style.transform='rotate('+(Math.random()*360)+'deg)';
+        confEl.appendChild(c);
+      }
+      setTimeout(function(){ confEl.innerHTML=''; }, 3600);
+    }
+
+    // ── Teclado global ─────────────────────────────────────────
+    document.addEventListener('keydown', function(e){
+      if(phase!=='q') return;
+      var s = flow[idx];
+      var typing = (document.activeElement && document.activeElement.classList.contains('field'));
+      // números → elegir opción
+      if((s.type==='single'||s.type==='multi') && !s.chips && /^[1-9]$/.test(e.key)){
+        var i=parseInt(e.key,10)-1;
+        if(i<s.options.length){ e.preventDefault(); if(s.collapse) expandList(); pick(s, s.options[i]); }
+        return;
+      }
+      if(e.key==='Enter' && !typing){
+        e.preventDefault();
+        if(s.type==='multi'){ next(); }
+        else if(s.type==='single'){ if(answers[s.id]) next(); else if(s.optional) next(); }
+        return;
+      }
+      if((e.key==='Backspace'||e.key==='ArrowLeft') && !typing){ e.preventDefault(); back(); }
+    });
+    backEl.addEventListener('click', back);
+
+    boot();
+  })();
+  </script>
+</StaticPage>

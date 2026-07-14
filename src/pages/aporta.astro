@@ -1,0 +1,710 @@
+---
+import StaticPage from '../layouts/StaticPage.astro';
+---
+<StaticPage
+  title="Ayuda a que Presu lea tu banco — aporta un documento anónimo"
+  description="Comparte un extracto o pantallazo de transacción 100% anonimizado en tu propio navegador. El original nunca sale de tu equipo. Ayúdanos a que Presu entienda tu banco."
+  ogTitle="Ayuda a que Presu lea tu banco 🌱"
+  ogDescription="Aporta un documento financiero anonimizado en tu propio equipo. El original nunca sale de tu dispositivo. Tu plata, clara."
+>
+  <link slot="head" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
+
+  <header class="site-header">
+    <div class="sh-wrap">
+      <div class="sh-brand">
+        <a class="sh-logo" href="/" aria-label="Presu — inicio"><span class="wordmark"><span class="wm-bar" aria-hidden="true"></span><span class="wm-text">presu</span></span></a>
+        <a class="sh-endorse" href="https://asimetrica.co" target="_blank" rel="noopener"><span>de</span><img src="/asimetrica-logo.webp" alt="Asimétrica" /></a>
+      </div>
+      <nav class="sh-nav" id="sh-nav">
+        <a href="/#como">Cómo</a>
+        <a href="/#privacidad">Privacidad</a>
+        <a href="/#planes">Planes</a>
+        <a href="/aporta">Aporta 🌱</a>
+      </nav>
+      <div class="sh-actions"><a class="sh-cta" href="/#waitlist">Únete a la lista</a><button class="sh-burger" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="sh-nav"><span></span><span></span><span></span></button></div>
+    </div>
+  </header>
+  <div class="progress"><i id="bar"></i></div>
+  <button class="back" id="backBtn" aria-label="Atrás">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    Atrás
+  </button>
+  <div class="conf" id="conf" aria-hidden="true"></div>
+  <input type="file" id="fileInput" accept="image/*,application/pdf" multiple hidden />
+
+  <div class="stage"><div class="step" id="step"></div></div>
+
+  <style is:global>
+    :root{
+      --mint:#34D399;--mint-bright:#5EEAB8;--ink:#08231A;--tx:#F4F4F3;--mut:#A1A1A6;--mut2:#6B6B72;
+      --bg:#08080A;--bg2:#101014;--bg3:#16161A;--line:rgba(255,255,255,.1);--line2:rgba(255,255,255,.16);
+      --red:#FB7185;--amber:#FBBF24;
+      --head:"Space Grotesk",sans-serif;--mono:"JetBrains Mono",monospace
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;background:var(--bg);color:var(--tx);font-family:"Hanken Grotesk",sans-serif;
+      line-height:1.5;-webkit-font-smoothing:antialiased;
+      background-image:radial-gradient(120% 80% at 50% -10%,rgba(52,211,153,.10),transparent 60%);
+      background-attachment:fixed;
+    }
+    .progress{position:fixed;top:0;left:0;right:0;height:4px;background:rgba(255,255,255,.06);z-index:50}
+    .progress > i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--mint),var(--mint-bright));
+      border-radius:0 4px 4px 0;transition:width .5s cubic-bezier(.2,.7,.2,1)}
+    .back{position:fixed;top:18px;left:18px;z-index:40;display:none;align-items:center;gap:6px;
+      background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--mut);
+      border-radius:999px;padding:8px 14px 8px 11px;font-size:.85rem;font-family:inherit;cursor:pointer;transition:.18s}
+    .back:hover{color:var(--tx);border-color:var(--line2);background:rgba(255,255,255,.08)}
+    .back svg{width:14px;height:14px}
+
+    .stage{min-height:100dvh;display:grid;place-items:center;padding:60px 20px}
+    .step{width:100%;max-width:600px;margin:0 auto}
+    .step.anim{animation:stepIn .45s cubic-bezier(.2,.7,.2,1) both}
+    @keyframes stepIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+    .wide{max-width:920px}
+
+    .brand{display:inline-flex;margin-bottom:26px}
+    .wordmark{position:relative;display:inline-flex;align-items:center;line-height:.9}
+    .wm-text{position:relative;z-index:1;font-family:var(--head);font-weight:700;font-size:1.55rem;letter-spacing:-.05em;color:var(--tx);line-height:.9}
+    .wm-bar{position:absolute;left:-5%;right:-8%;top:53%;height:.36em;border-radius:999px;background:var(--mint);transform:rotate(-9deg);z-index:0}
+    /* Site header (igual al resto del sitio) */
+    .site-header{position:sticky;top:0;z-index:100;background:rgba(8,8,10,.72);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
+    .sh-wrap{max-width:1200px;margin:0 auto;padding:14px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+    .sh-brand{display:flex;align-items:center;gap:12px;min-width:0}
+    .sh-logo{display:inline-flex;text-decoration:none}
+    .sh-logo .wm-text{font-size:1.375rem}
+    .sh-endorse{display:inline-flex;align-items:center;gap:7px;padding-left:12px;border-left:1px solid var(--line);font-family:"Hanken Grotesk",sans-serif;font-size:.8rem;font-weight:500;color:var(--mut2);text-decoration:none;white-space:nowrap}
+    .sh-endorse img{height:.95rem;width:auto;display:block}
+    .sh-nav{display:flex;align-items:center;gap:26px}
+    .sh-nav a{font-family:"Hanken Grotesk",sans-serif;font-size:1rem;font-weight:500;color:var(--mut);text-decoration:none;transition:color .16s}
+    .sh-nav a:hover{color:var(--tx)}
+    .sh-cta{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:9px 20px;border-radius:999px;background:var(--mint);color:#06231A;font-family:"Hanken Grotesk",sans-serif;font-weight:700;font-size:.9rem;text-decoration:none;white-space:nowrap;transition:background .16s}
+    .sh-cta:hover{background:var(--mint-bright)}
+    .sh-actions{display:flex;align-items:center;gap:10px}
+  .sh-burger{display:none;flex-direction:column;justify-content:center;gap:5px;width:42px;height:42px;padding:0;background:none;border:1px solid var(--line);border-radius:11px;cursor:pointer}
+  .sh-burger span{display:block;width:20px;height:2px;margin:0 auto;background:var(--tx);border-radius:2px;transition:transform .22s,opacity .22s}
+  .sh-burger[aria-expanded="true"] span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+  .sh-burger[aria-expanded="true"] span:nth-child(2){opacity:0}
+  .sh-burger[aria-expanded="true"] span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+  @media(max-width:640px){
+    .sh-endorse{display:none}
+    .sh-burger{display:flex}
+    .sh-wrap{padding:12px 16px}
+    .sh-nav{position:absolute;top:100%;left:0;right:0;flex-direction:column;align-items:stretch;gap:0;padding:6px 16px 14px;background:var(--bg);border-bottom:1px solid var(--line);display:none}
+    .site-header.is-open .sh-nav{display:flex}
+    .sh-nav a{padding:14px 4px;font-size:1.05rem;border-bottom:1px solid var(--line)}
+    .sh-nav a:last-child{border-bottom:0}
+  }
+
+    .eb{font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mint);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+    .q{font-family:var(--head);font-weight:700;font-size:clamp(1.55rem,4.2vw,2.2rem);line-height:1.12;letter-spacing:-.02em;color:#fff;margin:0 0 10px}
+    .lead{font-size:1.06rem;line-height:1.6;color:#D4D4D6;margin:0 0 16px}
+    .lead b{color:#fff}
+    .help{color:var(--mut);font-size:1rem;margin:0 0 22px}
+    .center{text-align:center}
+
+    /* Sellos de privacidad */
+    .seals{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 22px}
+    .seal{display:inline-flex;align-items:center;gap:7px;background:rgba(52,211,153,.08);
+      border:1px solid rgba(52,211,153,.35);color:var(--mint-bright);border-radius:999px;
+      padding:7px 13px;font-size:.82rem;font-weight:600}
+    .seal svg{width:14px;height:14px;stroke:var(--mint);fill:none;stroke-width:2.2}
+
+    /* Pasos numerados */
+    .steps3{display:grid;gap:12px;margin:0 0 24px}
+    .s3{display:flex;gap:13px;align-items:flex-start;background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+    .s3 .n{flex:none;width:26px;height:26px;border-radius:8px;background:rgba(52,211,153,.14);color:var(--mint);
+      display:grid;place-items:center;font-family:var(--mono);font-weight:600;font-size:.85rem}
+    .s3 b{color:#fff}.s3 span{color:var(--mut);font-size:.95rem}
+
+    /* Barra colectiva */
+    .collective{background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin:0 0 22px}
+    .collective .top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px}
+    .collective .big{font-family:var(--head);font-weight:700;font-size:1.5rem;color:#fff}
+    .collective .lab{font-size:.82rem;color:var(--mut2);font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em}
+    .cbar{height:9px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden}
+    .cbar > i{display:block;height:100%;background:linear-gradient(90deg,var(--mint),var(--mint-bright));width:0;transition:width .8s cubic-bezier(.2,.7,.2,1)}
+
+    /* Dropzone */
+    .drop{border:2px dashed var(--line2);border-radius:18px;background:var(--bg2);padding:38px 22px;text-align:center;
+      transition:.18s;cursor:pointer}
+    .drop:hover,.drop.over{border-color:var(--mint);background:rgba(52,211,153,.06)}
+    .drop .ic{width:54px;height:54px;margin:0 auto 14px;border-radius:14px;background:rgba(52,211,153,.12);
+      display:grid;place-items:center}
+    .drop .ic svg{width:26px;height:26px;stroke:var(--mint);fill:none;stroke-width:2}
+    .drop h3{margin:0 0 6px;font-family:var(--head);font-weight:600;font-size:1.15rem;color:#fff}
+    .drop p{margin:0;color:var(--mut);font-size:.92rem}
+    .types{margin-top:14px;font-size:.8rem;color:var(--mut2);font-family:var(--mono)}
+
+    /* Editor de redacción */
+    .editor-wrap{background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:12px;margin:0 0 14px}
+    .canvas-host{position:relative;display:flex;justify-content:center;background:#000;border-radius:10px;overflow:auto;max-height:62vh}
+    #editCanvas{display:block;max-width:100%;height:auto;touch-action:none;cursor:crosshair}
+    .toolbar{display:flex;flex-wrap:wrap;gap:9px;margin-top:12px}
+    .tool{display:inline-flex;align-items:center;gap:7px;background:var(--bg3);border:1px solid var(--line2);
+      color:var(--tx);border-radius:11px;padding:10px 14px;font-family:inherit;font-size:.92rem;font-weight:600;cursor:pointer;transition:.16s}
+    .tool:hover{border-color:var(--mint);background:rgba(52,211,153,.08)}
+    .tool:disabled{opacity:.45;cursor:not-allowed}
+    .tool svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2}
+    .tool.busy{pointer-events:none;opacity:.7}
+    .pagehint{font-size:.84rem;color:var(--mut2);margin:10px 2px 0}
+
+    /* Checklist */
+    .checklist{background:rgba(251,113,133,.06);border:1px solid rgba(251,113,133,.3);border-radius:13px;padding:13px 15px;margin:0 0 14px}
+    .checklist .h{font-weight:700;color:#fff;font-size:.95rem;margin-bottom:7px;display:flex;align-items:center;gap:8px}
+    .checklist .h svg{width:16px;height:16px;stroke:var(--red);fill:none;stroke-width:2.2}
+    .checklist ul{margin:0;padding-left:18px;color:#E7B7BF;font-size:.9rem;line-height:1.65}
+    .keepnote{font-size:.86rem;color:var(--mut);margin:0 0 6px}
+    .keepnote b{color:var(--mint-bright)}
+
+    /* Formulario */
+    .field-label{display:block;font-size:.82rem;color:var(--mut);margin:0 0 7px;font-weight:600}
+    .field2{width:100%;background:var(--bg2);border:1.5px solid var(--line);border-radius:12px;color:#fff;font-family:inherit;font-size:1rem;padding:13px 14px;outline:none;transition:.16s}
+    .field2::placeholder{color:var(--mut2)}
+    .field2:focus{border-color:var(--mint);background:var(--bg3)}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .frow{margin:0 0 16px}
+    select.field2{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%23A1A1A6' stroke-width='2'><path d='M4 6l4 4 4-4'/></svg>");background-repeat:no-repeat;background-position:right 14px center}
+    .checkrow{display:flex;gap:11px;align-items:flex-start;margin:6px 0 0;font-size:.92rem;color:var(--mut)}
+    .checkrow input{margin-top:3px;accent-color:var(--mint);width:18px;height:18px;flex:none}
+    .checkrow a{color:var(--mint-bright)}
+
+    /* Botones */
+    .nav{display:flex;align-items:center;gap:12px;margin-top:22px;flex-wrap:wrap}
+    .btn{border:0;border-radius:13px;padding:14px 24px;font-weight:700;font-size:1rem;cursor:pointer;font-family:inherit;
+      display:inline-flex;align-items:center;gap:9px;transition:.16s;text-decoration:none}
+    .btn-mint{background:var(--mint);color:var(--ink)}
+    .btn-mint:hover{background:var(--mint-bright);transform:translateY(-2px)}
+    .btn-mint:disabled{background:#1d3a30;color:#5a6b63;cursor:not-allowed;transform:none}
+    .btn-ghost{background:rgba(255,255,255,.05);border:1px solid var(--line2);color:#fff}
+    .btn-ghost:hover{background:rgba(255,255,255,.09)}
+    .btn-wa{background:#25D366;color:#06351d}
+    .btn-wa:hover{background:#3ee07a;transform:translateY(-2px)}
+    .skip{background:none;border:0;color:var(--mut2);font-size:.92rem;cursor:pointer;font-family:inherit;text-decoration:underline;text-underline-offset:3px}
+    .skip:hover{color:var(--mut)}
+    .consent2{font-size:.82rem;color:var(--mut2);margin:18px 0 0;line-height:1.5}
+    .err{color:#FCA5A5;font-size:.92rem;margin-top:12px;min-height:1em}
+
+    /* Final */
+    .check{width:84px;height:84px;margin:0 auto 22px;border-radius:50%;background:rgba(52,211,153,.12);
+      border:1.5px solid rgba(52,211,153,.5);display:grid;place-items:center}
+    .check svg{width:42px;height:42px;stroke:var(--mint);fill:none;stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round}
+    .conf{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:5}
+    .conf i{position:absolute;top:-12px;width:9px;height:9px;border-radius:2px;opacity:.9;animation:fall linear forwards}
+    @keyframes fall{to{transform:translateY(105dvh) rotate(540deg);opacity:0}}
+
+    .thumbs{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 0}
+    .thumb{position:relative;width:64px;height:64px;border-radius:9px;overflow:hidden;border:1px solid var(--line2);background:#000}
+    .thumb img{width:100%;height:100%;object-fit:cover}
+    .thumb .rm{position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.7);color:#fff;border:0;cursor:pointer;font-size:12px;line-height:1;display:grid;place-items:center}
+
+    @media (max-width:520px){ .grid2{grid-template-columns:1fr} }
+    @media (prefers-reduced-motion:reduce){ .step.anim,.conf i{animation:none!important} }
+  </style>
+
+  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script is:inline>
+  (function(){
+    'use strict';
+    var API = ['presu.asimetrica.co','presu.io','www.presu.io','presu.com.co'].indexOf(location.hostname) !== -1
+      ? 'https://presu-waitlist.asimetrica.workers.dev'
+      : 'https://presu-waitlist-staging.asimetrica.workers.dev';
+    var SITE = 'https://presu.io';
+    var GOAL = 500; // meta de documentos para la barra colectiva
+
+    // pdf.js worker
+    if(window.pdfjsLib){ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'; }
+
+    // ── Países → bancos → moneda (LATAM; CO por defecto) ──
+    var COUNTRIES = [
+      { code:'CO', name:'Colombia', cur:'COP', banks:['Bancolombia','Nu','Nequi','Daviplata','Davivienda','Banco de Bogotá','BBVA','Banco de Occidente','Scotiabank Colpatria','Banco Caja Social','Banco Popular','Banco Falabella','AV Villas','Lulo Bank','RappiPay (Rappicard)','Ualá','Movii','Bancoomeva'] },
+      { code:'MX', name:'México', cur:'MXN', banks:['BBVA México','Banorte','Santander','Banamex','HSBC','Scotiabank','Nu','Hey Banco','Klar','Mercado Pago'] },
+      { code:'AR', name:'Argentina', cur:'ARS', banks:['Banco Nación','Banco Galicia','Santander','BBVA','Banco Macro','Brubank','Ualá','Mercado Pago','Naranja X'] },
+      { code:'CL', name:'Chile', cur:'CLP', banks:['Banco de Chile','BancoEstado','Santander','BCI','Scotiabank','Banco Falabella','Mercado Pago','Tenpo'] },
+      { code:'PE', name:'Perú', cur:'PEN', banks:['BCP','BBVA','Interbank','Scotiabank','Yape','Plin','Banco de la Nación'] },
+      { code:'EC', name:'Ecuador', cur:'USD', banks:['Banco Pichincha','Banco Guayaquil','Produbanco','Banco del Pacífico','Banco Bolivariano'] },
+      { code:'US', name:'Estados Unidos', cur:'USD', banks:['Bank of America','Chase','Wells Fargo','Citi','Capital One'] },
+      { code:'XX', name:'Otro país', cur:'', banks:[] }
+    ];
+
+    // ── Estado ──
+    var phase = 'intro';     // intro | upload | edit | form | sending | done
+    var items = [];          // { canvas:<full-res>, boxes:[{x,y,w,h}], done:false, blob:null }
+    var editIdx = 0;
+    var progress = null;     // { total, goal, banks }
+    var meta = { pais:'CO', banco:'', moneda:'COP', tipo:'', nombre:'', correo:'', codigo:'' };
+
+    var stepEl = document.getElementById('step');
+    var barEl = document.getElementById('bar');
+    var backEl = document.getElementById('backBtn');
+    var confEl = document.getElementById('conf');
+    var fileInput = document.getElementById('fileInput');
+
+    function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c];});}
+    function setBar(p){ barEl.style.width = Math.max(0,Math.min(100,p))+'%'; }
+    function shell(html){ stepEl.className='step anim'; if(phase==='edit') stepEl.classList.add('wide'); stepEl.innerHTML=html; void stepEl.offsetWidth; }
+    var BRAND = '';  /* el logo ahora vive en el site-header fijo, no en cada paso */
+    var SHIELD = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex:none;vertical-align:middle"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>';
+
+    // ── Arranque ──
+    function boot(){
+      // Evita que soltar el archivo fuera de la zona haga que el navegador lo abra/descargue.
+      ['dragover','drop'].forEach(function(ev){ window.addEventListener(ev, function(e){ e.preventDefault(); }, false); });
+      render(); loadProgress();
+    }
+    function loadProgress(){
+      fetch(API+'/contrib/progress',{cache:'no-store'}).then(function(r){return r.json();})
+        .then(function(d){ if(d && typeof d.total==='number'){ progress=d; if(phase==='intro') renderIntro(); } })
+        .catch(function(){});
+    }
+
+    function render(){
+      backEl.style.display = (phase==='upload'||phase==='edit'||phase==='form') ? 'inline-flex' : 'none';
+      if(phase==='intro') return renderIntro();
+      if(phase==='upload') return renderUpload();
+      if(phase==='edit') return renderEdit();
+      if(phase==='form') return renderForm();
+      if(phase==='sending') return renderSending();
+      if(phase==='done') return renderDone();
+    }
+
+    // ── Intro ──
+    function renderIntro(){
+      setBar(6);
+      var total = progress ? progress.total : null;
+      var banks = progress ? (progress.banks ? progress.banks.length : 0) : null;
+      var pct = total!=null ? Math.min(100, Math.round(total/GOAL*100)) : 0;
+      var collective = total!=null ? (
+        '<div class="collective">'+
+        '<div class="top"><span class="big">'+total+' <span style="font-size:1rem;color:var(--mut)">de '+GOAL+'</span></span>'+
+        '<span class="lab">'+(banks||0)+' bancos</span></div>'+
+        '<div class="cbar"><i style="width:'+pct+'%"></i></div></div>'
+      ) : '';
+      shell(
+        BRAND+
+        '<div class="eb">'+SHIELD+' Aporte anónimo</div>'+
+        '<h1 class="q">Ayúdanos a que Presu <span style="color:var(--mint)">lea tu banco</span></h1>'+
+        '<p class="lead">Presu aprende a leer cada banco con ejemplos reales. Comparte un <b>extracto</b> o un <b>pantallazo de una transacción</b> — y nos ayudas a que funcione con el tuyo.</p>'+
+        '<div class="seals">'+
+          '<span class="seal">'+SHIELD+' Se anonimiza en tu equipo</span>'+
+          '<span class="seal">'+SHIELD+' El original nunca se sube</span>'+
+          '<span class="seal">'+SHIELD+' Sin cuenta · sin claves</span>'+
+        '</div>'+
+        collective+
+        '<div class="steps3">'+
+          '<div class="s3"><span class="n">1</span><div><b>Sube</b> <span>— un PDF o pantallazo (se procesa solo en tu navegador).</span></div></div>'+
+          '<div class="s3"><span class="n">2</span><div><b>Tapa lo sensible</b> <span>— te ayudamos a ocultar nombre, cuenta y saldo. Se borra de verdad.</span></div></div>'+
+          '<div class="s3"><span class="n">3</span><div><b>Aporta</b> <span>— solo viaja la imagen ya tapada. Nada más.</span></div></div>'+
+        '</div>'+
+        '<div class="nav"><button class="btn btn-mint" id="go">Empezar <span style="font-size:1.1em">→</span></button></div>'+
+        '<p class="consent2">Anonimizado en tu equipo, deja de ser un dato personal (Ley 1581 de 2012). Lo usamos solo para mejorar la lectura de formatos. <a href="/privacidad" style="color:var(--mint-bright)">Privacidad</a>.</p>'
+      );
+      document.getElementById('go').addEventListener('click', function(){ phase='upload'; render(); });
+    }
+
+    // ── Subida ──
+    function renderUpload(){
+      setBar(20);
+      shell(
+        BRAND+
+        '<div class="eb">'+SHIELD+' Paso 1 de 3 · Subir</div>'+
+        '<h1 class="q">Sube tu documento</h1>'+
+        '<p class="help">Un extracto en PDF, o un pantallazo de tu app/correo del banco. Puedes subir varios.</p>'+
+        '<div class="drop" id="drop">'+
+          '<div class="ic"><svg viewBox="0 0 24 24"><path d="M12 16V4m0 0L8 8m4-4 4 4"/><path d="M20 16v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2"/></svg></div>'+
+          '<h3>Arrastra aquí o toca para elegir</h3>'+
+          '<p>Se abre solo en tu navegador. No se sube nada todavía.</p>'+
+          '<div class="types">PNG · JPG · PDF</div>'+
+        '</div>'+
+        '<div class="seals" style="margin-top:18px"><span class="seal">'+SHIELD+' El archivo original no sale de tu equipo</span></div>'+
+        '<p class="err" id="upErr"></p>'
+      );
+      var drop = document.getElementById('drop');
+      drop.addEventListener('click', function(){ fileInput.click(); });
+      drop.addEventListener('dragover', function(e){ e.preventDefault(); drop.classList.add('over'); });
+      drop.addEventListener('dragleave', function(){ drop.classList.remove('over'); });
+      drop.addEventListener('drop', function(e){ e.preventDefault(); drop.classList.remove('over'); handleFiles(e.dataTransfer.files); });
+    }
+
+    fileInput.addEventListener('change', function(){ handleFiles(fileInput.files); fileInput.value=''; });
+
+    function handleFiles(fileList){
+      var files = Array.prototype.slice.call(fileList||[]);
+      if(!files.length) return;
+      var errEl = document.getElementById('upErr');
+      var pending = 0, hadErr = false;
+      function maybeAdvance(){ if(pending===0){ if(items.length){ editIdx=0; phase='edit'; render(); } } }
+      files.forEach(function(f){
+        if(f.type==='application/pdf' || /\.pdf$/i.test(f.name)){
+          pending++; renderPdf(f).then(function(){ pending--; maybeAdvance(); }).catch(function(e){
+            pending--; hadErr=true;
+            var locked = e && (e.name==='PasswordException' || /password/i.test(String(e && e.message)));
+            if(errEl) errEl.textContent = locked
+              ? 'Para abrir ese PDF necesitas su clave. Si no la tienes a mano, sube un pantallazo del extracto.'
+              : 'No pudimos abrir ese PDF (¿está dañado?). Prueba con un pantallazo.';
+            maybeAdvance();
+          });
+        } else if(/^image\//.test(f.type) || /\.(png|jpe?g|webp|gif)$/i.test(f.name)){
+          pending++; loadImage(f).then(function(){ pending--; maybeAdvance(); }).catch(function(){ pending--; hadErr=true; if(errEl) errEl.textContent='No pudimos abrir esa imagen.'; maybeAdvance(); });
+        } else {
+          if(errEl) errEl.textContent='Solo aceptamos imágenes o PDF.';
+        }
+      });
+    }
+
+    var MAXDIM = 2200; // downscale para memoria/rendimiento
+    function fitCanvas(srcW, srcH){
+      var scale = Math.min(1, MAXDIM/Math.max(srcW,srcH));
+      var c = document.createElement('canvas');
+      c.width = Math.round(srcW*scale); c.height = Math.round(srcH*scale);
+      return c;
+    }
+    function loadImage(file){
+      return new Promise(function(res,rej){
+        var img = new Image();
+        img.onload = function(){
+          var c = fitCanvas(img.naturalWidth, img.naturalHeight);
+          c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+          items.push({ canvas:c, boxes:[], textItems:[], source:'imagen', done:false, blob:null });
+          URL.revokeObjectURL(img.src); res();
+        };
+        img.onerror = rej;
+        img.src = URL.createObjectURL(file);
+      });
+    }
+    function renderPdf(file){
+      return file.arrayBuffer().then(function(buf){
+        var task = pdfjsLib.getDocument({ data: buf });
+        // PDF con clave (común en extractos): la pedimos aquí; NO se sube ni se guarda,
+        // solo descifra localmente para poder rasterizarlo.
+        task.onPassword = function(updatePassword, reason){
+          var msg = reason === 2
+            ? '🔒 Clave incorrecta. Escribe la clave del PDF (no se sube ni se guarda):'
+            : '🔒 Este PDF tiene clave. Escríbela para abrirlo aquí mismo —no se sube ni se guarda, solo abre el documento en tu equipo:';
+          var pw = window.prompt(msg);
+          if (pw === null) { task.destroy(); } else { updatePassword(pw); }
+        };
+        return task.promise.then(function(pdf){
+          var chain = Promise.resolve();
+          var n = Math.min(pdf.numPages, 8); // tope de páginas
+          for(var p=1;p<=n;p++){ (function(pg){
+            chain = chain.then(function(){
+              return pdf.getPage(pg).then(function(page){
+                var vp1 = page.getViewport({scale:1});
+                var scale = Math.min(2, MAXDIM/Math.max(vp1.width, vp1.height));
+                var vp = page.getViewport({scale:scale});
+                var c = document.createElement('canvas');
+                c.width = Math.round(vp.width); c.height = Math.round(vp.height);
+                return page.render({canvasContext:c.getContext('2d'), viewport:vp}).promise.then(function(){
+                  return page.getTextContent().then(function(tc){
+                    var tItems=[];
+                    (tc.items||[]).forEach(function(t){
+                      var s=(t.str||'').trim(); if(!s) return;
+                      var m=pdfjsLib.Util.transform(vp.transform, t.transform);
+                      var fh=Math.hypot(m[2],m[3]); var w=(t.width||0)*scale;
+                      tItems.push({ str:s, x:m[4], y:m[5]-fh, w:Math.max(w, fh*0.4), h:fh*1.25 });
+                    });
+                    var item={ canvas:c, boxes:[], textItems:tItems, source:'pdf', done:false, blob:null };
+                    // Auto-redacta lo sensible usando el texto real del PDF (cuenta, tarjeta, correo, nombre, dirección…)
+                    var pad=Math.max(2, c.width/450);
+                    tItems.forEach(function(t){ if(classifyPII(t.str)) item.boxes.push({ x:t.x-pad, y:t.y-pad, w:t.w+pad*2, h:t.h+pad*2 }); });
+                    items.push(item);
+                  });
+                });
+              });
+            });
+          })(p); }
+          return chain;
+        });
+      });
+    }
+
+    // ── Editor de redacción ──
+    var draw = null; // {startX,startY,box}
+    function renderEdit(){
+      var it = items[editIdx];
+      setBar(35 + Math.round((editIdx/Math.max(items.length,1))*25));
+      var multi = items.length>1 ? '<div class="pagehint">Documento '+(editIdx+1)+' de '+items.length+'</div>' : '';
+      shell(
+        BRAND+
+        '<div class="eb">'+SHIELD+' Paso 2 de 3 · Tapa lo sensible</div>'+
+        '<h1 class="q">Oculta tus datos</h1>'+
+        '<p class="help">Pinta un rectángulo sobre lo que quieras <b>borrar</b>. Se elimina de verdad (no se puede recuperar).</p>'+
+        '<div class="checklist"><div class="h"><svg viewBox="0 0 24 24"><path d="M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>Tapa esto</div>'+
+          '<ul><li>Tu <b>nombre</b> y dirección</li><li><b>Número de cuenta</b> y de tarjeta</li><li><b>Saldo</b> / cupo disponible</li><li>Cédula, teléfono, correo, códigos QR</li></ul></div>'+
+        '<p class="keepnote">Deja visible lo útil: <b>comercio, fecha, monto, moneda</b> de cada movimiento.</p>'+
+        '<div class="editor-wrap"><div class="canvas-host"><canvas id="editCanvas"></canvas></div>'+
+          '<div class="toolbar">'+
+            '<button class="tool" id="ocrBtn"><svg viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 12h10"/></svg>Detectar datos sensibles</button>'+
+            '<button class="tool" id="undoBtn" disabled><svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-1"/></svg>Deshacer</button>'+
+            '<button class="tool" id="clearBtn" disabled><svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>Limpiar</button>'+
+          '</div>'+
+          multi+
+        '</div>'+
+        '<div class="nav"><button class="btn btn-mint" id="nextBtn">'+(editIdx<items.length-1?'Listo, siguiente':'Listo, continuar')+' <span style="font-size:1.1em">→</span></button>'+
+          '<button class="skip" id="skipDoc">Quitar este documento</button></div>'+
+        '<p class="err" id="editErr"></p>'
+      );
+      setupCanvas(it);
+      document.getElementById('ocrBtn').addEventListener('click', function(){ runOCR(it, this); });
+      document.getElementById('undoBtn').addEventListener('click', function(){ it.boxes.pop(); paintEditor(it); });
+      document.getElementById('clearBtn').addEventListener('click', function(){ it.boxes=[]; paintEditor(it); });
+      document.getElementById('nextBtn').addEventListener('click', function(){ finalizeItem(it); if(editIdx<items.length-1){ editIdx++; render(); } else { phase='form'; render(); } });
+      document.getElementById('skipDoc').addEventListener('click', function(){
+        items.splice(editIdx,1);
+        if(!items.length){ phase='upload'; render(); return; }
+        if(editIdx>=items.length) editIdx=items.length-1;
+        render();
+      });
+      // Auto-OCR: si la página no trae capa de texto (imagen o PDF rasterizado), la analiza sola
+      // (no bloquea: puedes tapar a mano mientras corre; las marcas aparecen al terminar).
+      if(!(it.textItems && it.textItems.length) && !it.ocrTried){ runOCR(it, document.getElementById('ocrBtn'), true); }
+    }
+
+    var cv, cctx, viewScale;
+    function setupCanvas(it){
+      cv = document.getElementById('editCanvas');
+      cctx = cv.getContext('2d');
+      cv.width = it.canvas.width; cv.height = it.canvas.height;
+      paintEditor(it);
+      var rectOf = function(){ return cv.getBoundingClientRect(); };
+      var toSrc = function(e){ var r=rectOf(); var sx=cv.width/r.width, sy=cv.height/r.height; return { x:(e.clientX-r.left)*sx, y:(e.clientY-r.top)*sy }; };
+      cv.addEventListener('pointerdown', function(e){ e.preventDefault(); cv.setPointerCapture(e.pointerId); var p=toSrc(e); draw={x0:p.x,y0:p.y,box:{x:p.x,y:p.y,w:0,h:0}}; });
+      cv.addEventListener('pointermove', function(e){ if(!draw) return; var p=toSrc(e); draw.box={ x:Math.min(draw.x0,p.x), y:Math.min(draw.y0,p.y), w:Math.abs(p.x-draw.x0), h:Math.abs(p.y-draw.y0) }; paintEditor(it, draw.box); });
+      cv.addEventListener('pointerup', function(e){ if(!draw) return; var b=draw.box; draw=null; if(b.w>6 && b.h>6){ it.boxes.push(b); } paintEditor(it); });
+      cv.addEventListener('pointercancel', function(){ draw=null; paintEditor(it); });
+    }
+    function paintEditor(it, preview){
+      cctx.drawImage(it.canvas,0,0);
+      var all = it.boxes.concat(preview?[preview]:[]);
+      for(var i=0;i<all.length;i++){ var b=all[i];
+        cctx.fillStyle='rgba(0,0,0,.78)'; cctx.fillRect(b.x,b.y,b.w,b.h);
+        cctx.strokeStyle='#FB7185'; cctx.lineWidth=Math.max(2, cv.width/500); cctx.strokeRect(b.x,b.y,b.w,b.h);
+      }
+      var undo=document.getElementById('undoBtn'), clr=document.getElementById('clearBtn');
+      if(undo) undo.disabled = !it.boxes.length;
+      if(clr) clr.disabled = !it.boxes.length;
+    }
+
+    // ── OCR opcional (Tesseract.js, lazy) ──
+    var tesseractLoading = null;
+    function loadTesseract(){
+      if(window.Tesseract) return Promise.resolve();
+      if(tesseractLoading) return tesseractLoading;
+      tesseractLoading = new Promise(function(res,rej){
+        var s=document.createElement('script');
+        s.src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+        s.onload=res; s.onerror=rej; document.head.appendChild(s);
+      });
+      return tesseractLoading;
+    }
+    function luhn(num){ var s=0,alt=false; for(var i=num.length-1;i>=0;i--){ var d=+num[i]; if(alt){ d*=2; if(d>9)d-=9; } s+=d; alt=!alt; } return s%10===0; }
+    // Palabras típicas de un extracto (NO son nombres) — evita auto-tapar encabezados útiles.
+    var KEEP_WORDS=/\b(extracto|tarjeta|credito|crédito|debito|débito|cuenta|saldo|pago|pagos|periodo|período|fecha|detalle|transacci|movimiento|interes|interés|cupo|total|minimo|mínimo|banco|estado|consumo|cuota|tasa|valor|capital|mora|abono|resumen|disponible|facturado|cobranza|gastos|nombre|titular|direccion|dirección|correo)\b/i;
+    function classifyPII(t){
+      var s=(t||'').trim(); if(!s) return false;
+      if(/\d{1,4}[-/.]\d{1,2}[-/.]\d{1,4}/.test(s)) return false;   // fecha → conservar
+      if(/^[-$]?[\d.,\s]+$/.test(s) && s.replace(/\D/g,'').length<=7) return false; // monto corto → conservar
+      if(/[\w.+-]+@[\w-]+\.[\w.]+/.test(s)) return true;            // correo
+      var digits=s.replace(/\D/g,'');
+      if(digits.length>=13 && digits.length<=19 && luhn(digits)) return true; // tarjeta
+      if(digits.length>=9) return true;                             // cuenta / cédula / teléfono largo
+      if(/\b(calle|carrera|cra|cll|kr|av|avenida|diagonal|transversal|manzana|apto|apartamento|barrio)\b/i.test(s) && /\d/.test(s)) return true; // dirección
+      // Nombre en MAYÚSCULAS (2-4 palabras, solo letras) que no sea texto típico de extracto
+      var words=s.split(/\s+/);
+      if(words.length>=2 && words.length<=4 && /^[A-ZÁÉÍÓÚÑ ]+$/.test(s) && s.replace(/\s/g,'').length>=6 && !KEEP_WORDS.test(s)) return true;
+      return false;
+    }
+    function rectsOverlap(a,b){ return !(a.x+a.w<b.x || b.x+b.w<a.x || a.y+a.h<b.y || b.y+b.h<a.y); }
+    function textNotRedacted(it){ return (it.textItems||[]).filter(function(t){ for(var i=0;i<it.boxes.length;i++){ if(rectsOverlap(it.boxes[i],t)) return false; } return true; }); }
+    // Texto anónimo (estructurado) para entrenar el parser: lo que NO quedó tapado.
+    function extractAnonText(it){ return textNotRedacted(it).map(function(t){return t.str;}).join(' ').replace(/\s+/g,' ').trim().slice(0,60000); }
+    // ¿Quedó PII sin tapar? (red de seguridad antes de enviar)
+    function remainingHasPII(it){ return textNotRedacted(it).some(function(t){ return classifyPII(t.str); }); }
+    // Tokens con posición (x,y,w,h) para que el parser entienda columnas/filas. Solo lo NO tapado.
+    function tokensOf(it){
+      return {
+        w: it.canvas.width, h: it.canvas.height, source: it.source || 'imagen',
+        tokens: textNotRedacted(it).map(function(t){
+          return { t:t.str, x:Math.round(t.x), y:Math.round(t.y), w:Math.round(t.w), h:Math.round(t.h) };
+        }).slice(0, 4000)
+      };
+    }
+    function runOCR(it, btn, auto){
+      it.ocrTried = true;
+      var errEl=document.getElementById('editErr'); if(errEl) errEl.textContent = auto ? 'Esta página es una imagen — la analizamos sola para marcar tus datos…' : '';
+      btn.classList.add('busy'); var orig=btn.innerHTML; btn.innerHTML='Analizando…';
+      loadTesseract().then(function(){
+        return Tesseract.recognize(it.canvas, 'spa+eng');
+      }).then(function(res){
+        var words=(res && res.data && res.data.words)||[]; var added=0;
+        var fillText = !(it.textItems && it.textItems.length); // solo guardamos texto OCR si no vino del PDF
+        words.forEach(function(w){
+          if(w.confidence<35) return;
+          var b=w.bbox;
+          if(fillText) it.textItems.push({ str:w.text, x:b.x0, y:b.y0, w:b.x1-b.x0, h:b.y1-b.y0 });
+          if(classifyPII(w.text)){
+            var pad=Math.max(2, it.canvas.width/400);
+            it.boxes.push({ x:b.x0-pad, y:b.y0-pad, w:(b.x1-b.x0)+pad*2, h:(b.y1-b.y0)+pad*2 });
+            added++;
+          }
+        });
+        paintEditor(it);
+        btn.classList.remove('busy'); btn.innerHTML=orig;
+        if(errEl) errEl.textContent = added? ('Marcamos '+added+' posible(s) dato(s). Revísalos y agrega lo que falte.') : 'No detectamos datos automáticamente. Tápalos a mano.';
+      }).catch(function(){
+        btn.classList.remove('busy'); btn.innerHTML=orig;
+        if(errEl) errEl.textContent='No pudimos analizar automáticamente. Tapa los datos a mano.';
+      });
+    }
+
+    // Aplana destructivamente las cajas sobre el canvas y exporta JPEG
+    function finalizeItem(it){
+      var ctx=it.canvas.getContext('2d');
+      ctx.fillStyle='#000';
+      it.boxes.forEach(function(b){ ctx.fillRect(Math.round(b.x),Math.round(b.y),Math.round(b.w),Math.round(b.h)); });
+      it.done=true;
+    }
+    function exportItem(it){ return new Promise(function(res){ it.canvas.toBlob(function(blob){ it.blob=blob; res(blob); },'image/jpeg',0.82); }); }
+
+    // ── Formulario de metadatos ──
+    function renderForm(){
+      setBar(78);
+      var co = COUNTRIES;
+      var cOpts = co.map(function(c){ return '<option value="'+c.code+'"'+(c.code===meta.pais?' selected':'')+'>'+esc(c.name)+'</option>'; }).join('');
+      shell(
+        BRAND+
+        '<div class="eb">'+SHIELD+' Paso 3 de 3 · Datos</div>'+
+        '<h1 class="q">¿De qué banco es?</h1>'+
+        '<p class="help">Esto nos dice qué formato estamos aprendiendo. Nada de esto te identifica.</p>'+
+        '<div class="grid2">'+
+          '<div class="frow"><label class="field-label">País</label><select class="field2" id="fPais">'+cOpts+'</select></div>'+
+          '<div class="frow"><label class="field-label">Moneda</label><input class="field2" id="fMoneda" value="'+esc(meta.moneda)+'" placeholder="COP"></div>'+
+        '</div>'+
+        '<div class="frow"><label class="field-label">Banco / app</label><input class="field2" id="fBanco" list="bankList" placeholder="Empieza a escribir…" value="'+esc(meta.banco)+'"><datalist id="bankList"></datalist></div>'+
+        '<div class="frow"><label class="field-label">Tipo de documento</label><select class="field2" id="fTipo">'+
+          '<option value="">Elige…</option>'+
+          '<option value="extracto">Extracto / estado de cuenta</option>'+
+          '<option value="correo">Correo de transacción</option>'+
+          '<option value="app">Pantallazo de la app del banco</option>'+
+          '<option value="otro">Otro</option>'+
+        '</select></div>'+
+        '<details style="margin:4px 0 8px"><summary style="cursor:pointer;color:var(--mut);font-size:.92rem">¿Quieres crédito por tu aporte? (opcional)</summary>'+
+          '<div class="frow" style="margin-top:12px"><input class="field2" id="fNombre" placeholder="Tu nombre (aparece en el Muro)" value="'+esc(meta.nombre)+'"></div>'+
+          '<div class="frow"><input class="field2" id="fCorreo" placeholder="Correo o código de Fundador" value="'+esc(meta.correo)+'"></div>'+
+        '</details>'+
+        '<label class="checkrow"><input type="checkbox" id="fConsent"><span>Confirmo que <b style="color:#fff">tapé mis datos personales</b> y autorizo usar esta imagen anónima para mejorar Presu. <a href="/privacidad">Privacidad</a>.</span></label>'+
+        '<div class="thumbs" id="thumbs"></div>'+
+        '<div class="nav"><button class="btn btn-mint" id="sendBtn" disabled>Aportar '+items.length+' documento'+(items.length>1?'s':'')+' <span style="font-size:1.1em">→</span></button></div>'+
+        '<p class="err" id="formErr"></p>'+
+        '<p class="consent2">'+SHIELD+' Solo viaja la imagen que ya tapaste. El original nunca sale de tu equipo.</p>'
+      );
+      var sel=document.getElementById('fPais');
+      function syncCountry(){
+        var c = COUNTRIES.filter(function(x){return x.code===sel.value;})[0]||COUNTRIES[0];
+        meta.pais=c.code;
+        document.getElementById('bankList').innerHTML = c.banks.map(function(b){return '<option value="'+esc(b)+'">';}).join('');
+        var mon=document.getElementById('fMoneda'); if(!mon.value || mon.dataset.auto!=='0'){ mon.value=c.cur; mon.dataset.auto='1'; }
+      }
+      sel.addEventListener('change', syncCountry); syncCountry();
+      document.getElementById('fMoneda').addEventListener('input', function(){ this.dataset.auto='0'; });
+      renderThumbs();
+      var consent=document.getElementById('fConsent'), sendBtn=document.getElementById('sendBtn');
+      consent.addEventListener('change', function(){ sendBtn.disabled = !consent.checked; });
+      sendBtn.addEventListener('click', submitAll);
+    }
+    function renderThumbs(){
+      var host=document.getElementById('thumbs'); if(!host) return; host.innerHTML='';
+      items.forEach(function(it,i){
+        var url = it.canvas.toDataURL('image/jpeg',0.5);
+        var d=document.createElement('div'); d.className='thumb';
+        d.innerHTML='<img src="'+url+'"><button class="rm" title="Quitar">×</button>';
+        d.querySelector('.rm').addEventListener('click', function(){ items.splice(i,1); if(!items.length){ phase='upload'; render(); } else renderForm(); });
+        host.appendChild(d);
+      });
+    }
+
+    function submitAll(){
+      var errEl=document.getElementById('formErr'); errEl.textContent='';
+      meta.banco=(document.getElementById('fBanco').value||'').trim();
+      meta.moneda=(document.getElementById('fMoneda').value||'').trim();
+      meta.tipo=document.getElementById('fTipo').value;
+      var nombre=(document.getElementById('fNombre')||{}).value||'';
+      var correo=(document.getElementById('fCorreo')||{}).value||'';
+      if(!meta.banco){ errEl.textContent='Dinos de qué banco es.'; return; }
+      if(!meta.tipo){ errEl.textContent='Elige el tipo de documento.'; return; }
+      meta.nombre=nombre.trim(); meta.correo=correo.trim();
+      // Red de seguridad: si parece que quedó un dato personal sin tapar, avisa antes de enviar.
+      if(items.some(remainingHasPII)){
+        if(!window.confirm('⚠️ Parece que quedó algún dato personal sin tapar (tu nombre, número de cuenta o dirección). Revísalo antes de enviar.\n\n¿Enviar de todas formas?')) return;
+      }
+      phase='sending'; render();
+      // Exporta todos los blobs (aplanados) y envía
+      Promise.all(items.map(exportItem)).then(function(){
+        var sid = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : (''+Date.now()+'-'+Math.round(Math.random()*1e9));
+        var fd=new FormData();
+        fd.append('pais',meta.pais); fd.append('banco',meta.banco); fd.append('moneda',meta.moneda);
+        fd.append('tipo',meta.tipo); fd.append('nombre',meta.nombre); fd.append('ref',meta.correo);
+        fd.append('botcheck',''); fd.append('n',String(items.length)); fd.append('sid',sid);
+        items.forEach(function(it,i){ fd.append('doc'+i, it.blob, 'doc'+i+'.jpg'); fd.append('tokens'+i, JSON.stringify(tokensOf(it))); });
+        return fetch(API+'/contrib',{method:'POST',body:fd});
+      }).then(function(r){ return r.json().catch(function(){return {};}); })
+        .then(function(d){ if(d && (d.status==='ok')){ if(d.progress) progress=d.progress; phase='done'; render(); } else { failSend(d && d.reason); } })
+        .catch(function(){ failSend('network'); });
+    }
+    function failSend(reason){
+      phase='form'; render();
+      var errEl=document.getElementById('formErr');
+      if(errEl) errEl.textContent = reason==='too_big' ? 'Alguna imagen pesa demasiado. Intenta con menos páginas.' : 'No pudimos enviar. Revisa tu conexión e inténtalo de nuevo.';
+    }
+
+    function renderSending(){
+      setBar(92); backEl.style.display='none';
+      shell(BRAND+'<div class="center" style="padding:30px 0;color:var(--mut)"><div class="q" style="font-size:1.4rem;color:#fff">Anonimizando y enviando…</div><p class="lead" style="margin-top:10px">Aplanando las imágenes y subiendo solo lo que tapaste.</p></div>');
+    }
+
+    // ── Final + compartir ──
+    function renderDone(){
+      setBar(100); backEl.style.display='none'; confetti();
+      var total = progress ? progress.total : null;
+      var waText = encodeURIComponent('Le aporté un documento anónimo a Presu para que aprenda a leer mi banco 🌱 El original nunca sale de tu equipo — ayuda tú también: '+SITE+'/aporta');
+      var prog = total!=null ? '<div class="collective" style="margin-top:6px"><div class="top"><span class="big">'+total+'</span><span class="lab">documentos aportados</span></div><div class="cbar"><i style="width:'+Math.min(100,Math.round(total/GOAL*100))+'%"></i></div></div>' : '';
+      shell(
+        '<div class="check"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></div>'+
+        '<h1 class="q center">¡Gracias! 🌱</h1>'+
+        '<p class="lead center">Tu aporte ayuda a que Presu lea tu banco —y el de mucha gente más. <b>El original nunca salió de tu equipo.</b></p>'+
+        prog+
+        '<p class="lead center" style="margin-top:18px">¿Conoces a alguien con otro banco? Entre más formatos, mejor lee Presu.</p>'+
+        '<div class="nav" style="justify-content:center">'+
+          '<a class="btn btn-wa" href="https://wa.me/?text='+waText+'" target="_blank" rel="noopener"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163a11.867 11.867 0 0 1-1.587-5.946C.157 5.335 5.495 0 12.05 0a11.82 11.82 0 0 1 8.413 3.488 11.82 11.82 0 0 1 3.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 0 1-5.688-1.448L.057 24zM6.597 20.13c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884a9.86 9.86 0 0 0 1.512 5.26l-.999 3.648 3.876-.607zM17.04 14.815c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/></svg> Compartir por WhatsApp</a>'+
+          '<a class="btn btn-ghost" href="/muro">Ver el Muro</a>'+
+        '</div>'+
+        '<div class="nav" style="justify-content:center;margin-top:10px"><button class="skip" id="again">Aportar otro documento</button></div>'+
+        '<p class="consent2 center">Tu plata, clara. 🌿</p>'
+      );
+      document.getElementById('again').addEventListener('click', function(){ items=[]; editIdx=0; meta.banco=''; meta.tipo=''; phase='upload'; render(); });
+    }
+
+    function confetti(){
+      var colors=['#34D399','#5EEAB8','#F4F4F3','#0E9F6E'];
+      for(var i=0;i<26;i++){ var c=document.createElement('i'); c.style.left=(Math.random()*100)+'%';
+        c.style.background=colors[i%colors.length]; c.style.animationDuration=(1.6+Math.random()*1.4)+'s';
+        c.style.animationDelay=(Math.random()*.25)+'s'; confEl.appendChild(c); }
+      setTimeout(function(){ confEl.innerHTML=''; }, 3600);
+    }
+
+    function back(){
+      if(phase==='upload'){ phase='intro'; render(); }
+      else if(phase==='edit'){ if(editIdx>0){ editIdx--; render(); } else { items=[]; phase='upload'; render(); } }
+      else if(phase==='form'){ editIdx=items.length-1; phase='edit'; render(); }
+    }
+    backEl.addEventListener('click', back);
+
+    boot();
+  })();
+  </script>
+  <script is:inline>
+  (function(){var h=document.querySelector(".site-header"),b=h&&h.querySelector(".sh-burger");if(!h||!b)return;function c(){h.classList.remove("is-open");b.setAttribute("aria-expanded","false");}b.addEventListener("click",function(){var o=h.classList.toggle("is-open");b.setAttribute("aria-expanded",o?"true":"false");});h.querySelectorAll(".sh-nav a").forEach(function(a){a.addEventListener("click",c);});document.addEventListener("keydown",function(e){if(e.key==="Escape")c();});})();
+  </script>
+</StaticPage>

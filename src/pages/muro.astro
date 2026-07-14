@@ -1,0 +1,119 @@
+---
+import StaticPage from '../layouts/StaticPage.astro';
+---
+<StaticPage title="Muro de Fundadores · Presu" description="Pioneros que ya invitaron a 3+ amigos a la lista de Presu. Gracias por correr la voz.">
+  <link slot="head" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+
+  <header class="site-header">
+    <div class="sh-wrap">
+      <div class="sh-brand">
+        <a class="sh-logo" href="/" aria-label="Presu — inicio"><span class="wordmark"><span class="wm-bar" aria-hidden="true"></span><span class="wm-text">presu</span></span></a>
+        <a class="sh-endorse" href="https://asimetrica.co" target="_blank" rel="noopener"><span>de</span><img src="/asimetrica-logo.webp" alt="Asimétrica" /></a>
+      </div>
+      <nav class="sh-nav" id="sh-nav">
+        <a href="/#como">Cómo</a>
+        <a href="/#privacidad">Privacidad</a>
+        <a href="/#planes">Planes</a>
+        <a href="/aporta">Aporta 🌱</a>
+      </nav>
+      <div class="sh-actions"><a class="sh-cta" href="/#waitlist">Únete a la lista</a><button class="sh-burger" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="sh-nav"><span></span><span></span><span></span></button></div>
+    </div>
+  </header>
+  <div class="wrap">
+    <div class="eb">Muro de Fundadores</div>
+    <h1>Quienes están <span style="color:var(--mint)">construyendo</span> Presu</h1>
+    <p class="sub">Pioneros que ya invitaron a 3+ amigos a la lista. Gracias por correr la voz 🌱</p>
+    <div id="mount"><p class="loading">Cargando…</p></div>
+
+    <div class="sep"></div>
+
+    <div class="eb">Sembradores 🌱</div>
+    <h2>Quienes aportaron <span style="color:var(--mint)">documentos</span></h2>
+    <p class="sub">Compartieron un documento anónimo —tapado en su propio equipo— para que Presu aprenda a leer su banco.</p>
+    <div id="mountSemb"><p class="loading">Cargando…</p></div>
+    <div><a class="cta" href="/aporta">Aporta un documento →</a></div>
+
+    <a class="back" href="/">← Volver a Presu</a>
+  </div>
+
+  <style is:global>
+  :root{--mint:#34D399;--mint-bright:#5EEAB8;--ink:#08231A;--tx:#F4F4F3;--mut:#A1A1A6;--mut2:#6B6B72;--bg:#08080A;--bg2:#101014;--line:rgba(255,255,255,.1);--head:"Space Grotesk",sans-serif;--mono:"JetBrains Mono",monospace}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--tx);font-family:"Hanken Grotesk",sans-serif;line-height:1.5}
+  .wrap{max-width:680px;margin:0 auto;text-align:center;padding:48px 20px 60px}
+  .wordmark{position:relative;display:inline-flex;align-items:center;line-height:.9}
+  .wm-text{position:relative;z-index:1;font-family:var(--head);font-weight:700;font-size:1.375rem;letter-spacing:-.05em;color:var(--tx);line-height:.9}
+  .wm-bar{position:absolute;left:-5%;right:-8%;top:53%;height:.36em;border-radius:999px;background:var(--mint);transform:rotate(-9deg);z-index:0}
+  /* Site header (igual al resto del sitio) */
+  .site-header{position:sticky;top:0;z-index:100;background:rgba(8,8,10,.72);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
+  .sh-wrap{max-width:1200px;margin:0 auto;padding:14px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px;text-align:left}
+  .sh-brand{display:flex;align-items:center;gap:12px;min-width:0}
+  .sh-logo{display:inline-flex;text-decoration:none}
+  .sh-endorse{display:inline-flex;align-items:center;gap:7px;padding-left:12px;border-left:1px solid var(--line);font-family:"Hanken Grotesk",sans-serif;font-size:.8rem;font-weight:500;color:var(--mut2);text-decoration:none;white-space:nowrap}
+  .sh-endorse img{height:.95rem;width:auto;display:block}
+  .sh-nav{display:flex;align-items:center;gap:26px}
+  .sh-nav a{font-family:"Hanken Grotesk",sans-serif;font-size:1rem;font-weight:500;color:var(--mut);text-decoration:none;transition:color .16s}
+  .sh-nav a:hover{color:var(--tx)}
+  .sh-cta{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:9px 20px;border-radius:999px;background:var(--mint);color:#06231A;font-family:"Hanken Grotesk",sans-serif;font-weight:700;font-size:.9rem;text-decoration:none;white-space:nowrap;transition:background .16s}
+  .sh-cta:hover{background:var(--mint-bright)}
+  .sh-actions{display:flex;align-items:center;gap:10px}
+.sh-burger{display:none;flex-direction:column;justify-content:center;gap:5px;width:42px;height:42px;padding:0;background:none;border:1px solid var(--line);border-radius:11px;cursor:pointer}
+.sh-burger span{display:block;width:20px;height:2px;margin:0 auto;background:var(--tx);border-radius:2px;transition:transform .22s,opacity .22s}
+.sh-burger[aria-expanded="true"] span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.sh-burger[aria-expanded="true"] span:nth-child(2){opacity:0}
+.sh-burger[aria-expanded="true"] span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+@media(max-width:640px){
+  .sh-endorse{display:none}
+  .sh-burger{display:flex}
+  .sh-wrap{padding:12px 16px}
+  .sh-nav{position:absolute;top:100%;left:0;right:0;flex-direction:column;align-items:stretch;gap:0;padding:6px 16px 14px;background:var(--bg);border-bottom:1px solid var(--line);display:none}
+  .site-header.is-open .sh-nav{display:flex}
+  .sh-nav a{padding:14px 4px;font-size:1.05rem;border-bottom:1px solid var(--line)}
+  .sh-nav a:last-child{border-bottom:0}
+}
+  .eb{font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mint);margin-bottom:18px}
+  h1{font-family:var(--head);font-weight:700;font-size:2.2rem;letter-spacing:-.02em;margin:0 0 10px}
+  h2{font-family:var(--head);font-weight:700;font-size:1.65rem;letter-spacing:-.02em;margin:0 0 10px}
+  .sub{color:var(--mut);max-width:46ch;margin:0 auto 36px}
+  .sep{height:1px;background:var(--line);max-width:420px;margin:54px auto 40px}
+  .cta{display:inline-block;margin-top:22px;background:var(--mint);color:var(--ink);font-weight:700;text-decoration:none;border-radius:13px;padding:13px 24px}
+  .cta:hover{background:var(--mint-bright)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+  .f{background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:16px 14px;display:flex;flex-direction:column;align-items:center;gap:8px}
+  .av{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--mint),var(--mint-bright));color:var(--ink);display:grid;place-items:center;font-family:var(--head);font-weight:700;font-size:1.1rem}
+  .nm{font-weight:600;color:var(--tx);font-size:.95rem}
+  .ct{font-family:var(--mono);font-size:.72rem;color:var(--mint-bright)}
+  .empty{color:var(--mut2);margin-top:30px}
+  .back{display:inline-block;margin-top:34px;color:var(--mut);text-decoration:none;font-size:.9rem;border:1px solid var(--line);border-radius:999px;padding:9px 18px}
+  .loading{color:var(--mut)}
+  </style>
+
+  <script is:inline>
+  (function(){
+    var API = ['presu.asimetrica.co','presu.io','www.presu.io','presu.com.co'].indexOf(location.hostname) !== -1
+      ? 'https://presu-waitlist.asimetrica.workers.dev'
+      : 'https://presu-waitlist-staging.asimetrica.workers.dev';
+    function initials(name){ var p=String(name||'').trim().split(/\s+/); return ((p[0]||'?')[0] + (p[1]?p[1][0]:'')).toUpperCase(); }
+    fetch(API+'/founders').then(function(r){return r.json();}).then(function(d){
+      var fs = (d && d.founders) || [];
+      var m = document.getElementById('mount');
+      if(!fs.length){ m.innerHTML = '<p class="empty">Aún no hay Fundadores. ¿Serás el primero? Invita a 3 amigos.</p>'; return; }
+      m.innerHTML = '<div class="grid">' + fs.map(function(f){
+        return '<div class="f"><div class="av">'+initials(f.name)+'</div><div class="nm">'+f.name+'</div><div class="ct">'+f.count+' invitados</div></div>';
+      }).join('') + '</div>';
+    }).catch(function(){ document.getElementById('mount').innerHTML = '<p class="empty">No pudimos cargar el muro.</p>'; });
+
+    fetch(API+'/contrib/wall').then(function(r){return r.json();}).then(function(d){
+      var ws = (d && d.wall) || [];
+      var m = document.getElementById('mountSemb');
+      if(!ws.length){ m.innerHTML = '<p class="empty">Aún no hay Sembradores. ¿Serás el primero en aportar?</p>'; return; }
+      m.innerHTML = '<div class="grid">' + ws.map(function(w){
+        return '<div class="f"><div class="av">'+initials(w.name)+'</div><div class="nm">'+w.name+'</div><div class="ct">'+w.count+' '+(w.count===1?'documento':'documentos')+'</div></div>';
+      }).join('') + '</div>';
+    }).catch(function(){ document.getElementById('mountSemb').innerHTML = '<p class="empty">No pudimos cargar los Sembradores.</p>'; });
+  })();
+  </script>
+  <script is:inline>
+  (function(){var h=document.querySelector(".site-header"),b=h&&h.querySelector(".sh-burger");if(!h||!b)return;function c(){h.classList.remove("is-open");b.setAttribute("aria-expanded","false");}b.addEventListener("click",function(){var o=h.classList.toggle("is-open");b.setAttribute("aria-expanded",o?"true":"false");});h.querySelectorAll(".sh-nav a").forEach(function(a){a.addEventListener("click",c);});document.addEventListener("keydown",function(e){if(e.key==="Escape")c();});})();
+  </script>
+</StaticPage>
