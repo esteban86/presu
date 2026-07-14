@@ -141,11 +141,13 @@ import StaticPage from '../layouts/StaticPage.astro';
       {min:15, label:'<b>Masterclass</b> de Asimétrica'},
     ];
     function toast(t){ var el=document.getElementById('toast'); el.textContent=t; el.classList.add('on'); setTimeout(function(){el.classList.remove('on');},1600); }
+    function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c];}); }
+    function safeUrl(u){ u=String(u||''); return /^https?:\/\//i.test(u) ? esc(u) : '#'; }
 
     if(!code){ document.getElementById('loading').textContent='Falta tu código. Abre el link de tu correo.'; return; }
 
     var shareLink = 'https://presu.io/?ref='+code;
-    var shareMsg = 'Me sumé a Presu 🌿 — reúne tus gastos de todos tus bancos y te dice si vas bien, privado y en tu equipo. La beta abre el 30 de junio y entrando antes es gratis. Te dejo mi link: '+shareLink;
+    var shareMsg = 'Me sumé a Presu 🌿 — reúne tus gastos de todos tus bancos y te dice si vas bien, privado y en tu equipo. Entrando ahora es gratis. Te dejo mi link: '+shareLink;
 
     Promise.all([
       fetch(API+'/me?code='+code).then(function(r){return r.json();}),
@@ -181,13 +183,13 @@ import StaticPage from '../layouts/StaticPage.astro';
           : '<li><span class="dot"></span><span><b>Masterclass de Asimétrica</b> — a los 15 referidos</span></li>';
         cc.innerHTML = '<h2>Círculo privado 🎉</h2>'
           + '<p class="muted" style="margin-top:0">Tu acceso de Círculo: grupo privado + voto en el roadmap.</p>'
-          + (me.unlock.whatsapp ? '<a class="btn btn-mint" style="display:inline-block;text-decoration:none;margin:4px 0 14px" href="'+me.unlock.whatsapp+'" target="_blank" rel="noopener">Unirme al grupo privado →</a>' : '')
-          + '<ul class="tiers"><li class="on"><span class="dot">🗳️</span><span><b>Voto en el roadmap</b> — <a href="/roadmap.html?code='+code+'" style="color:var(--mint-bright)">abrir el tablero →</a></span></li>' + mc + '</ul>';
+          + (me.unlock.whatsapp ? '<a class="btn btn-mint" style="display:inline-block;text-decoration:none;margin:4px 0 14px" href="'+safeUrl(me.unlock.whatsapp)+'" target="_blank" rel="noopener">Unirme al grupo privado →</a>' : '')
+          + '<ul class="tiers"><li class="on"><span class="dot">🗳️</span><span><b>Voto en el roadmap</b> — <a href="/roadmap.html?code='+encodeURIComponent(code)+'" style="color:var(--mint-bright)">abrir el tablero →</a></span></li>' + mc + '</ul>';
       }
 
       var top = (lb && lb.top) || [];
       document.getElementById('rank').innerHTML = top.length
-        ? top.map(function(x,i){ return '<li class="'+(i<3?'top3':'')+'"><span class="pos">'+(i+1)+'</span><span class="nm">'+x.name+'</span><span class="ct">'+x.count+'</span></li>'; }).join('')
+        ? top.map(function(x,i){ return '<li class="'+(i<3?'top3':'')+'"><span class="pos">'+(i+1)+'</span><span class="nm">'+esc(x.name)+'</span><span class="ct">'+(x.count|0)+'</span></li>'; }).join('')
         : '<li><span class="nm" style="color:var(--mut)">Aún nadie en el ranking. ¡Sé el primero!</span></li>';
     }).catch(function(){ document.getElementById('loading').textContent='No pudimos cargar tu progreso. Intenta de nuevo.'; });
 

@@ -18,11 +18,11 @@ id = "7aec6338c2e042e3acc5c03a592c0da7"
 binding = "DOCS"
 bucket_name = "presu-docs"
 
-# Cron de LANZAMIENTO (solo prod): jue 25 jun, 17:00–17:19 UTC = 12:00pm (mediodía) Colombia.
-# Dispara cada minuto en esa ventana; cada disparo envía un lote (idempotente),
-# así drena toda la base en ~14 min. Pasada esa fecha no vuelve a dispararse.
-[triggers]
-crons = ["0-19 17 25 6 *"]
+# (Sin cron.) El cron de lanzamiento del 25-jun ya cumplió y se retiró: el patrón
+# "0-19 17 25 6 *" no fija AÑO, así que se re-disparaba cada 25 de junio para
+# siempre, re-enviando la campaña vieja. El drenaje de campañas hoy se hace a mano
+# vía /admin/*-batch. Si se necesita un cron puntual, definirlo con fecha y quitarlo
+# después (y recordar que [triggers] es heredable por [env.staging]).
 
 # WEB3FORMS_KEY se carga como secret (no se commitea):
 #   npx wrangler secret put WEB3FORMS_KEY

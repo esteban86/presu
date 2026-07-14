@@ -161,6 +161,7 @@ import StaticPage from '../layouts/StaticPage.astro';
       : 'https://presu-waitlist-staging.asimetrica.workers.dev';
     var qs = new URLSearchParams(location.search);
     var email = (qs.get('e') || qs.get('email') || '').trim().toLowerCase();
+    var code = (qs.get('code') || qs.get('c') || '').trim().toUpperCase(); // gatea la precarga de PII
     var nombre = '';
     var MODE_NUEVO = qs.get('nuevo') === '1';  // post-registro: sin bloque beta, WhatsApp temprano
     var EMBED = qs.get('embed') === '1';       // dentro del modal/iframe de la landing
@@ -300,7 +301,7 @@ import StaticPage from '../layouts/StaticPage.astro';
     function boot(){
       render(); // muestra "cargando…"
       if(!email){ phase='gate'; render(); return; }
-      fetch(API+'/survey?e='+encodeURIComponent(email),{cache:'no-store'})
+      fetch(API+'/survey?e='+encodeURIComponent(email)+(code?'&code='+encodeURIComponent(code):''),{cache:'no-store'})
         .then(function(r){return r.json();})
         .then(function(d){
           if(!d || !d.found){ phase='gate'; render(); return; }

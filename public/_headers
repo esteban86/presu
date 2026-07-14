@@ -1,0 +1,22 @@
+# Cloudflare Pages — cabeceras de seguridad para todo el sitio.
+# Se sirven en cada respuesta de presu.io. Editar con cuidado: la CSP puede
+# romper páginas si falta un origen. Orígenes externos que el sitio SÍ usa
+# (verificado 14-jul-2026):
+#   GA4          → googletagmanager.com + *.google-analytics.com
+#   Fuentes      → fonts.googleapis.com (css) + fonts.gstatic.com (woff2)
+#   Workers API  → *.asimetrica.workers.dev (waitlist, waitlist-staging, presu-ai)
+#   /aporta      → cdnjs.cloudflare.com (pdf.js) + cdn.jsdelivr.net (tesseract.js)
+#                  + tessdata.projectnaptha.com (datos OCR) + blob:/wasm (workers)
+#   /admin       → cdnjs.cloudflare.com (jspdf, jszip)
+#   iframe       → self (/encuesta?embed=1 dentro del modal de contacto)
+# Nota: script/style usan 'unsafe-inline' porque el sitio es Astro estático con
+# scripts is:inline (sin SSR no hay nonce). El XSS real ya está cerrado escapando
+# en el render; la CSP es defensa en profundidad (limita exfiltración y clickjacking).
+
+/*
+  Strict-Transport-Security: max-age=31536000
+  X-Frame-Options: SAMEORIGIN
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; frame-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://www.googletagmanager.com https://*.google-analytics.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.asimetrica.workers.dev https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://tessdata.projectnaptha.com; worker-src 'self' blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; form-action 'self' https://*.asimetrica.workers.dev; upgrade-insecure-requests

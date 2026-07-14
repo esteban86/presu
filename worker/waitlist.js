@@ -46,7 +46,9 @@ const CAMPAIGN_BATCH = 30; // envíos por disparo del cron (bajo el límite de s
 const OLA2_CUTOFF = Date.UTC(2026, 6, 1, 5);
 function cohortOf(r) { return (r && (r.origen === 'tanda2' || (r.ts || 0) >= OLA2_CUTOFF)) ? 'tanda2' : 'pionero'; }
 const TEST_EMAILS = ['x@x.com', 'prueba@asimetrica.co', 'prueba.worker@asimetrica.co', 'esteban.restrepo@bpt.global', 'debug1@aleph0.com.co', 'pionero.prueba@aleph0.com.co', 'chequeo.cuota@aleph0.com.co', 'esteban@aleph0.com.co'];
-function isTestEmail(e) { return TEST_EMAILS.indexOf(e) !== -1 || e.indexOf('+') !== -1 || e.indexOf('diag-') === 0; }
+// Nota: NO tratar cualquier correo con '+' como prueba — el plus-addressing
+// (ana+presu@gmail.com) es de usuarios reales y quedaban excluidos de campañas.
+function isTestEmail(e) { return TEST_EMAILS.indexOf(e) !== -1 || e.indexOf('diag-') === 0; }
 
 export default {
   async fetch(request, env) {
@@ -138,13 +140,17 @@ export default {
 
     // Código de referido propio (para que esta persona también pueda invitar)
     const code = await genCode(env);
+    // Saneo en el origen: nombre/empresa se muestran en público (muro, ranking,
+    // leaderboard) → quitar '<'/'>' neutraliza XSS almacenado aunque el front
+    // escape al render; y acotar tamaño evita que un body enorme llene el KV.
+    const clean = (v, n) => String(v || '').replace(/[<>]/g, '').slice(0, n);
     const record = {
       email,
-      perfil: data.perfil || 'persona',
-      nombre: data.nombre || '',
-      empresa: data.empresa || '',
-      empleados: data.empleados || '',
-      origen: data.origen || '',
+      perfil: data.perfil === 'empresa' ? 'empresa' : 'persona',
+      nombre: clean(data.nombre, 80),
+      empresa: clean(data.empresa, 120),
+      empleados: clean(data.empleados, 40),
+      origen: clean(data.origen, 40),
       ref: code,
       referredBy: null,
       ts: Date.now(),
@@ -158,19 +164,26 @@ export default {
     }
 
     if (code) await env.WAITLIST.put('code:' + code, email);
-    await env.WAITLIST.put('email:' + email, JSON.stringify(record));
+    await env.WAITLIST.put('email:' + email, JSON.stringify(record)); // ← el registro real
 
-    let total = parseInt((await env.WAITLIST.get('meta:count')) || '0', 10) + 1;
-    await env.WAITLIST.put('meta:count', String(total));
-
-    // Correos vía Resend (best-effort)
+    // A partir de aquí el usuario YA quedó registrado. El contador y los correos
+    // son best-effort: si el KV se satura (429 en la hot key meta:count) o Resend
+    // falla, NO debemos devolver 500 —eso confunde a alguien que sí quedó dentro
+    // y provoca reintentos. Envolvemos en try/catch y respondemos 'ok' igual.
+    let total = null;
     let mail = { welcome: null, notify: null };
-    if (env.RESEND_API_KEY) {
-      const isLate = record.origen === 'tanda2';
-      mail.welcome = await sendResend(env, { to: email, reply_to: env.NOTIFY_EMAIL || undefined, subject: isLate ? 'Estás dentro 🌊 el 15 ves tu plata clara' : 'Ya eres Pionero 🌿 tu plata por fin clara', html: isLate ? lateWelcomeHtml(record) : welcomeHtml(record), campaign: 'welcome' });
-      if (mail.welcome && mail.welcome.ok) { await env.WAITLIST.put('welcomed:' + email, String(Date.now())); await env.WAITLIST.put('campaign:' + email, 'welcome'); }
-      if (env.NOTIFY_EMAIL) mail.notify = await sendResend(env, { to: env.NOTIFY_EMAIL, reply_to: email, subject: '📥 Nuevo registro en la waitlist de Presu (' + record.perfil + ')', html: notifyHtml(record, total) });
-    }
+    try {
+      total = parseInt((await env.WAITLIST.get('meta:count')) || '0', 10) + 1;
+      await env.WAITLIST.put('meta:count', String(total));
+    } catch (e) { /* contador aproximado; el registro ya quedó */ }
+    try {
+      if (env.RESEND_API_KEY) {
+        const isLate = record.origen === 'tanda2';
+        mail.welcome = await sendResend(env, { to: email, reply_to: env.NOTIFY_EMAIL || undefined, subject: isLate ? 'Estás dentro 🌊 el 15 ves tu plata clara' : 'Ya eres Pionero 🌿 tu plata por fin clara', html: isLate ? lateWelcomeHtml(record) : welcomeHtml(record), campaign: 'welcome' });
+        if (mail.welcome && mail.welcome.ok) { await env.WAITLIST.put('welcomed:' + email, String(Date.now())); await env.WAITLIST.put('campaign:' + email, 'welcome'); }
+        if (env.NOTIFY_EMAIL) mail.notify = await sendResend(env, { to: env.NOTIFY_EMAIL, reply_to: email, subject: '📥 Nuevo registro en la waitlist de Presu (' + record.perfil + ')', html: notifyHtml(record, total) });
+      }
+    } catch (e) { /* los correos nunca deben romper el registro */ }
 
     const resp = { status: 'ok', total, ref: code };
     if (url.searchParams.has('debug')) resp.mail = mail;
@@ -480,6 +493,10 @@ async function trackRedirect(request, env, url) {
         let r = {}; try { r = JSON.parse(raw); } catch (err) {}
         r.clickedAt = ts; r.clickDevice = device; r.clickTo = to; r.clickCount = (r.clickCount || 0) + 1;
         await env.WAITLIST.put('email:' + e, JSON.stringify(r));
+        // Pasa el código del pionero a la encuesta para que precargue SUS respuestas
+        // sin exponer PII a quien solo conozca el correo (el code no viaja en el HTML
+        // del correo; se añade aquí, server-side, tras validar que el registro existe).
+        if (to === 'encuesta' && r.ref) dest += '&code=' + encodeURIComponent(r.ref);
       }
     }
   } catch (err) { /* el tracking nunca debe romper la redirección */ }
@@ -618,7 +635,13 @@ async function surveyCheck(request, env, pub, url) {
   let rec = {}; try { rec = JSON.parse(raw); } catch (e) {}
   let sv = {}; const svRaw = await env.WAITLIST.get('survey:' + email);
   if (svRaw) { try { sv = JSON.parse(svRaw); } catch (e) {} }
-  return json({ found: true, answered: !!svRaw, completed: !!sv.completed, nombre: rec.nombre || '', celular: rec.celular || '', answers: sv.answers || {} }, 200, pub);
+  const base = { found: true, answered: !!svRaw, completed: !!sv.completed };
+  // PII (nombre, celular, respuestas previas) SOLO si el código del pionero
+  // coincide con su registro. Sin esto, cualquiera cosechaba teléfono + perfil
+  // financiero con solo el correo. El link personalizado del correo trae el code.
+  const code = String(url.searchParams.get('code') || '').trim().toUpperCase();
+  if (!code || !rec.ref || code !== rec.ref) return json(base, 200, pub);
+  return json({ ...base, nombre: rec.nombre || '', celular: rec.celular || '', answers: sv.answers || {} }, 200, pub);
 }
 
 // POST /survey {email, answers, complete?} → guarda de forma INCREMENTAL (merge), solo si el correo ya está en la waitlist.

@@ -103,7 +103,7 @@ import StaticPage from '../layouts/StaticPage.astro';
       var list = feats.length
         ? feats.map(function(f){
             return '<div class="card"><div class="feat">'
-              + '<div class="vote'+(f.voted?' on':'')+'" data-id="'+f.id+'"><span class="arr">▲</span><span class="n">'+(f.votes||0)+'</span></div>'
+              + '<div class="vote'+(f.voted?' on':'')+'" data-id="'+esc(f.id)+'"><span class="arr">▲</span><span class="n">'+(f.votes|0)+'</span></div>'
               + '<div class="body"><div class="t">'+esc(f.title)+'</div>'+(f.desc?'<div class="d">'+esc(f.desc)+'</div>':'')+'<div class="by">por '+esc(f.by||'Fundador')+'</div></div>'
               + '</div></div>';
           }).join('')
@@ -116,7 +116,7 @@ import StaticPage from '../layouts/StaticPage.astro';
         + '<textarea id="d" maxlength="400" placeholder="¿Para qué serviría? (opcional)"></textarea>'
         + '<button class="btn" id="send">Proponer</button></div>'
         + list
-        + '<a class="back" href="/fundador.html?code='+code+'">← Volver a mi panel</a>';
+        + '<a class="back" href="/fundador.html?code='+encodeURIComponent(code)+'">← Volver a mi panel</a>';
 
       document.querySelectorAll('.vote').forEach(function(v){
         v.addEventListener('click', function(){
@@ -137,7 +137,7 @@ import StaticPage from '../layouts/StaticPage.astro';
     }
     function load(){
       fetch(API+'/roadmap?code='+code).then(function(r){ return r.json().then(function(j){return {s:r.status,j:j};}); }).then(function(o){
-        if(o.s===403){ mount.innerHTML='<div class="gate"><h1>Esto es del Círculo de Fundadores</h1><p class="msg">El tablero de roadmap se desbloquea al llegar a <b style="color:var(--mint)">7 referidos</b>. Sigue invitando 🌱</p><a class="back" href="/fundador.html?code='+code+'">← Ver mi panel</a></div>'; return; }
+        if(o.s===403){ mount.innerHTML='<div class="gate"><h1>Esto es del Círculo de Fundadores</h1><p class="msg">El tablero de roadmap se desbloquea al llegar a <b style="color:var(--mint)">7 referidos</b>. Sigue invitando 🌱</p><a class="back" href="/fundador.html?code='+encodeURIComponent(code)+'">← Ver mi panel</a></div>'; return; }
         feats = (o.j && o.j.features) || []; render();
       }).catch(function(){ mount.innerHTML='<p class="msg">No pudimos cargar el tablero.</p>'; });
     }

@@ -87,7 +87,7 @@ const txns = [
 const faqs = [
   {
     q: '¿Es seguro? ¿Dónde quedan mis datos?',
-    a: 'Tus datos quedan cifrados en tu propio computador, no en un servidor ni en la nube. Presu es local-first: la información no sale de tu equipo, así que nadie más —ni Asimétrica— puede verla.',
+    a: 'Tus datos quedan solo en tu propio computador, no en un servidor ni en la nube. Presu es local-first: la información no sale de tu equipo, así que nadie más —ni Asimétrica— puede verla.',
     open: true,
   },
   {
@@ -104,7 +104,7 @@ const faqs = [
   },
   {
     q: '¿Tiene costo?',
-    a: 'Si entras como pionero (antes del 30 de junio), usas toda la beta gratis a cambio de tu feedback y conservas un precio especial. Después podrás seguir gratis con la importación manual y el panel básico; el plan completo tendrá un precio que definimos al lanzar.',
+    a: 'Si entras temprano, usas toda la beta gratis a cambio de tu feedback y conservas un precio especial de pionero. Después podrás seguir gratis con la importación manual y el panel básico; el plan completo tendrá un precio que definimos al lanzar.',
   },
   {
     q: '¿Funciona en Mac, Windows o celular?',
@@ -115,7 +115,7 @@ const faqs = [
 
 <Base
   title="Presu — tus gastos personales, claros."
-  description="Presu reúne tu plata de todos los bancos, la organiza sola y te dice —en una frase— si vas bien este mes. Todo cifrado en tu equipo: sin nube, sin cuentas."
+  description="Presu reúne tu plata de todos los bancos, la organiza sola y te dice —en una frase— si vas bien este mes. Todo en tu equipo: sin nube, sin cuentas."
 >
   <script type="application/ld+json" is:inline set:html={JSON.stringify(homeJsonLd)}></script>
 
@@ -127,13 +127,13 @@ const faqs = [
     <div class="hero-grid">
       <!-- Izquierda: el argumento + captura -->
       <div class="hero-copy">
-        <span class="pill-badge"><span class="ping"></span> Beta de pioneros · gratis antes del 30 de junio</span>
+        <span class="pill-badge"><span class="ping"></span> 🌊 Nueva Ola · abre el 15 de julio, 4pm</span>
         <h1>Tus gastos de todos los bancos, <span class="mark">claros</span>.</h1>
         <p class="pitch">Presu reúne tu plata de Bancolombia, Nu, Davivienda y más, la organiza sola y te dice —en una frase, no en una hoja de cálculo— a dónde se va y si vas bien este mes.</p>
-        <p class="sub">Todo vive cifrado en tu equipo: sin nube, sin cuentas, sin que nadie más lo vea.</p>
+        <p class="sub">Todo vive en tu equipo: sin nube, sin cuentas, sin que nadie más lo vea.</p>
 
         <div class="countdown" id="countdown">
-          <span class="cd-top">Falta para abrir la beta</span>
+          <span class="cd-top">Falta para la Nueva Ola</span>
           <div class="cd-units" role="timer" aria-label="Cuenta regresiva para la beta">
             <div class="cd-u"><b id="cd-d">00</b><span>días</span></div>
             <span class="cd-sep">:</span>
@@ -143,8 +143,8 @@ const faqs = [
             <span class="cd-sep">:</span>
             <div class="cd-u"><b id="cd-s">00</b><span>seg</span></div>
           </div>
-          <span class="cd-live">● La beta ya está abierta —entra y reclama tu acceso.</span>
-          <p class="cd-note">Los <b>pioneros</b> entran antes del 30: prueban la beta, le dan forma con su feedback y usan <b>Presu completo, gratis</b>.</p>
+          <span class="cd-live">● La Nueva Ola ya abrió —entra y reclama tu acceso.</span>
+          <p class="cd-note">Faltan para la <b>Nueva Ola</b>. ¿Ya eres pionero de la beta? Ya tienes acceso —revisa tu correo 📩.</p>
         </div>
 
         <form id="hero-form" class="capture" novalidate>
@@ -257,11 +257,11 @@ const faqs = [
     <div class="privacy reveal">
       <div class="privacy-glow" aria-hidden="true"></div>
       <h2>Tus datos viven en <span class="mark">tu equipo</span>. Punto.</h2>
-      <p class="privacy-lead">Presu funciona <strong>local-first</strong>: tu información financiera se guarda <strong>cifrada en tu computador</strong>. No en un servidor, no en la nube, no con nosotros. No necesitas crear una cuenta, y de tu equipo solo sale lo que tú decidas exportar. <strong>Nadie más —ni Asimétrica— ve tus movimientos.</strong></p>
+      <p class="privacy-lead">Presu funciona <strong>local-first</strong>: tu información financiera se guarda <strong>en tu computador</strong>. No en un servidor, no en la nube, no con nosotros. No necesitas crear una cuenta, y de tu equipo solo sale lo que tú decidas exportar. <strong>Nadie más —ni Asimétrica— ve tus movimientos.</strong></p>
       <div class="privacy-pills">
         <span class="ppill">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-          Cifrado en tu dispositivo
+          Solo en tu dispositivo
         </span>
         <span class="ppill">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
@@ -318,7 +318,7 @@ const faqs = [
       </div>
     </div>
     <div class="offer reveal">
-      <span class="os-eb" id="os-eb-date">¿Entras antes del 30 de junio? Eres pionero</span>
+      <span class="os-eb" id="os-eb-date">Beta en curso · Nueva Ola abre el 15 de julio</span>
       <p class="offer-lead"><strong>No pagas nada</strong> por la beta —y además te llevas esto:</p>
       <ul class="offer-stack">
         <li>
@@ -363,7 +363,7 @@ const faqs = [
     <div class="cta-glow" aria-hidden="true"></div>
     <div class="sec-head reveal">
       <h2>Sé de los primeros en usar <span class="mark">Presu</span>.</h2>
-      <p class="sec-lead" id="waitlist-lede">La beta abre el <b>martes 30 de junio</b>. Los pioneros entran antes y usan Presu completo gratis —más unos bonos— a cambio de su feedback. Sin spam.</p>
+      <p class="sec-lead" id="waitlist-lede">La beta de pioneros ya está corriendo; la <b>Nueva Ola</b> abre el <b>15 de julio, 4pm</b>. Déjanos tu correo y entras. Los pioneros ya tienen acceso —revisa tu correo. Sin spam.</p>
       <div class="proof hidden" id="proof-wait">
         <span class="avatars" aria-hidden="true"><i class="av"></i><i class="av"></i><i class="av"></i><i class="av"></i></span>
         <b class="count">—</b><span class="proof-txt">&nbsp;personas ya en la Nueva Ola</span>

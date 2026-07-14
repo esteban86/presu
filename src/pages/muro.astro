@@ -94,12 +94,13 @@ import StaticPage from '../layouts/StaticPage.astro';
       ? 'https://presu-waitlist.asimetrica.workers.dev'
       : 'https://presu-waitlist-staging.asimetrica.workers.dev';
     function initials(name){ var p=String(name||'').trim().split(/\s+/); return ((p[0]||'?')[0] + (p[1]?p[1][0]:'')).toUpperCase(); }
+    function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c];}); }
     fetch(API+'/founders').then(function(r){return r.json();}).then(function(d){
       var fs = (d && d.founders) || [];
       var m = document.getElementById('mount');
       if(!fs.length){ m.innerHTML = '<p class="empty">Aún no hay Fundadores. ¿Serás el primero? Invita a 3 amigos.</p>'; return; }
       m.innerHTML = '<div class="grid">' + fs.map(function(f){
-        return '<div class="f"><div class="av">'+initials(f.name)+'</div><div class="nm">'+f.name+'</div><div class="ct">'+f.count+' invitados</div></div>';
+        return '<div class="f"><div class="av">'+esc(initials(f.name))+'</div><div class="nm">'+esc(f.name)+'</div><div class="ct">'+(f.count|0)+' invitados</div></div>';
       }).join('') + '</div>';
     }).catch(function(){ document.getElementById('mount').innerHTML = '<p class="empty">No pudimos cargar el muro.</p>'; });
 
@@ -108,7 +109,7 @@ import StaticPage from '../layouts/StaticPage.astro';
       var m = document.getElementById('mountSemb');
       if(!ws.length){ m.innerHTML = '<p class="empty">Aún no hay Sembradores. ¿Serás el primero en aportar?</p>'; return; }
       m.innerHTML = '<div class="grid">' + ws.map(function(w){
-        return '<div class="f"><div class="av">'+initials(w.name)+'</div><div class="nm">'+w.name+'</div><div class="ct">'+w.count+' '+(w.count===1?'documento':'documentos')+'</div></div>';
+        return '<div class="f"><div class="av">'+esc(initials(w.name))+'</div><div class="nm">'+esc(w.name)+'</div><div class="ct">'+(w.count|0)+' '+(w.count===1?'documento':'documentos')+'</div></div>';
       }).join('') + '</div>';
     }).catch(function(){ document.getElementById('mountSemb').innerHTML = '<p class="empty">No pudimos cargar los Sembradores.</p>'; });
   })();
