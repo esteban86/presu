@@ -12,13 +12,14 @@ export interface Props {
 
 const { label = 'Funciona con tus bancos', more = '+ muchos más' } = Astro.props;
 
+// webp redimensionado (56px alto = 2x del display de 28px); `w` = ancho a 28px de alto.
 const BANKS = [
-  { name: 'Bancolombia', src: '/assets/banks/bancolombia-t.png' },
-  { name: 'Banco de Bogotá', src: '/assets/banks/bogota-t.png' },
-  { name: 'Davivienda', src: '/assets/banks/davivienda-t.png' },
-  { name: 'BBVA', src: '/assets/banks/bbva-t.png' },
-  { name: 'Nu', src: '/assets/banks/nu-t.png' },
-  { name: 'RappiCard', src: '/assets/banks/rappicard-t.png' },
+  { name: 'Bancolombia', src: '/assets/banks/bancolombia-t.webp', w: 28 },
+  { name: 'Banco de Bogotá', src: '/assets/banks/bogota-t.webp', w: 122 },
+  { name: 'Davivienda', src: '/assets/banks/davivienda-t.webp', w: 125 },
+  { name: 'BBVA', src: '/assets/banks/bbva-t.webp', w: 71 },
+  { name: 'Nu', src: '/assets/banks/nu-t.webp', w: 28 },
+  { name: 'RappiCard', src: '/assets/banks/rappicard-t.webp', w: 111 },
 ];
 ---
 
@@ -26,7 +27,7 @@ const BANKS = [
   <span class="banks-strip__label">{label}</span>
   {BANKS.map((bank) => (
     <span class="banks-strip__logo">
-      <img src={bank.src} alt={bank.name} loading="lazy" width="120" height="28" />
+      <img src={bank.src} alt={bank.name} loading="lazy" width={bank.w} height="28" />
     </span>
   ))}
   {more && <span class="banks-strip__more">{more}</span>}
