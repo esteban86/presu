@@ -621,7 +621,7 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '';
       // Turnstile (render explícito porque el form es dinámico). Inerte sin site key.
       try {
         var K=(document.querySelector('meta[name="ts-sitekey"]')||{}).content;
-        if(K && window.turnstile){ window.__tsContribId = turnstile.render('#ts-contrib', {sitekey:K, size:'flexible'}); }
+        if(K && window.turnstile){ window.__tsContribId = turnstile.render('#ts-contrib', {sitekey:K, size:'flexible', appearance:'interaction-only'}); }
       } catch(e){}
     }
     function tsContribToken(){ try { return window.turnstile ? (turnstile.getResponse(window.__tsContribId)||'') : ''; } catch(e){ return ''; } }

@@ -179,7 +179,7 @@ const faqs = [
           <div class="ramp">🚀 <b>Salta la fila</b> — al unirte recibes tu link; cada amigo que invites te sube en la cola de la próxima tanda.</div>
           <a href="/aporta" class="ramp ramp-link">🌱 <b>Gánate tu cupo</b> — aporta un documento (anónimo, en tu equipo) y te invitamos antes que al resto <span class="arw">→</span></a>
         </div>
-        {TURNSTILE_SITE_KEY && <div id="ts-hero" class="cf-turnstile ts-widget" data-sitekey={TURNSTILE_SITE_KEY} data-size="flexible"></div>}
+        {TURNSTILE_SITE_KEY && <div id="ts-hero" class="cf-turnstile ts-widget" data-sitekey={TURNSTILE_SITE_KEY} data-size="flexible" data-appearance="interaction-only"></div>}
       </div>
 
       <!-- Derecha: la pieza firma — VerdictCard + categorías -->
@@ -406,7 +406,7 @@ const faqs = [
         <p class="err" id="consent-err">Solo falta tu visto bueno aquí para sumarte.</p>
 
         <input type="text" name="botcheck" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
-        {TURNSTILE_SITE_KEY && <div id="ts-wl" class="cf-turnstile ts-widget" data-sitekey={TURNSTILE_SITE_KEY} data-size="flexible"></div>}
+        {TURNSTILE_SITE_KEY && <div id="ts-wl" class="cf-turnstile ts-widget" data-sitekey={TURNSTILE_SITE_KEY} data-size="flexible" data-appearance="interaction-only"></div>}
         <button type="submit" class="capture-btn capture-btn--block">Únete a la lista de espera</button>
         <p class="err err--center" id="wl-err">Algo falló de nuestro lado. Reintenta en un momento.</p>
         <p class="form-foot">Mac y Windows · móvil próximamente · Presu, de Asimétrica</p>
