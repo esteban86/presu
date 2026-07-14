@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Sitemap manual. Solo páginas INDEXABLES (sin noindex) y con URL limpia (sin .html,
      coincide con el <link rel=canonical>). Al agregar/quitar una página indexable,
-     actualizar aquí. Excluidas por noindex: admin, aliados, descargar, encuesta,
+     actualizar aquí. Excluidas por noindex: admin, aliados, encuesta,
      fundador, ranking, roadmap. -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
@@ -14,6 +14,12 @@
       <image:loc>https://presu.io/presu-og.png</image:loc>
       <image:title>Presu — tus gastos personales, claros</image:title>
     </image:image>
+  </url>
+  <url>
+    <loc>https://presu.io/descargar</loc>
+    <lastmod>2026-07-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://presu.io/aporta</loc>
