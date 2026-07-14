@@ -171,7 +171,7 @@ const faqs = [
         </div>
 
         <div class="proof hidden" id="proof-hero">
-          <span class="avatars" aria-hidden="true"><i class="av"></i><i class="av"></i><i class="av"></i><i class="av"></i></span>
+          <span class="proof-dot" aria-hidden="true"></span><span class="avatars" aria-hidden="true"><i class="av"></i><i class="av"></i><i class="av"></i><i class="av"></i></span>
           <b class="count">—</b><span class="proof-txt">&nbsp;personas ya en la Nueva Ola</span>
         </div>
 
@@ -370,7 +370,7 @@ const faqs = [
       <h2>Sé de los primeros en usar <span class="mark">Presu</span>.</h2>
       <p class="sec-lead" id="waitlist-lede">La beta de pioneros ya está corriendo; la <b>Nueva Ola</b> abre el <b>15 de julio, 4pm</b>. Déjanos tu correo y entras. Los pioneros ya tienen acceso —revisa tu correo. Sin spam.</p>
       <div class="proof hidden" id="proof-wait">
-        <span class="avatars" aria-hidden="true"><i class="av"></i><i class="av"></i><i class="av"></i><i class="av"></i></span>
+        <span class="proof-dot" aria-hidden="true"></span><span class="avatars" aria-hidden="true"><i class="av"></i><i class="av"></i><i class="av"></i><i class="av"></i></span>
         <b class="count">—</b><span class="proof-txt">&nbsp;personas ya en la Nueva Ola</span>
       </div>
     </div>
@@ -777,18 +777,32 @@ const faqs = [
   .proof {
     display: flex;
     align-items: center;
-    gap: var(--space-2);
+    gap: 10px;
+    width: fit-content;
+    max-width: 100%;
     margin-top: var(--space-5);
+    padding: 8px 15px 8px 12px;
+    background: rgba(52, 211, 153, 0.06);
+    border: 1px solid rgba(52, 211, 153, 0.2);
+    border-radius: 999px;
     font-size: var(--text-caption);
     color: var(--text-secondary);
   }
   .proof .proof-dot {
-    width: 7px;
-    height: 7px;
+    flex: none;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
     background: var(--presu-emerald);
-    box-shadow: 0 0 8px var(--presu-emerald);
+    box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.5);
+    animation: proof-pulse 2s infinite;
   }
+  @keyframes proof-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.5); }
+    70% { box-shadow: 0 0 0 7px rgba(52, 211, 153, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
+  }
+  @media (prefers-reduced-motion: reduce) { .proof .proof-dot { animation: none; } }
   .proof .avatars {
     display: inline-flex;
     align-items: center;
@@ -810,7 +824,8 @@ const faqs = [
   .proof .count {
     font-family: var(--font-display);
     font-weight: var(--weight-bold);
-    color: var(--text-primary);
+    color: var(--presu-emerald);
+    font-size: 1.05rem;
     font-variant-numeric: tabular-nums;
     display: inline-block;
   }
