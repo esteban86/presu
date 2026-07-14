@@ -26,7 +26,7 @@
       "inLanguage": "es-CO",
       "url": "https://presu.io/",
       "image": "https://presu.io/presu-og.png",
-      "description": "Presu reúne los gastos de tus bancos colombianos, los organiza solos y te muestra a dónde se va tu plata. Local-first: tus datos viven cifrados en tu propio equipo, no en la nube.",
+      "description": "Presu reúne los gastos de tus bancos colombianos, los organiza solos y te muestra a dónde se va tu plata. Local-first: tus datos viven en tu propio equipo, no en la nube.",
       "publisher": { "@id": "https://asimetrica.co/#organization" },
       "offers": {
         "@type": "Offer",
@@ -42,7 +42,7 @@
         {
           "@type": "Question",
           "name": "¿Es seguro? ¿Dónde quedan mis datos?",
-          "acceptedAnswer": { "@type": "Answer", "text": "Tus datos quedan cifrados en tu propio computador, no en un servidor ni en la nube. Presu es local-first: la información no sale de tu equipo, así que nadie más —ni Asimétrica— puede verla." }
+          "acceptedAnswer": { "@type": "Answer", "text": "Tus datos quedan solo en tu propio computador, no en un servidor ni en la nube. Presu es local-first: la información no sale de tu equipo, así que nadie más —ni Asimétrica— puede verla." }
         },
         {
           "@type": "Question",
