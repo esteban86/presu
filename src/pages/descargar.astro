@@ -19,18 +19,18 @@ import StaticPage from '../layouts/StaticPage.astro';
     </div>
   </header>
   <div class="wrap">
-    <div class="eb">Beta de pioneros</div>
+    <div class="eb">Mac y Windows · local-first</div>
     <h1>Descarga Presu 🌿</h1>
-    <p class="lede">Tu copiloto de finanzas, <b style="color:var(--tx)">local-first</b>: tus datos viven solo en tu equipo. Confirma tu correo de pionero y empieza en un minuto.</p>
+    <p class="lede">Tu copiloto de finanzas, <b style="color:var(--tx)">local-first</b>: tus datos viven solo en tu equipo. Déjanos tu correo y empieza en un minuto.</p>
 
-    <!-- PUERTA: validación de correo de pionero (se oculta al validar) -->
+    <!-- PUERTA: captura de correo (se oculta al continuar; cualquier correo válido entra) -->
     <form class="gate" id="gate" novalidate>
-      <label for="gate-email">Tu correo de pionero</label>
+      <label for="gate-email">Tu correo</label>
       <div class="gate-row">
-        <input type="email" id="gate-email" autocomplete="email" placeholder="tu@correo.com" aria-label="Tu correo de pionero" />
+        <input type="email" id="gate-email" autocomplete="email" placeholder="tu@correo.com" aria-label="Tu correo" />
         <button type="submit" id="gate-btn">Continuar</button>
       </div>
-      <p class="hint">Solo para pioneros de la beta. Usa el mismo correo con el que te registraste.</p>
+      <p class="hint">Si ya eres pionero, usa el mismo correo con el que te registraste.</p>
       <p class="msg" id="gate-msg"></p>
     </form>
 
@@ -241,11 +241,6 @@ import StaticPage from '../layouts/StaticPage.astro';
       gateEmail.classList.add('err','shake');
       setTimeout(function(){ gateEmail.classList.remove('shake'); }, 450);
     }
-    function check(email){
-      return fetch(API + '/es-pionero?e=' + encodeURIComponent(email), {cache:'no-store'})
-        .then(function(r){ return r.json(); })
-        .then(function(d){ return !!(d && d.pionero); });
-    }
     function unlock(email){
       pioneerEmail = email || pioneerEmail || '';
       try { sessionStorage.setItem('presu_dl_ok','1'); if (pioneerEmail) sessionStorage.setItem('presu_dl_email', pioneerEmail); } catch(e){}
@@ -258,26 +253,14 @@ import StaticPage from '../layouts/StaticPage.astro';
       e.preventDefault();
       var email = gateEmail.value.trim().toLowerCase();
       if (!EMAIL_RE.test(email)) { fail('Escribe un correo válido.'); return; }
-      gateMsg.className = 'msg'; gateEmail.classList.remove('err');
-      gateBtn.disabled = true; gateBtn.textContent = 'Verificando…';
-      check(email).then(function(ok){
-        gateBtn.disabled = false; gateBtn.textContent = 'Continuar';
-        if (ok) unlock(email);
-        else fail('Ese correo no está en la lista de pioneros. Si te registraste con otro, prueba ese — o <a href="/#waitlist">únete a la lista</a>.');
-      }).catch(function(){
-        gateBtn.disabled = false; gateBtn.textContent = 'Continuar';
-        fail('No pudimos verificar ahora. Reintenta en un momento.');
-      });
+      unlock(email); // pioneros y nuevos: el mismo binario; el plan lo resuelve la app por licencia
     });
 
     // Auto-desbloqueo: ?e= del correo, o sesión ya validada
     (function(){
       var qEmail = (new URLSearchParams(location.search).get('e') || '').trim().toLowerCase();
       try { if (sessionStorage.getItem('presu_dl_ok') === '1') { unlock(sessionStorage.getItem('presu_dl_email') || qEmail || ''); return; } } catch(e){}
-      if (qEmail && EMAIL_RE.test(qEmail)) {
-        gateEmail.value = qEmail;
-        check(qEmail).then(function(ok){ if (ok) unlock(qEmail); });
-      }
+      if (qEmail && EMAIL_RE.test(qEmail)) { unlock(qEmail); }
     })();
 
     // ── Descarga (se arma al desbloquear) ──
