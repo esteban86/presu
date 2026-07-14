@@ -163,7 +163,6 @@ const faqs = [
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
             Gratis para empezar · Tus datos no salen de tu equipo · Sin spam
           </p>
-          {TURNSTILE_SITE_KEY && <div class="cf-turnstile ts-widget" data-sitekey={TURNSTILE_SITE_KEY} data-size="flexible"></div>}
         </form>
 
         <div class="capture-ok hidden" id="hero-ok" role="status">
@@ -180,6 +179,7 @@ const faqs = [
           <div class="ramp">🚀 <b>Salta la fila</b> — al unirte recibes tu link; cada amigo que invites te sube en la cola de la próxima tanda.</div>
           <a href="/aporta" class="ramp ramp-link">🌱 <b>Gánate tu cupo</b> — aporta un documento (anónimo, en tu equipo) y te invitamos antes que al resto <span class="arw">→</span></a>
         </div>
+        {TURNSTILE_SITE_KEY && <div id="ts-hero" class="cf-turnstile ts-widget" data-sitekey={TURNSTILE_SITE_KEY} data-size="flexible"></div>}
       </div>
 
       <!-- Derecha: la pieza firma — VerdictCard + categorías -->
@@ -406,7 +406,7 @@ const faqs = [
         <p class="err" id="consent-err">Solo falta tu visto bueno aquí para sumarte.</p>
 
         <input type="text" name="botcheck" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
-        {TURNSTILE_SITE_KEY && <div class="cf-turnstile ts-widget" data-sitekey={TURNSTILE_SITE_KEY} data-size="flexible"></div>}
+        {TURNSTILE_SITE_KEY && <div id="ts-wl" class="cf-turnstile ts-widget" data-sitekey={TURNSTILE_SITE_KEY} data-size="flexible"></div>}
         <button type="submit" class="capture-btn capture-btn--block">Únete a la lista de espera</button>
         <p class="err err--center" id="wl-err">Algo falló de nuestro lado. Reintenta en un momento.</p>
         <p class="form-foot">Mac y Windows · móvil próximamente · Presu, de Asimétrica</p>
@@ -1756,26 +1756,33 @@ const faqs = [
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const API = apiBase(location.hostname);
 
-  // Token de Turnstile del widget dentro de un form (vacío si no hay widget).
-  const tsToken = (form: HTMLFormElement | null): string => {
-    const el = form && form.querySelector('[name="cf-turnstile-response"]');
-    return el ? (el as HTMLInputElement).value : '';
+  // Token de Turnstile del widget con id `wid` (el widget puede estar FUERA del
+  // form). Lee el hidden input que Turnstile inyecta; cae a getResponse() si hace falta.
+  const tsToken = (wid: string): string => {
+    const el = document.getElementById(wid);
+    if (!el) return '';
+    const inp =
+      el.querySelector('[name="cf-turnstile-response"]') ||
+      (el.parentElement && el.parentElement.querySelector('[name="cf-turnstile-response"]'));
+    if (inp) return (inp as HTMLInputElement).value || '';
+    try { if ((window as any).turnstile) return (window as any).turnstile.getResponse(el) || ''; } catch {}
+    return '';
   };
   // Espera a que el widget resuelva (hasta ~8s) antes de enviar, para que un submit
   // rápido no falle con el token aún vacío. Sin widget → resuelve de una.
-  const tsTokenReady = (form: HTMLFormElement | null): Promise<string> =>
+  const tsTokenReady = (wid: string): Promise<string> =>
     new Promise((resolve) => {
-      if (!(window as any).turnstile) return resolve(tsToken(form));
-      const t = tsToken(form);
+      if (!(window as any).turnstile || !document.getElementById(wid)) return resolve(tsToken(wid));
+      const t = tsToken(wid);
       if (t) return resolve(t);
       let n = 0;
       const iv = setInterval(() => {
-        const v = tsToken(form);
+        const v = tsToken(wid);
         if (v || ++n > 40) { clearInterval(iv); resolve(v); }
       }, 200);
     });
-  const tsReset = (form: HTMLFormElement | null) => {
-    try { (window as any).turnstile && (window as any).turnstile.reset(form?.querySelector('.cf-turnstile')); } catch {}
+  const tsReset = (wid: string) => {
+    try { const el = document.getElementById(wid); (window as any).turnstile && el && (window as any).turnstile.reset(el); } catch {}
   };
 
   // Código de referido entrante (?ref=) — se recuerda por si vuelve luego.
@@ -2049,7 +2056,7 @@ const faqs = [
       heroErr.style.display = 'none';
       btnLoading(heroForm, true);
       const late = isNuevaOla();
-      tsTokenReady(heroForm).then((tok) => send(
+      tsTokenReady('ts-hero').then((tok) => send(
         { perfil: 'persona', correo: email, origen: late ? 'tanda2' : 'hero', ref: REF, turnstile: tok },
         (res) => {
           heroForm.style.display = 'none';
@@ -2068,7 +2075,7 @@ const faqs = [
         },
         () => {
           btnLoading(heroForm, false);
-          tsReset(heroForm);
+          tsReset('ts-hero');
           heroErr.textContent = 'Algo falló de nuestro lado. Reintenta en un momento.';
           heroErr.style.display = 'block';
         },
@@ -2128,7 +2135,7 @@ const faqs = [
       showError('wl-err', false);
       btnLoading(form, true);
       const perfil = (form.querySelector('input[name=perfil]:checked') as HTMLInputElement).value;
-      tsTokenReady(form).then((tok) => send(
+      tsTokenReady('ts-wl').then((tok) => send(
         {
           perfil,
           correo: email,
@@ -2151,7 +2158,7 @@ const faqs = [
         },
         () => {
           btnLoading(form, false);
-          tsReset(form);
+          tsReset('ts-wl');
           showError('wl-err', true);
         },
         () => {
