@@ -18,6 +18,17 @@ id = "7aec6338c2e042e3acc5c03a592c0da7"
 binding = "DOCS"
 bucket_name = "presu-docs"
 
+# Rate-limit por Durable Object (fuertemente consistente → frena ráfagas; el
+# binding nativo 'ratelimit' resultó no-op en esta cuenta). Un id por bucket:ip;
+# el límite/ventana se pasan por request desde el código.
+[[durable_objects.bindings]]
+name = "RL"
+class_name = "RateLimiter"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["RateLimiter"]
+
 # (Sin cron.) El cron de lanzamiento del 25-jun ya cumplió y se retiró: el patrón
 # "0-19 17 25 6 *" no fija AÑO, así que se re-disparaba cada 25 de junio para
 # siempre, re-enviando la campaña vieja. El drenaje de campañas hoy se hace a mano
@@ -41,5 +52,13 @@ id = "14cae570f4024c458142cd264a3775e8"
 binding = "DOCS"
 bucket_name = "presu-docs-staging"
 
+# Rate-limit por Durable Object (instancias propias del worker de staging).
+[[env.staging.durable_objects.bindings]]
+name = "RL"
+class_name = "RateLimiter"
+
 [env.staging.vars]
 NOTIFY_EMAIL = "esteban@aleph0.com.co"
+# Llave de PRUEBA oficial de Cloudflare (always-pass, es pública) — solo staging.
+# En PROD el secret real se pone con:  wrangler secret put TURNSTILE_SECRET
+TURNSTILE_SECRET = "1x0000000000000000000000000000000AA"

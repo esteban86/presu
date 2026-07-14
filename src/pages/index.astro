@@ -19,6 +19,10 @@ import FaqItem from '../components/ui/FaqItem.astro';
 import { formatCOPCompact, CATEGORIES } from '../lib/format.js';
 import homeJsonLd from '../data/home-jsonld.json';
 
+// Turnstile: solo se renderiza si hay site key (build-time). Sin ella, el widget
+// no aparece y el worker no exige token (rollout inerte hasta provisionar).
+const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '';
+
 const ingresos = formatCOPCompact(6420000); // "$6,42M"
 const gastos = formatCOPCompact(4740000); // "$4,74M"
 const balance = formatCOPCompact(1680000); // "$1,68M" (= ingresos − gastos)
@@ -159,6 +163,7 @@ const faqs = [
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
             Gratis para empezar · Tus datos no salen de tu equipo · Sin spam
           </p>
+          {TURNSTILE_SITE_KEY && <div class="cf-turnstile ts-widget" data-sitekey={TURNSTILE_SITE_KEY} data-size="flexible"></div>}
         </form>
 
         <div class="capture-ok hidden" id="hero-ok" role="status">
@@ -401,6 +406,7 @@ const faqs = [
         <p class="err" id="consent-err">Solo falta tu visto bueno aquí para sumarte.</p>
 
         <input type="text" name="botcheck" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+        {TURNSTILE_SITE_KEY && <div class="cf-turnstile ts-widget" data-sitekey={TURNSTILE_SITE_KEY} data-size="flexible"></div>}
         <button type="submit" class="capture-btn capture-btn--block">Únete a la lista de espera</button>
         <p class="err err--center" id="wl-err">Algo falló de nuestro lado. Reintenta en un momento.</p>
         <p class="form-foot">Mac y Windows · móvil próximamente · Presu, de Asimétrica</p>
@@ -421,6 +427,7 @@ const faqs = [
       <iframe title="Conectemos con Presu" allow="clipboard-write"></iframe>
     </div>
   </div>
+  {TURNSTILE_SITE_KEY && <script is:inline async defer src="https://challenges.cloudflare.com/turnstile/v0/api.js"></script>}
 </Base>
 
 <!-- Estilos globales: los tocan/inyectan countdown.js y waitlist.js
@@ -1749,6 +1756,15 @@ const faqs = [
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const API = apiBase(location.hostname);
 
+  // Token de Turnstile del widget dentro de un form (vacío si no hay widget).
+  const tsToken = (form: HTMLFormElement | null): string => {
+    const el = form && form.querySelector('[name="cf-turnstile-response"]');
+    return el ? (el as HTMLInputElement).value : '';
+  };
+  const tsReset = (form: HTMLFormElement | null) => {
+    try { (window as any).turnstile && (window as any).turnstile.reset(form?.querySelector('.cf-turnstile')); } catch {}
+  };
+
   // Código de referido entrante (?ref=) — se recuerda por si vuelve luego.
   const REF = (() => {
     try {
@@ -2021,7 +2037,7 @@ const faqs = [
       btnLoading(heroForm, true);
       const late = isNuevaOla();
       send(
-        { perfil: 'persona', correo: email, origen: late ? 'tanda2' : 'hero', ref: REF },
+        { perfil: 'persona', correo: email, origen: late ? 'tanda2' : 'hero', ref: REF, turnstile: tsToken(heroForm) },
         (res) => {
           heroForm.style.display = 'none';
           if (late) {
@@ -2039,6 +2055,7 @@ const faqs = [
         },
         () => {
           btnLoading(heroForm, false);
+          tsReset(heroForm);
           heroErr.textContent = 'Algo falló de nuestro lado. Reintenta en un momento.';
           heroErr.style.display = 'block';
         },
@@ -2106,6 +2123,7 @@ const faqs = [
           empresa: perfil === 'empresa' ? (form as any).empresa.value.trim() : '',
           empleados: perfil === 'empresa' ? (form as any).empleados.value.trim() : '',
           ref: REF,
+          turnstile: tsToken(form),
         },
         (res) => {
           form.classList.add('hidden');
@@ -2120,6 +2138,7 @@ const faqs = [
         },
         () => {
           btnLoading(form, false);
+          tsReset(form);
           showError('wl-err', true);
         },
         () => {

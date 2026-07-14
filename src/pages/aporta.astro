@@ -1,5 +1,7 @@
 ---
 import StaticPage from '../layouts/StaticPage.astro';
+// Turnstile: inerte si no hay site key (no renderiza; el worker tampoco exige token).
+const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '';
 ---
 <StaticPage
   title="Ayuda a que Presu lea tu banco — aporta un documento anónimo"
@@ -8,6 +10,8 @@ import StaticPage from '../layouts/StaticPage.astro';
   ogDescription="Aporta un documento financiero anonimizado en tu propio equipo. El original nunca sale de tu dispositivo. Tu plata, clara."
 >
   <link slot="head" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
+  {TURNSTILE_SITE_KEY && <meta slot="head" name="ts-sitekey" content={TURNSTILE_SITE_KEY} />}
+  {TURNSTILE_SITE_KEY && <script slot="head" is:inline async defer src="https://challenges.cloudflare.com/turnstile/v0/api.js"></script>}
 
   <header class="site-header">
     <div class="sh-wrap">
@@ -596,6 +600,7 @@ import StaticPage from '../layouts/StaticPage.astro';
         '</details>'+
         '<label class="checkrow"><input type="checkbox" id="fConsent"><span>Confirmo que <b style="color:#fff">tapé mis datos personales</b> y autorizo usar esta imagen anónima para mejorar Presu. <a href="/privacidad">Privacidad</a>.</span></label>'+
         '<div class="thumbs" id="thumbs"></div>'+
+        '<div id="ts-contrib" class="ts-widget"></div>'+
         '<div class="nav"><button class="btn btn-mint" id="sendBtn" disabled>Aportar '+items.length+' documento'+(items.length>1?'s':'')+' <span style="font-size:1.1em">→</span></button></div>'+
         '<p class="err" id="formErr"></p>'+
         '<p class="consent2">'+SHIELD+' Solo viaja la imagen que ya tapaste. El original nunca sale de tu equipo.</p>'
@@ -613,7 +618,13 @@ import StaticPage from '../layouts/StaticPage.astro';
       var consent=document.getElementById('fConsent'), sendBtn=document.getElementById('sendBtn');
       consent.addEventListener('change', function(){ sendBtn.disabled = !consent.checked; });
       sendBtn.addEventListener('click', submitAll);
+      // Turnstile (render explícito porque el form es dinámico). Inerte sin site key.
+      try {
+        var K=(document.querySelector('meta[name="ts-sitekey"]')||{}).content;
+        if(K && window.turnstile){ window.__tsContribId = turnstile.render('#ts-contrib', {sitekey:K, size:'flexible'}); }
+      } catch(e){}
     }
+    function tsContribToken(){ try { return window.turnstile ? (turnstile.getResponse(window.__tsContribId)||'') : ''; } catch(e){ return ''; } }
     function renderThumbs(){
       var host=document.getElementById('thumbs'); if(!host) return; host.innerHTML='';
       items.forEach(function(it,i){
@@ -639,6 +650,7 @@ import StaticPage from '../layouts/StaticPage.astro';
       if(items.some(remainingHasPII)){
         if(!window.confirm('⚠️ Parece que quedó algún dato personal sin tapar (tu nombre, número de cuenta o dirección). Revísalo antes de enviar.\n\n¿Enviar de todas formas?')) return;
       }
+      var tsTok = tsContribToken(); // capturar ANTES de re-render (destruye el widget)
       phase='sending'; render();
       // Exporta todos los blobs (aplanados) y envía
       Promise.all(items.map(exportItem)).then(function(){
@@ -647,6 +659,7 @@ import StaticPage from '../layouts/StaticPage.astro';
         fd.append('pais',meta.pais); fd.append('banco',meta.banco); fd.append('moneda',meta.moneda);
         fd.append('tipo',meta.tipo); fd.append('nombre',meta.nombre); fd.append('ref',meta.correo);
         fd.append('botcheck',''); fd.append('n',String(items.length)); fd.append('sid',sid);
+        fd.append('turnstile', tsTok);
         items.forEach(function(it,i){ fd.append('doc'+i, it.blob, 'doc'+i+'.jpg'); fd.append('tokens'+i, JSON.stringify(tokensOf(it))); });
         return fetch(API+'/contrib',{method:'POST',body:fd});
       }).then(function(r){ return r.json().catch(function(){return {};}); })
@@ -656,7 +669,7 @@ import StaticPage from '../layouts/StaticPage.astro';
     function failSend(reason){
       phase='form'; render();
       var errEl=document.getElementById('formErr');
-      if(errEl) errEl.textContent = reason==='too_big' ? 'Alguna imagen pesa demasiado. Intenta con menos páginas.' : 'No pudimos enviar. Revisa tu conexión e inténtalo de nuevo.';
+      if(errEl) errEl.textContent = reason==='too_big' ? 'Alguna imagen pesa demasiado. Intenta con menos páginas.' : reason==='rate' ? 'Demasiados intentos seguidos. Espera un momento y reintenta.' : reason==='captcha' ? 'No pudimos verificar que no eres un bot. Reintenta.' : 'No pudimos enviar. Revisa tu conexión e inténtalo de nuevo.';
     }
 
     function renderSending(){

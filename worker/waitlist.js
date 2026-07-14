@@ -50,6 +50,61 @@ const TEST_EMAILS = ['x@x.com', 'prueba@asimetrica.co', 'prueba.worker@asimetric
 // (ana+presu@gmail.com) es de usuarios reales y quedaban excluidos de campañas.
 function isTestEmail(e) { return TEST_EMAILS.indexOf(e) !== -1 || e.indexOf('diag-') === 0; }
 
+// ── Anti-abuso: rate-limit por IP (KV) + verificación Turnstile ──────────────
+const TURNSTILE_VERIFY = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
+function clientIp(request) { return request.headers.get('CF-Connecting-IP') || request.headers.get('X-Forwarded-For') || ''; }
+
+/** Rate-limit con Durable Object (fuertemente consistente → frena ráfagas, a
+ *  diferencia del KV que tiene lag, y del binding nativo 'ratelimit' que en esta
+ *  cuenta es no-op). `key` = bucket+IP; cada key es una instancia de ventana fija.
+ *  true = permitido. Sin binding o sin IP → NO bloquea (no romper a legítimos). */
+async function rateLimit(ns, key, limit, windowSec) {
+  if (!ns || !key || key.slice(-1) === ':') return true;
+  try {
+    const stub = ns.get(ns.idFromName(key));
+    const r = await stub.fetch('https://rl/?limit=' + limit + '&window=' + windowSec);
+    const d = await r.json();
+    return !!d.success;
+  } catch (e) { return true; }
+}
+
+// Durable Object: contador de ventana fija en memoria (single-thread por id →
+// sin carreras). Si el DO se desaloja, la ventana se reinicia (aceptable para
+// anti-abuso). Un id por `key` (bucket:ip).
+export class RateLimiter {
+  constructor(state) { this.state = state; this.win = null; }
+  async fetch(request) {
+    const u = new URL(request.url);
+    const limit = parseInt(u.searchParams.get('limit') || '12', 10);
+    const windowMs = parseInt(u.searchParams.get('window') || '60', 10) * 1000;
+    const now = Date.now();
+    if (!this.win || now - this.win.start >= windowMs) this.win = { start: now, count: 0 };
+    this.win.count++;
+    return Response.json({ success: this.win.count <= limit });
+  }
+}
+
+/**
+ * Verifica un token de Cloudflare Turnstile contra siteverify.
+ * Fail-OPEN si no hay TURNSTILE_SECRET (el deploy queda inerte hasta provisionar);
+ * rechaza si falta el token cuando SÍ está configurado; y ante un outage/parse de
+ * siteverify no bloquea (el rate-limit por IP sigue siendo la red de seguridad).
+ * @returns {boolean} true = pasa; false = token ausente/ inválido.
+ */
+async function verifyTurnstile(env, token, ip) {
+  if (!env.TURNSTILE_SECRET) return true;   // no configurado → rollout seguro
+  if (!token) return false;                 // configurado y sin token → bloquear
+  try {
+    const body = new FormData();
+    body.append('secret', env.TURNSTILE_SECRET);
+    body.append('response', String(token).slice(0, 4096));
+    if (ip) body.append('remoteip', ip);
+    const r = await fetch(TURNSTILE_VERIFY, { method: 'POST', body });
+    const d = await r.json();
+    return d && typeof d.success === 'boolean' ? d.success : true; // malformado → no bloquear
+  } catch (e) { return true; } // outage de siteverify → no tumbar registros (rate-limit cubre)
+}
+
 export default {
   async fetch(request, env) {
     const origin = request.headers.get('Origin') || '';
@@ -129,8 +184,13 @@ export default {
     try { data = await request.json(); } catch (e) { return json({ status: 'error', reason: 'json' }, 400, cors); }
     if (data.botcheck) return json({ status: 'ok' }, 200, cors); // honeypot
 
+    const ip = clientIp(request);
+    if (!(await rateLimit(env.RL, 'sub:' + ip, 12, 60))) return json({ status: 'error', reason: 'rate' }, 429, cors);
+
     const email = String(data.correo || data.email || '').trim().toLowerCase();
     if (!EMAIL_RE.test(email) || isDisposable(email)) return json({ status: 'error', reason: 'email' }, 400, cors);
+
+    if (!(await verifyTurnstile(env, data.turnstile, ip))) return json({ status: 'error', reason: 'captcha' }, 403, cors);
 
     // Dedup
     if (await env.WAITLIST.get('email:' + email)) return json({ status: 'already' }, 200, cors);
@@ -483,7 +543,9 @@ async function trackRedirect(request, env, url) {
   let dest = SITE + path;
   if (e) dest += (path.indexOf('?') > -1 ? '&' : '?') + 'e=' + encodeURIComponent(e) + (to === 'encuesta' ? '&nuevo=1' : '');
   try {
-    if (e && EMAIL_RE.test(e)) {
+    // Rate-limit el TRACKING (no la redirección): si un bot spamea /r, deja de
+    // escribir clicks/contadores pero el usuario siempre es redirigido.
+    if (e && EMAIL_RE.test(e) && (await rateLimit(env.RL, 'r:' + clientIp(request), 60, 60))) {
       const ua = request.headers.get('user-agent') || '';
       const device = /iPad|Tablet/i.test(ua) ? 'tablet' : /Mobi|Android|iPhone|iPod|Windows Phone/i.test(ua) ? 'mobile' : 'desktop';
       const ts = Date.now();
@@ -578,6 +640,7 @@ async function roadmapList(request, env, pub, url) {
 async function roadmapPropose(request, env, cors) {
   if (request.method !== 'POST') return json({ error: 'method' }, 405, cors);
   let b; try { b = await request.json(); } catch (e) { return json({ error: 'json' }, 400, cors); }
+  if (!(await rateLimit(env.RL, 'rmp:' + clientIp(request), 12, 60))) return json({ error: 'rate' }, 429, cors);
   const code = String(b.code || '').trim().toUpperCase();
   const member = await circuloMember(env, code);
   if (!member) return json({ error: 'forbidden' }, 403, cors);
@@ -594,6 +657,7 @@ async function roadmapPropose(request, env, cors) {
 async function roadmapVote(request, env, cors) {
   if (request.method !== 'POST') return json({ error: 'method' }, 405, cors);
   let b; try { b = await request.json(); } catch (e) { return json({ error: 'json' }, 400, cors); }
+  if (!(await rateLimit(env.RL, 'rmv:' + clientIp(request), 40, 60))) return json({ error: 'rate' }, 429, cors);
   const code = String(b.code || '').trim().toUpperCase();
   const member = await circuloMember(env, code);
   if (!member) return json({ error: 'forbidden' }, 403, cors);
@@ -795,6 +859,9 @@ async function contribSubmit(request, env, cors) {
   if (!env.DOCS) return json({ status: 'error', reason: 'no_storage' }, 500, cors);
   let form; try { form = await request.formData(); } catch (e) { return json({ status: 'error', reason: 'form' }, 400, cors); }
   if (form.get('botcheck')) return json({ status: 'ok' }, 200, cors); // honeypot
+  const ip = clientIp(request);
+  if (!(await rateLimit(env.RL, 'contrib:' + ip, 8, 60))) return json({ status: 'error', reason: 'rate' }, 429, cors);
+  if (!(await verifyTurnstile(env, form.get('turnstile'), ip))) return json({ status: 'error', reason: 'captcha' }, 403, cors);
   const pais = (String(form.get('pais') || '').trim().slice(0, 4)) || 'XX';
   const banco = String(form.get('banco') || '').trim().slice(0, 60);
   const moneda = String(form.get('moneda') || '').trim().slice(0, 8);
@@ -810,6 +877,7 @@ async function contribSubmit(request, env, cors) {
     if (m && v && typeof v === 'object' && v.size) docs.push({ idx: parseInt(m[1], 10), file: v });
   }
   docs.sort(function (a, b) { return a.idx - b.idx; });
+  if (docs.length > 12) docs.length = 12; // tope de páginas por aporte (anti-abuso de R2)
   if (!docs.length) return json({ status: 'error', reason: 'no_files' }, 400, cors);
   const ids = [];
   for (const d of docs) {
