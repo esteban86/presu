@@ -29,11 +29,20 @@ class_name = "RateLimiter"
 tag = "v1"
 new_sqlite_classes = ["RateLimiter"]
 
-# (Sin cron.) El cron de lanzamiento del 25-jun ya cumplió y se retiró: el patrón
-# "0-19 17 25 6 *" no fija AÑO, así que se re-disparaba cada 25 de junio para
-# siempre, re-enviando la campaña vieja. El drenaje de campañas hoy se hace a mano
-# vía /admin/*-batch. Si se necesita un cron puntual, definirlo con fecha y quitarlo
-# después (y recordar que [triggers] es heredable por [env.staging]).
+# Cron: respaldo diario de la waitlist (KV → R2) a las 08:00 UTC = 03:00 Bogotá
+# (tráfico bajo). El handler `scheduled` hace SOLO el backup (backupToR2); ya NO
+# drena campañas (el cron zombie del 25-jun se retiró: "0-19 17 25 6 *" no fijaba
+# AÑO y re-enviaba la campaña vieja cada 25-jun). Los drenajes de campaña hoy son a
+# mano vía /admin/*-batch. Nota: [triggers] lo hereda [env.staging] → staging también
+# respalda su propio KV a su propio R2 (inofensivo). Un cron diario SÍ debe repetirse.
+[triggers]
+crons = ["0 8 * * *"]
+
+# Workers Logs: captura console.log/error + excepciones (antes: 0 logs, 45 catch
+# vacíos → ciegos). head_sampling_rate=1 = 100% de invocaciones (volumen bajo).
+[observability]
+enabled = true
+head_sampling_rate = 1
 
 # WEB3FORMS_KEY se carga como secret (no se commitea):
 #   npx wrangler secret put WEB3FORMS_KEY

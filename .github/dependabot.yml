@@ -1,0 +1,22 @@
+version: 2
+updates:
+  # Dependencias npm (Astro, worker, tooling). Agrupa minor+patch en un solo PR
+  # semanal para no inundar; los major llegan en PRs sueltos (revisión manual).
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      minor-patch:
+        update-types:
+          - minor
+          - patch
+
+  # Las propias actions del workflow de CI (checkout, setup-node, ...).
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday

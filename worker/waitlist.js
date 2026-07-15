@@ -45,10 +45,21 @@ const CAMPAIGN_BATCH = 30; // envíos por disparo del cron (bajo el límite de s
 // (el tag solo no basta: 11 registros post-corte llegaron sin él). 1-jul 00:00 Bogotá (UTC-5).
 const OLA2_CUTOFF = Date.UTC(2026, 6, 1, 5);
 function cohortOf(r) { return (r && (r.origen === 'tanda2' || (r.ts || 0) >= OLA2_CUTOFF)) ? 'tanda2' : 'pionero'; }
-const TEST_EMAILS = ['x@x.com', 'prueba@asimetrica.co', 'prueba.worker@asimetrica.co', 'esteban.restrepo@bpt.global', 'debug1@aleph0.com.co', 'pionero.prueba@aleph0.com.co', 'chequeo.cuota@aleph0.com.co', 'esteban@aleph0.com.co'];
+// Fixtures de prueba (sintéticos, no personales). Los correos PERSONALES no se
+// hardcodean —el repo es público— sino que se derivan de config: env.NOTIFY_EMAIL
+// (el correo del dueño) y la lista opcional env.TEST_EMAILS_EXTRA (coma-separada).
+const TEST_EMAILS = ['x@x.com', 'prueba@asimetrica.co', 'prueba.worker@asimetrica.co', 'debug1@aleph0.com.co', 'pionero.prueba@aleph0.com.co', 'chequeo.cuota@aleph0.com.co'];
 // Nota: NO tratar cualquier correo con '+' como prueba — el plus-addressing
 // (ana+presu@gmail.com) es de usuarios reales y quedaban excluidos de campañas.
-function isTestEmail(e) { return TEST_EMAILS.indexOf(e) !== -1 || e.indexOf('diag-') === 0; }
+function isTestEmail(e, env) {
+  if (!e) return false;
+  if (e.indexOf('diag-') === 0 || TEST_EMAILS.indexOf(e) !== -1) return true;
+  if (env) {
+    if (env.NOTIFY_EMAIL && e === String(env.NOTIFY_EMAIL).trim().toLowerCase()) return true;
+    if (env.TEST_EMAILS_EXTRA && String(env.TEST_EMAILS_EXTRA).toLowerCase().split(',').map(function (s) { return s.trim(); }).indexOf(e) !== -1) return true;
+  }
+  return false;
+}
 
 // ── Anti-abuso: rate-limit por IP (KV) + verificación Turnstile ──────────────
 const TURNSTILE_VERIFY = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
@@ -65,7 +76,7 @@ async function rateLimit(ns, key, limit, windowSec) {
     const r = await stub.fetch('https://rl/?limit=' + limit + '&window=' + windowSec);
     const d = await r.json();
     return !!d.success;
-  } catch (e) { return true; }
+  } catch (e) { console.warn('rateLimit: DO falló, abriendo (fail-open)', key, e && e.message); return true; }
 }
 
 // Durable Object: contador de ventana fija en memoria (single-thread por id →
@@ -102,7 +113,7 @@ async function verifyTurnstile(env, token, ip) {
     const r = await fetch(TURNSTILE_VERIFY, { method: 'POST', body });
     const d = await r.json();
     return d && typeof d.success === 'boolean' ? d.success : true; // malformado → no bloquear
-  } catch (e) { return true; } // outage de siteverify → no tumbar registros (rate-limit cubre)
+  } catch (e) { console.warn('turnstile: siteverify falló, abriendo (fail-open)', e && e.message); return true; } // outage de siteverify → no tumbar registros (rate-limit cubre)
 }
 
 export default {
@@ -126,6 +137,7 @@ export default {
     if (path === '/admin/campaign-batch') return adminCampaignBatch(request, env, cors);
     if (path === '/admin/campaign-one') return adminCampaignOne(request, env, cors);
     if (request.method === 'GET' && path === '/admin/stats') return adminStats(request, env, cors);
+    if (request.method === 'POST' && path === '/admin/backup') return adminBackup(request, env, cors);
     if (request.method === 'GET' && path === '/admin/waitlist') return adminWaitlist(request, env, cors, url);
     if (request.method === 'GET' && path === '/admin/clicks') return adminClicks(request, env, cors);
     if (request.method === 'GET' && path === '/admin/users') return adminUsers(request, env, cors);
@@ -235,7 +247,7 @@ export default {
     try {
       total = parseInt((await env.WAITLIST.get('meta:count')) || '0', 10) + 1;
       await env.WAITLIST.put('meta:count', String(total));
-    } catch (e) { /* contador aproximado; el registro ya quedó */ }
+    } catch (e) { console.error('subscribe: meta:count falló', maskEmail(email), e && e.message); /* contador aproximado; el registro ya quedó */ }
     try {
       if (env.RESEND_API_KEY) {
         const isLate = record.origen === 'tanda2';
@@ -243,18 +255,70 @@ export default {
         if (mail.welcome && mail.welcome.ok) { await env.WAITLIST.put('welcomed:' + email, String(Date.now())); await env.WAITLIST.put('campaign:' + email, 'welcome'); }
         if (env.NOTIFY_EMAIL) mail.notify = await sendResend(env, { to: env.NOTIFY_EMAIL, reply_to: email, subject: '📥 Nuevo registro en la waitlist de Presu (' + record.perfil + ')', html: notifyHtml(record, total) });
       }
-    } catch (e) { /* los correos nunca deben romper el registro */ }
+    } catch (e) { console.error('subscribe: correo de bienvenida falló', maskEmail(email), e && e.message); /* los correos nunca deben romper el registro */ }
 
     const resp = { status: 'ok', total, ref: code };
     if (url.searchParams.has('debug')) resp.mail = mail;
     return json(resp, 200, cors);
   },
 
-  // Cron: el día del lanzamiento dispara cada minuto y drena la base por lotes.
+  // Cron: respaldo diario de la waitlist (KV → R2). El drenaje de campañas ya
+  // NO se hace por cron (se retiró el cron zombie del 25-jun); hoy se drena a mano
+  // vía /admin/*-batch. Este scheduled solo saca la copia de seguridad.
   async scheduled(event, env, ctx) {
-    ctx.waitUntil(runCampaignBatch(env, CAMPAIGN_BATCH));
+    ctx.waitUntil(backupToR2(env, event && event.scheduledTime));
   },
 };
+
+// ── Respaldo diario: snapshot de la waitlist a R2 ────────────────────────────
+// Los registros (email:*) son las joyas de la corona: contienen correo, nombre,
+// celular, código de referido y referredBy → de ahí se reconstruye TODO (códigos
+// y conteos de referidos son derivables). Se guardan también leaderboard, encuestas
+// y roadmap. Se omiten click:/mailevt:/*_sent: (analítica de alta cardinalidad y
+// regenerable) para no pasar el tope de subrequests. R2 NO es público (solo se sirve
+// vía /admin/doc con token), así que el snapshot con PII está a salvo.
+async function backupToR2(env, scheduledTime) {
+  if (!env.DOCS) { console.error('backup: sin binding DOCS, se omite'); return; }
+  const takenAt = new Date(scheduledTime || Date.now()).toISOString();
+  const snap = { schema: 1, takenAt, count: 0, metaCount: 0, rows: [], leaderboard: null, surveys: [], roadmap: [] };
+  try {
+    const emailNames = await listAll(env, 'email:');
+    for (const x of await getMany(env, emailNames)) {
+      let r = {}; try { r = JSON.parse(x.v || '{}'); } catch (e) {}
+      snap.rows.push({ email: x.n.slice(6), ...r });
+    }
+    snap.count = snap.rows.length;
+    snap.metaCount = parseInt((await env.WAITLIST.get('meta:count')) || '0', 10);
+    try { snap.leaderboard = JSON.parse((await env.WAITLIST.get('leaderboard')) || 'null'); } catch (e) {}
+    for (const x of await getMany(env, await listAll(env, 'survey:'))) { let v = {}; try { v = JSON.parse(x.v || '{}'); } catch (e) {} snap.surveys.push({ k: x.n, ...v }); }
+    for (const x of await getMany(env, await listAll(env, 'roadmap:'))) snap.roadmap.push({ k: x.n, v: x.v });
+  } catch (e) {
+    console.error('backup: fallo recolectando', e && e.message);
+    // seguimos: guardamos lo que se alcanzó a juntar (mejor algo que nada)
+  }
+  const day = takenAt.slice(0, 10); // YYYY-MM-DD → un snapshot por día
+  const body = JSON.stringify(snap);
+  const meta = { httpMetadata: { contentType: 'application/json; charset=utf-8' }, customMetadata: { count: String(snap.count), takenAt } };
+  try {
+    await env.DOCS.put('backups/waitlist-' + day + '.json', body, meta);
+    await env.DOCS.put('backups/waitlist-latest.json', body, meta); // puntero al más reciente
+    console.log('backup: ok', 'backups/waitlist-' + day + '.json', 'count=' + snap.count, 'bytes=' + body.length);
+  } catch (e) {
+    console.error('backup: fallo escribiendo a R2', e && e.message);
+    return;
+  }
+  // Retención: conservar ~60 snapshots diarios; borra los más viejos (best-effort).
+  try {
+    const listed = await env.DOCS.list({ prefix: 'backups/waitlist-2', limit: 1000 });
+    const dated = listed.objects
+      .map((o) => o.key)
+      .filter((k) => /backups\/waitlist-\d{4}-\d{2}-\d{2}\.json$/.test(k))
+      .sort();
+    const excess = dated.slice(0, Math.max(0, dated.length - 60));
+    for (const k of excess) await env.DOCS.delete(k);
+    if (excess.length) console.log('backup: retención, borrados=' + excess.length);
+  } catch (e) { console.error('backup: fallo en retención', e && e.message); }
+}
 
 // ── Referidos ────────────────────────────────────────────────
 function tierFor(n) {
@@ -393,6 +457,14 @@ async function adminWaitlist(request, env, cors, url) {
   return json({ total: rows.length, rows }, 200, cors);
 }
 function authed(request, env) { return env.ADMIN_TOKEN && (request.headers.get('X-Admin-Token') || '') === env.ADMIN_TOKEN; }
+
+// POST /admin/backup — dispara el respaldo a R2 bajo demanda (mismo que el cron). Token.
+async function adminBackup(request, env, cors) {
+  if (!authed(request, env)) return json({ error: 'unauthorized' }, 401, cors);
+  await backupToR2(env, Date.now());
+  const latest = await env.DOCS.head('backups/waitlist-latest.json');
+  return json({ ok: true, latest: latest ? { size: latest.size, count: latest.customMetadata && latest.customMetadata.count, takenAt: latest.customMetadata && latest.customMetadata.takenAt } : null }, 200, cors);
+}
 
 // GET /admin/clicks — agrega los eventos click:<correo>:<ts> (device, destino, campaña). Token.
 async function adminClicks(request, env, cors) {
@@ -573,7 +645,7 @@ async function runCampaignBatch(env, limit) {
     if (sent >= limit) break;
     const email = k.name.slice(6);
     if (await env.WAITLIST.get('campaign:' + email)) { skipped++; continue; }
-    if (isTestEmail(email) || isDisposable(email)) { await env.WAITLIST.put('campaign:' + email, 'skip'); skipped++; continue; }
+    if (isTestEmail(email, env) || isDisposable(email)) { await env.WAITLIST.put('campaign:' + email, 'skip'); skipped++; continue; }
     let rec = {}; try { rec = JSON.parse((await env.WAITLIST.get('email:' + email)) || '{}'); } catch (e) {}
     rec.email = email;
     if (!rec.ref) { rec.ref = await genCode(env); if (rec.ref) { await env.WAITLIST.put('code:' + rec.ref, email); await env.WAITLIST.put('email:' + email, JSON.stringify(rec)); } }
@@ -767,7 +839,7 @@ async function runSurveyBatch(env, limit) {
     if (sent >= limit) break;
     const email = k.name.slice(6);
     if (await env.WAITLIST.get('survey_sent:' + email)) { skipped++; continue; }
-    if (isTestEmail(email) || isDisposable(email)) { await env.WAITLIST.put('survey_sent:' + email, 'skip'); skipped++; continue; }
+    if (isTestEmail(email, env) || isDisposable(email)) { await env.WAITLIST.put('survey_sent:' + email, 'skip'); skipped++; continue; }
     let rec = {}; try { rec = JSON.parse((await env.WAITLIST.get('email:' + email)) || '{}'); } catch (e) {}
     rec.email = email;
     if (!env.RESEND_API_KEY) { errors++; continue; }
@@ -786,7 +858,7 @@ async function runFollowupBatch(env, limit) {
     if (sent >= limit) break;
     const email = k.name.slice(6);
     if (await env.WAITLIST.get('followup_sent:' + email)) { skipped++; continue; }
-    if (isTestEmail(email) || isDisposable(email)) { await env.WAITLIST.put('followup_sent:' + email, 'skip'); skipped++; continue; }
+    if (isTestEmail(email, env) || isDisposable(email)) { await env.WAITLIST.put('followup_sent:' + email, 'skip'); skipped++; continue; }
     let rec = {}; try { rec = JSON.parse((await env.WAITLIST.get('email:' + email)) || '{}'); } catch (e) {}
     rec.email = email;
     if (cohortOf(rec) !== 'pionero') { await env.WAITLIST.put('followup_sent:' + email, 'skip'); skipped++; continue; } // Nueva Ola: excluida
