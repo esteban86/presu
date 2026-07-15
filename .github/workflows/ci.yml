@@ -1,0 +1,41 @@
+name: CI
+
+# Corre en cada PR y en push a las ramas de despliegue. Antes: los 14 tests
+# (vitest) + astro check + build existían pero nadie los ejecutaba → un push roto
+# llegaba directo a producción. Este workflow los corre en cada cambio.
+on:
+  push:
+    branches: [astro-migration, main]
+  pull_request:
+
+# Cancela corridas viejas de la misma rama/PR si llega un push nuevo.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: check · test · build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install (npm ci)
+        run: npm ci
+
+      - name: Type-check (astro check)
+        run: npm run check
+
+      - name: Unit tests (vitest)
+        run: npm test
+
+      - name: Lint (eslint)
+        run: npm run lint
+
+      - name: Build (astro build)
+        run: npm run build

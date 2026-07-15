@@ -8,13 +8,21 @@
     "preview": "npm run build && wrangler dev",
     "check": "astro check",
     "test": "vitest run",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "deploy": "npm run build && wrangler deploy",
     "cf-typegen": "wrangler types"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.9",
+    "@eslint/js": "^9.39.5",
     "astro": "^5.0.0",
+    "eslint": "^9.39.5",
     "fontaine": "^0.8.0",
+    "globals": "^17.7.0",
+    "prettier": "^3.9.5",
+    "prettier-plugin-astro": "^0.14.1",
     "typescript": "^5.9.3",
     "vitest": "^2.0.0",
     "wrangler": "^4.109.0"

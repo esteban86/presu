@@ -1,0 +1,9 @@
+dist
+node_modules
+.astro
+.wrangler
+package-lock.json
+public
+apps
+*.min.js
+*.min.css
