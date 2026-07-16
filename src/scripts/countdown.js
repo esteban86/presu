@@ -5,8 +5,8 @@
 
 /** Cierre de la beta de pioneros: 30-jun-2026, 4pm hora Colombia (UTC-5). */
 export const BETA = Date.parse('2026-06-30T16:00:00-05:00');
-/** Apertura de la Nueva Ola: 15-jul-2026, 4pm hora Colombia (UTC-5). */
-export const OLA = Date.parse('2026-07-15T16:00:00-05:00');
+/** Apertura de la Nueva Ola: 21-jul-2026, mediodía hora Colombia (UTC-5). */
+export const OLA = Date.parse('2026-07-21T12:00:00-05:00');
 
 /**
  * A qué fecha debe apuntar el countdown dado el momento actual.

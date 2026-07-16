@@ -63,13 +63,13 @@ export function enterNuevaOla() {
   const q = (s) => document.querySelector(s);
 
   const badge = q('.hero-grid .pill-badge');
-  if (badge) badge.innerHTML = '<span class="ping"></span> 🌊 Nueva Ola · abre el 15 de julio, 4pm';
+  if (badge) badge.innerHTML = '<span class="ping"></span> 🌊 Nueva Ola · abre el 21 de julio, mediodía';
 
   const h1 = q('.hero-grid h1');
-  if (h1) h1.innerHTML = 'La <span class="mintword">Nueva Ola</span> de Presu abre el 15 de julio.';
+  if (h1) h1.innerHTML = 'La <span class="mintword">Nueva Ola</span> de Presu abre el 21 de julio.';
 
   const pitch = q('.hero-grid .pitch');
-  if (pitch) pitch.textContent = 'La beta de pioneros ya está corriendo. La siguiente tanda —la Nueva Ola— abre el 15 de julio a las 4pm.';
+  if (pitch) pitch.textContent = 'La beta de pioneros ya está corriendo. La siguiente tanda —la Nueva Ola— abre el 21 de julio al mediodía.';
 
   const sub = q('.hero-grid .sub');
   if (sub) sub.innerHTML = 'Déjanos tu correo y entras en la <b>Nueva Ola</b>. ¿Quieres adelantarte? Tienes dos formas 👇';
@@ -90,11 +90,11 @@ export function enterNuevaOla() {
   if (ramps) ramps.style.display = 'flex';
 
   const ose = q('#os-eb-date');
-  if (ose) ose.textContent = 'Beta en curso · Nueva Ola abre el 15 de julio';
+  if (ose) ose.textContent = 'Beta en curso · Nueva Ola abre el 21 de julio';
 
   const wl = q('#waitlist-lede');
   if (wl) {
-    wl.innerHTML = 'La beta de pioneros ya está corriendo; la <b style="color:var(--text-primary,#F4F4F3)">Nueva Ola</b> abre el <b style="color:var(--text-primary,#F4F4F3)">15 de julio, 4pm</b>. Déjanos tu correo y entras. <br><span style="color:var(--text-tertiary,#6B6B72)">¿Ya eres pionero? Ya tienes acceso — revisa tu correo 📩.</span>';
+    wl.innerHTML = 'La beta de pioneros ya está corriendo; la <b style="color:var(--text-primary,#F4F4F3)">Nueva Ola</b> abre el <b style="color:var(--text-primary,#F4F4F3)">21 de julio, mediodía</b>. Déjanos tu correo y entras. <br><span style="color:var(--text-tertiary,#6B6B72)">¿Ya eres pionero? Ya tienes acceso — revisa tu correo 📩.</span>';
   }
 
   return true;

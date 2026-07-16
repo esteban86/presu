@@ -1121,7 +1121,7 @@ function lateWelcomeHtml(r) {
   <div style="max-width:540px;margin:0 auto;padding:20px 24px 32px">
     <p style="font-size:16px;color:#A1A1A6;margin:0 0 6px">${hola}</p>
     <h1 style="font-size:28px;line-height:1.14;font-weight:800;letter-spacing:-.02em;margin:0 0 12px;color:#fff">Estás en la <span style="color:#34D399">Nueva Ola</span> 🌊</h1>
-    <p style="font-size:16px;line-height:1.55;color:#D4D4D6;margin:0 0 14px">La beta de <b style="color:#fff">pioneros</b> ya está corriendo. La <b style="color:#fff">Nueva Ola</b> abre el <b style="color:#fff">15 de julio a las 4pm</b> y ya tienes tu lugar. Y si quieres entrar <b style="color:#fff">antes que el resto</b>, tienes dos formas de adelantarte:</p>
+    <p style="font-size:16px;line-height:1.55;color:#D4D4D6;margin:0 0 14px">La beta de <b style="color:#fff">pioneros</b> ya está corriendo. La <b style="color:#fff">Nueva Ola</b> abre el <b style="color:#fff">21 de julio al mediodía</b> y ya tienes tu lugar. Y si quieres entrar <b style="color:#fff">antes que el resto</b>, tienes dos formas de adelantarte:</p>
     <div style="background:#0E2A20;border:1px solid rgba(52,211,153,.5);border-radius:18px;padding:20px;margin:0 0 16px">
       <div style="font-size:16px;color:#fff;font-weight:700;margin-bottom:6px">🚀 Salta la fila</div>
       <p style="font-size:14px;line-height:1.5;color:#D4D4D6;margin:0 0 12px">Cada amigo que entre con tu link te sube en la cola.</p>

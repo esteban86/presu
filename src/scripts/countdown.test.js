@@ -5,8 +5,8 @@ describe('countdown fechas', () => {
   it('BETA es 2026-06-30 4pm hora Colombia', () => {
     expect(BETA).toBe(Date.parse('2026-06-30T16:00:00-05:00'));
   });
-  it('OLA es 2026-07-15 4pm hora Colombia', () => {
-    expect(OLA).toBe(Date.parse('2026-07-15T16:00:00-05:00'));
+  it('OLA es 2026-07-21 mediodía hora Colombia', () => {
+    expect(OLA).toBe(Date.parse('2026-07-21T12:00:00-05:00'));
   });
 });
 
