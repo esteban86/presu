@@ -1,7 +1,7 @@
 {
   "name": "Presu — tus gastos personales, claros",
   "short_name": "Presu",
-  "description": "Reúne los gastos de tus bancos colombianos, los organiza solos y te muestra a dónde se va tu plata. Local y cifrado, en tu equipo.",
+  "description": "Reúne los gastos de tus bancos colombianos, los organiza solos y te muestra a dónde se va tu plata. Local-first: tus datos viven en tu equipo y ni nosotros podemos leerlos.",
   "lang": "es-CO",
   "start_url": "/",
   "scope": "/",
