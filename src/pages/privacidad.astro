@@ -3,15 +3,15 @@ import Base from '../layouts/Base.astro';
 ---
 <Base
   title="Política de privacidad · Presu"
-  description="Cómo Presu trata tus datos: tus finanzas viven en tu equipo; solo el dato mínimo viaja para funciones opcionales en la nube."
+  description="Cómo Presu trata tus datos: tus finanzas viven en tus dispositivos y, si activas la sincronización, viajan cifradas de extremo a extremo; solo el dato mínimo viaja para funciones opcionales en la nube."
 >
   <main class="legal">
     <div class="legal-wrap">
       <p class="eyebrow">Legal</p>
       <h1>Política de privacidad</h1>
-      <p class="updated">Última actualización: 12 de julio de 2026</p>
+      <p class="updated">Última actualización: 19 de julio de 2026</p>
 
-      <p class="lede">Presu es una aplicación de escritorio de finanzas personales que funciona <strong>principalmente en tu equipo</strong>. Tus <strong>datos financieros</strong> —cuentas, transacciones, extractos, presupuestos, categorías— <strong>viven solo en tu dispositivo</strong> y no se envían a Presu ni a terceros.</p>
+      <p class="lede">Presu es una aplicación de escritorio de finanzas personales que funciona <strong>principalmente en tu equipo</strong>. Tus <strong>datos financieros</strong> —cuentas, transacciones, extractos, presupuestos, categorías— <strong>viven en tus dispositivos</strong> y no se envían a Presu ni a terceros en texto legible. Si activas la sincronización entre dispositivos (Pro), viajan <strong>cifrados de extremo a extremo</strong> por un servidor que no puede leerlos (detalle abajo).</p>
       <p>Algunas funciones opcionales o del plan Pro usan servicios en la nube operados por Presu / <strong>Asimétrica</strong> (Presu IA, licencias y pagos). En esos casos viaja únicamente el dato mínimo que se describe abajo —nunca tu base de datos completa— y siempre con cédula y números de cuenta <strong>enmascarados</strong> cuando aplica.</p>
 
       <h2>Qué datos se guardan y dónde</h2>
@@ -21,6 +21,16 @@ import Base from '../layouts/Base.astro';
         <li>El texto de los extractos se procesa <strong>en tu equipo</strong>. La copia que se conserva para reprocesar/auditar se guarda <strong>localmente</strong> con cédula y números de cuenta <strong>enmascarados</strong>, y puedes borrar todos tus datos cuando quieras desde <strong>Ajustes » Resetear datos</strong>.</li>
       </ul>
       <div class="callout"><strong>Importante:</strong> la base de datos <code>gastos.db</code> y sus backups se guardan <strong>sin cifrar</strong> en disco (solo las credenciales se cifran). Si te preocupa el acceso físico a tu equipo, activa el cifrado de disco del sistema (FileVault en macOS, BitLocker en Windows). Está en evaluación cifrar también la base de datos en una versión futura.</div>
+
+      <h2>Sincronización entre tus dispositivos (opcional, parte de Pro)</h2>
+      <p>Si activas la sincronización (para usar Presu en más de un computador o con la app del celular), tus datos viajan entre tus dispositivos a través de un servidor intermedio («relay») operado por Presu en Cloudflare. Cómo funciona:</p>
+      <ul>
+        <li><strong>Cifrado de extremo a extremo, de conocimiento cero.</strong> Cada cambio se cifra (AES-256-GCM) <strong>en tu dispositivo</strong> con una llave que solo tus dispositivos conocen, derivada de tu frase de acceso. El servidor almacena únicamente los blobs cifrados: <strong>no puede leer tus montos, comercios, cuentas, ni ningún contenido financiero</strong>, y nosotros tampoco.</li>
+        <li><strong>Qué viaja (cifrado):</strong> tus movimientos, cuentas, categorías, presupuestos, deudas y ajustes relacionados — incluido, para movimientos detectados por correo, el <strong>asunto y el remitente</strong> del correo bancario (para que en tus otros dispositivos se vea de qué banco vino). Nunca el cuerpo del correo.</li>
+        <li><strong>Qué NO sale de cada dispositivo:</strong> los PDF de tus extractos y su vínculo con cada movimiento, tus credenciales de correo, y el estado local de revisión de duplicados.</li>
+        <li><strong>Qué ve el servidor (sin cifrar):</strong> metadatos mínimos para operar el servicio — un identificador de tu cuenta y de cada dispositivo, marcas de tiempo y el tamaño de los bloques. Nada del contenido.</li>
+        <li><strong>Desactivarla:</strong> Ajustes » Sincronización » Desactivar. Tus datos locales quedan intactos en cada dispositivo.</li>
+      </ul>
 
       <h2>Integraciones opcionales (las activas tú)</h2>
       <ul>
