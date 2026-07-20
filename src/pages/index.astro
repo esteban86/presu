@@ -54,8 +54,8 @@ const problems = [
   {
     tone: 'positive',
     icon: 'cloud',
-    title: 'Las demás apps suben todo a la nube',
-    body: 'Para organizarte te piden entregar tus datos financieros a un servidor ajeno. No, gracias.',
+    title: 'Las demás apps pueden leer tus movimientos',
+    body: 'Para organizarte te piden entregar tus datos a un servidor que los ve en claro. Presu los guarda y los sincroniza cifrados: sin tu llave, ahí no hay nada legible.',
   },
 ];
 
@@ -91,7 +91,7 @@ const txns = [
 const faqs = [
   {
     q: '¿Es seguro? ¿Dónde quedan mis datos?',
-    a: 'Tus datos quedan solo en tu propio computador, no en un servidor ni en la nube. Presu es local-first: la información no sale de tu equipo, así que nadie más —ni Asimétrica— puede verla.',
+    a: 'En tu computador. Presu es local-first: tu base de datos vive en tu equipo, no en un servidor nuestro. Si activas la sincronización (Pro) para usar Presu también en el celular, tus movimientos viajan cifrados de extremo a extremo —como en WhatsApp—: la llave se queda en tus dispositivos y en el servidor no hay nada legible, ni para nosotros.',
     open: true,
   },
   {
@@ -119,7 +119,7 @@ const faqs = [
 
 <Base
   title="Presu — App de finanzas personales para Colombia | Tus gastos, claros"
-  description="App de finanzas personales para Colombia. Presu reúne tu plata de todos los bancos, la organiza sola y te dice —en una frase— si vas bien este mes. Todo en tu equipo: sin nube, sin cuentas."
+  description="App de finanzas personales para Colombia. Presu reúne tu plata de todos los bancos, la organiza sola y te dice —en una frase— si vas bien este mes. Local-first, con cifrado de extremo a extremo: la llave es tuya."
 >
   <script type="application/ld+json" is:inline set:html={JSON.stringify(homeJsonLd)}></script>
 
@@ -161,7 +161,7 @@ const faqs = [
           <p class="capture-err" id="hero-err">Revisa el correo —parece que le falta algo.</p>
           <p class="capture-note">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-            Gratis para empezar · Tus datos no salen de tu equipo · Sin spam
+            Gratis para empezar · Solo tú puedes leer tus datos · Sin spam
           </p>
         </form>
 
@@ -229,7 +229,7 @@ const faqs = [
   <Section id="como" eyebrow="El giro">
     <div class="sec-head reveal">
       <h2>De un PDF a saber si vas bien, en <span class="mark">tres pasos</span>.</h2>
-      <p class="sec-lead">Sin claves del banco. Sin hojas de cálculo. Sin subir nada a la nube.</p>
+      <p class="sec-lead">Sin claves del banco. Sin hojas de cálculo. Sin que nadie más lea tu plata.</p>
     </div>
     <div class="steps">
       {steps.map((s) => (
@@ -261,20 +261,20 @@ const faqs = [
   <Section id="privacidad" eyebrow="Privacidad que se siente">
     <div class="privacy reveal">
       <div class="privacy-glow" aria-hidden="true"></div>
-      <h2>Tus datos viven en <span class="mark">tu equipo</span>. Punto.</h2>
-      <p class="privacy-lead">Presu funciona <strong>local-first</strong>: tu información financiera se guarda <strong>en tu computador</strong>. No en un servidor, no en la nube, no con nosotros. No necesitas crear una cuenta, y de tu equipo solo sale lo que tú decidas exportar. <strong>Nadie más —ni Asimétrica— ve tus movimientos.</strong></p>
+      <h2>Solo tú tienes <span class="mark">la llave</span>.</h2>
+      <p class="privacy-lead">Presu funciona <strong>local-first</strong>: tu información financiera vive en tu computador y ahí manda. Si activas la sincronización para verla también en el celular, viaja <strong>cifrada de extremo a extremo</strong> —la llave se deriva de tu frase de acceso y no sale de tus dispositivos. En nuestro servidor solo quedan bloques cifrados: <strong>ni Asimétrica puede leer tus movimientos.</strong></p>
       <div class="privacy-pills">
         <span class="ppill">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-          Solo en tu dispositivo
+          La llave es tuya
         </span>
         <span class="ppill">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-          Sin servidores, sin nube
+          Cifrado de extremo a extremo
         </span>
         <span class="ppill">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18.36 6.64A9 9 0 1 1 5.64 6.64"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
-          Sin crear cuenta
+          Empiezas sin crear cuenta
         </span>
       </div>
     </div>
@@ -286,7 +286,7 @@ const faqs = [
       <div class="b2b-glow" aria-hidden="true"></div>
       <p class="b2b-eyebrow">Para empresas</p>
       <h2>Bienestar financiero para tu equipo, <span class="mark">sin tocar su privacidad</span>.</h2>
-      <p class="b2b-lead">Ofrece Presu como beneficio. Tu gente ordena su plata y tú impulsas su tranquilidad —y nadie en la empresa ve sus datos, porque viven en el equipo de cada persona.</p>
+      <p class="b2b-lead">Ofrece Presu como beneficio. Tu gente ordena su plata y tú impulsas su tranquilidad —y nadie en la empresa ve sus datos —ni la empresa, ni nosotros: cada quien tiene su propia llave.</p>
       <a href="#waitlist" class="capture-btn b2b-cta" data-perfil="empresa">Quiero ofrecerlo en mi empresa
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
       </a>
