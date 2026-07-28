@@ -18,6 +18,8 @@
  * Bindings: KV "WAITLIST" · Secrets RESEND_API_KEY, ADMIN_TOKEN · Var NOTIFY_EMAIL
  */
 
+import { slug, resolveBankId, buildCoverage } from './coverage.js';
+
 const SITE = 'https://presu.io';
 const ALLOWED_ORIGINS = [SITE, 'https://www.presu.io', 'https://presu.asimetrica.co', 'https://presu.com.co', 'http://localhost:4821', 'http://localhost:4796'];
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -573,10 +575,6 @@ async function adminFollowupOne(request, env, cors) {
 // ── Aportes de documentos anonimizados (página /aporta) ──────
 const CONTRIB_GOAL = 500;
 const CONTRIB_MAXBYTES = 6 * 1024 * 1024; // 6MB por imagen (llegan ya comprimidas del cliente)
-function slug(s) {
-  return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
-    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'x';
-}
 async function contribBumpWall(env, key, name, count) {
   let lb = []; try { lb = JSON.parse((await env.WAITLIST.get('contrib_wall')) || '[]'); } catch (e) {}
   const i = lb.findIndex(function (x) { return x.key === key; });
@@ -594,6 +592,8 @@ async function contribSubmit(request, env, cors) {
   const banco = String(form.get('banco') || '').trim().slice(0, 60);
   const moneda = String(form.get('moneda') || '').trim().slice(0, 8);
   const tipo = String(form.get('tipo') || '').trim().slice(0, 20);
+  const productoRaw = String(form.get('producto') || '').trim().toLowerCase();
+  const producto = (productoRaw === 'cuenta' || productoRaw === 'tarjeta') ? productoRaw : '';
   const nombre = String(form.get('nombre') || '').trim().slice(0, 80);
   const ref = String(form.get('ref') || '').trim().slice(0, 80);
   const sid = String(form.get('sid') || '').trim().slice(0, 48) || crypto.randomUUID(); // agrupa páginas del mismo extracto
@@ -626,13 +626,17 @@ async function contribSubmit(request, env, cors) {
       const flat = parsed.tokens.map(function (t) { return t.t; }).join(' ').slice(0, 80000);
       if (flat) { txtKey = base + '.txt'; await env.DOCS.put(txtKey, flat, { httpMetadata: { contentType: 'text/plain; charset=utf-8' } }); }
     }
-    await env.WAITLIST.put('contrib:' + id, JSON.stringify({ id, submissionId: sid, page: d.idx, source, key, jsonKey, txtKey, tokenCount, pais, banco, moneda, tipo, size: f.size, ts: Date.now() }));
+    await env.WAITLIST.put('contrib:' + id, JSON.stringify({ id, submissionId: sid, page: d.idx, source, key, jsonKey, txtKey, tokenCount, pais, banco, producto, tipo, moneda, size: f.size, ts: Date.now() }));
     ids.push(id);
   }
   const total = parseInt((await env.WAITLIST.get('meta:contribs')) || '0', 10) + ids.length;
   await env.WAITLIST.put('meta:contribs', String(total));
   const bankKey = 'contrib_bank:' + pais + ':' + slug(banco);
   await env.WAITLIST.put(bankKey, String(parseInt((await env.WAITLIST.get(bankKey)) || '0', 10) + ids.length));
+  if (producto) {
+    const pKey = bankKey + ':' + producto;
+    await env.WAITLIST.put(pKey, String(parseInt((await env.WAITLIST.get(pKey)) || '0', 10) + ids.length));
+  }
   // Crédito opcional al colaborador: por correo o por código de Fundador
   let contributor = null;
   let email = EMAIL_RE.test(ref) ? ref.toLowerCase() : null;
