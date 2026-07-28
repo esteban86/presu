@@ -655,17 +655,64 @@ async function contribSubmit(request, env, cors) {
   return json({ status: 'ok', n: ids.length, progress: { total, goal: CONTRIB_GOAL }, contributor }, 200, cors);
 }
 
-// GET /contrib/progress — contador público para la barra colectiva
+const CONFIG_URL = 'https://raw.githubusercontent.com/esteban86/presu-releases/main/config.json';
+
+/**
+ * Lee el contrato de bancos. Cachea 10 min en KV y guarda una copia buena
+ * como respaldo: si GitHub falla, servimos la ultima que funciono.
+ * Devuelve [] si nunca hubo una — la pagina degrada sola.
+ */
+async function loadBanksCO(env) {
+  const cached = await env.WAITLIST.get('cfg:banks:CO', 'json');
+  if (cached && cached.ts && (Date.now() - cached.ts) < 10 * 60 * 1000) return cached.banks;
+  try {
+    const r = await fetch(CONFIG_URL, { cf: { cacheTtl: 300 } });
+    if (!r.ok) throw new Error('http ' + r.status);
+    const cfg = await r.json();
+    const banks = (cfg && cfg.banks && Array.isArray(cfg.banks.CO)) ? cfg.banks.CO : [];
+    await env.WAITLIST.put('cfg:banks:CO', JSON.stringify({ ts: Date.now(), banks }));
+    return banks;
+  } catch (e) {
+    return (cached && cached.banks) || [];
+  }
+}
+
+// GET /contrib/progress — cobertura publica: que formatos leemos y cuales faltan
 async function contribProgress(request, env, pub) {
-  const total = parseInt((await env.WAITLIST.get('meta:contribs')) || '0', 10);
-  const list = await env.WAITLIST.list({ prefix: 'contrib_bank:', limit: 1000 });
+  const banksCO = await loadBanksCO(env);
+
+  // Dos prefijos distintos, dos lecturas sin ambiguedad.
+  const byBank = await env.WAITLIST.list({ prefix: 'contrib_bank:', limit: 1000 });
   const banks = [];
-  for (const k of list.keys) {
-    const parts = k.name.split(':');
+  for (const k of byBank.keys) {
+    const parts = k.name.split(':'); // contrib_bank : pais : slug
+    if (parts.length !== 3) continue;
     banks.push({ pais: parts[1], banco: parts[2], count: parseInt((await env.WAITLIST.get(k.name)) || '0', 10) });
   }
   banks.sort(function (a, b) { return b.count - a.count; });
-  return json({ total, goal: CONTRIB_GOAL, banks }, 200, pub);
+
+  const byProd = await env.WAITLIST.list({ prefix: 'contrib_prod:', limit: 1000 });
+  const counts = {};
+  for (const k of byProd.keys) {
+    const parts = k.name.split(':'); // contrib_prod : pais : slug : producto
+    if (parts.length !== 4 || parts[1] !== 'CO') continue;
+    const id = resolveBankId(parts[2], banksCO);
+    if (!id) continue;
+    const n = parseInt((await env.WAITLIST.get(k.name)) || '0', 10);
+    counts[id] = counts[id] || {};
+    counts[id][parts[3]] = (counts[id][parts[3]] || 0) + n;
+  }
+
+  // Total en EXTRACTOS (submissionId unicos), no en paginas.
+  const subs = new Set();
+  const recs = await env.WAITLIST.list({ prefix: 'contrib:', limit: 1000 });
+  for (const k of recs.keys) {
+    let rec = null; try { rec = JSON.parse(await env.WAITLIST.get(k.name)); } catch (e) { continue; }
+    if (rec && rec.submissionId) subs.add(rec.submissionId);
+  }
+
+  const coverage = banksCO.length ? buildCoverage(banksCO, counts) : null;
+  return json({ total: subs.size, goal: CONTRIB_GOAL, banks, coverage }, 200, pub);
 }
 
 // GET /contrib/wall — muro público de colaboradores (anonimizado)
