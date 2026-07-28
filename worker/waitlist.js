@@ -772,9 +772,14 @@ async function adminContribMigrate(request, env, cors) {
       if (rec.submissionId) subs.add(rec.submissionId); else skipped.sinSubmissionId++;
       if (!rec.banco) continue;
       if (!rec.producto) { skipped.sinProducto++; continue; }
-      const id = resolveBankId(slug(rec.banco), banksCO);
-      if (!id) { skipped.bancoDesconocido++; continue; }
-      const key = 'contrib_prod:' + (rec.pais || 'CO') + ':' + id + ':' + rec.producto;
+      // La llave se arma con el slug CRUDO de lo que el usuario escribio, igual
+      // que contribSubmit. Si aca se usara el id canonico del contrato, un banco
+      // escrito como variante ("RappiPay (Rappicard)") quedaria en dos llaves
+      // distintas que contribProgress resuelve al mismo banco y suma: contaria
+      // doble. Reconstruir tiene que reproducir lo que el camino en vivo escribio.
+      const bslug = slug(rec.banco);
+      if (!resolveBankId(bslug, banksCO)) skipped.bancoDesconocido++; // solo informativo
+      const key = 'contrib_prod:' + (rec.pais || 'CO') + ':' + bslug + ':' + rec.producto;
       tally[key] = (tally[key] || 0) + 1;
     }
     cursor = page.list_complete ? null : page.cursor;
