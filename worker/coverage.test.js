@@ -31,7 +31,7 @@ test('resolveBankId devuelve null para un banco desconocido', () => {
 
 test('cuenta los formatos ok sobre el total declarado', () => {
   const c = buildCoverage(BANKS, {});
-  assert.equal(c.formats.ok, 3);    // bancolombia x2 + nu tarjeta
+  assert.equal(c.formats.ok, 4);    // bancolombia cuenta+tarjeta, nu tarjeta, rappicard tarjeta
   assert.equal(c.formats.total, 7); // 2 + 2 + 1 + 2
 });
 
@@ -57,7 +57,11 @@ test('atribuye los aportes al producto correcto', () => {
 
 test('ignora contadores de bancos que no estan en el contrato', () => {
   const c = buildCoverage(BANKS, { 'banco-inventado': { cuenta: 99 } });
-  assert.equal(c.supported.length + c.missing.length, 4);
+  const ids = c.supported.concat(c.missing).map((b) => b.id);
+  assert.equal(ids.indexOf('banco-inventado'), -1, 'no debe inventar una entrada');
+  // 5 entradas: bancolombia, rappicard y nu en supported; nu y banco-de-bogota en missing.
+  // nu sale en las dos listas a proposito — tiene un producto ok y otro wanted.
+  assert.equal(ids.length, 5);
 });
 
 test('los alias viajan en la cobertura para que el navegador pueda emparejar', () => {
