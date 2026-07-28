@@ -107,6 +107,7 @@ export default {
     if (request.method === 'GET' && path === '/contrib/wall') return contribWall(request, env, pub);
     if (request.method === 'GET' && path === '/admin/contrib') return adminContrib(request, env, cors);
     if (request.method === 'GET' && path === '/admin/contrib/export') return adminContribExport(request, env, cors);
+    if (request.method === 'GET' && path === '/admin/contrib/migrate') return adminContribMigrate(request, env, cors);
     if (request.method === 'GET' && path === '/admin/doc') return adminDoc(request, env, url);
 
     if (request.method !== 'POST') return json({ status: 'error', reason: 'method' }, 405, cors);
@@ -748,6 +749,48 @@ async function adminContribExport(request, env, cors) {
     lines.push(JSON.stringify({ submissionId: rec.submissionId, page: rec.page, bank: rec.banco, country: rec.pais, currency: rec.moneda, type: rec.tipo, source: rec.source, image: rec.key, w, h, tokens }));
   }
   return new Response(lines.join('\n'), { status: 200, headers: { 'Content-Type': 'application/x-ndjson; charset=utf-8', ...cors } });
+}
+
+// GET /admin/contrib/migrate[?dry=0] — reconstruye los contadores por banco x
+// producto y rellena el total de extractos. En SECO por defecto: reporta que
+// escribiria sin escribir nada.
+async function adminContribMigrate(request, env, cors) {
+  if (!authed(request, env)) return json({ error: 'unauthorized' }, 401, cors);
+  const dry = new URL(request.url).searchParams.get('dry') !== '0';
+  const banksCO = await loadBanksCO(env);
+  const tally = {}, subs = new Set();
+  const skipped = { sinProducto: 0, bancoDesconocido: 0, sinSubmissionId: 0 };
+  let registros = 0, cursor;
+  // Sigue el cursor: con limit 1000 y una pagina por documento, un solo list()
+  // truncaria el relleno en silencio justo cuando la campana funcione.
+  do {
+    const page = await env.WAITLIST.list({ prefix: 'contrib:', limit: 1000, cursor });
+    for (const k of page.keys) {
+      registros++;
+      let rec = null; try { rec = JSON.parse(await env.WAITLIST.get(k.name)); } catch (e) { continue; }
+      if (!rec) continue;
+      if (rec.submissionId) subs.add(rec.submissionId); else skipped.sinSubmissionId++;
+      if (!rec.banco) continue;
+      if (!rec.producto) { skipped.sinProducto++; continue; }
+      const id = resolveBankId(slug(rec.banco), banksCO);
+      if (!id) { skipped.bancoDesconocido++; continue; }
+      const key = 'contrib_prod:' + (rec.pais || 'CO') + ':' + id + ':' + rec.producto;
+      tally[key] = (tally[key] || 0) + 1;
+    }
+    cursor = page.list_complete ? null : page.cursor;
+  } while (cursor);
+
+  if (!dry) {
+    for (const key of Object.keys(tally)) await env.WAITLIST.put(key, String(tally[key]));
+    for (const sid of subs) await env.WAITLIST.put('sub:' + sid, '1');
+    await env.WAITLIST.put('meta:submissions', String(subs.size));
+  }
+  return json({
+    dry, registros,
+    escribiria: tally,
+    extractos: subs.size,
+    omitidos: skipped,
+  }, 200, cors);
 }
 
 // GET /admin/doc?id=&t= — sirve la imagen redactada desde R2 (para la galería admin).
