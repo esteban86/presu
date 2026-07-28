@@ -634,7 +634,7 @@ async function contribSubmit(request, env, cors) {
   const bankKey = 'contrib_bank:' + pais + ':' + slug(banco);
   await env.WAITLIST.put(bankKey, String(parseInt((await env.WAITLIST.get(bankKey)) || '0', 10) + ids.length));
   if (producto) {
-    const pKey = bankKey + ':' + producto;
+    const pKey = 'contrib_prod:' + pais + ':' + slug(banco) + ':' + producto;
     await env.WAITLIST.put(pKey, String(parseInt((await env.WAITLIST.get(pKey)) || '0', 10) + ids.length));
   }
   // Crédito opcional al colaborador: por correo o por código de Fundador
