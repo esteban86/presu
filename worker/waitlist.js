@@ -637,6 +637,13 @@ async function contribSubmit(request, env, cors) {
     const pKey = 'contrib_prod:' + pais + ':' + slug(banco) + ':' + producto;
     await env.WAITLIST.put(pKey, String(parseInt((await env.WAITLIST.get(pKey)) || '0', 10) + ids.length));
   }
+  // Total en EXTRACTOS: contador O(1). Antes se recorrian todos los registros
+  // al leer, lo que ademas se estancaba al topar el limite de list().
+  if (!(await env.WAITLIST.get('sub:' + sid))) {
+    await env.WAITLIST.put('sub:' + sid, '1');
+    const st = parseInt((await env.WAITLIST.get('meta:submissions')) || '0', 10) + 1;
+    await env.WAITLIST.put('meta:submissions', String(st));
+  }
   // Crédito opcional al colaborador: por correo o por código de Fundador
   let contributor = null;
   let email = EMAIL_RE.test(ref) ? ref.toLowerCase() : null;
@@ -663,8 +670,12 @@ const CONFIG_URL = 'https://raw.githubusercontent.com/esteban86/presu-releases/m
  * Devuelve [] si nunca hubo una — la pagina degrada sola.
  */
 async function loadBanksCO(env) {
-  const cached = await env.WAITLIST.get('cfg:banks:CO', 'json');
-  if (cached && cached.ts && (Date.now() - cached.ts) < 10 * 60 * 1000) return cached.banks;
+  // El get va DENTRO de un try: get(key,'json') hace JSON.parse y una copia
+  // corrupta lanzaria antes del try de abajo, sin que nada la atrape.
+  let cached = null;
+  try { cached = await env.WAITLIST.get('cfg:banks:CO', 'json'); } catch (e) { cached = null; }
+  const cachedBanks = (cached && Array.isArray(cached.banks)) ? cached.banks : null;
+  if (cachedBanks && cached.ts && (Date.now() - cached.ts) < 10 * 60 * 1000) return cachedBanks;
   try {
     const r = await fetch(CONFIG_URL, { cf: { cacheTtl: 300 } });
     if (!r.ok) throw new Error('http ' + r.status);
@@ -673,7 +684,7 @@ async function loadBanksCO(env) {
     await env.WAITLIST.put('cfg:banks:CO', JSON.stringify({ ts: Date.now(), banks }));
     return banks;
   } catch (e) {
-    return (cached && cached.banks) || [];
+    return cachedBanks || [];
   }
 }
 
@@ -703,16 +714,9 @@ async function contribProgress(request, env, pub) {
     counts[id][parts[3]] = (counts[id][parts[3]] || 0) + n;
   }
 
-  // Total en EXTRACTOS (submissionId unicos), no en paginas.
-  const subs = new Set();
-  const recs = await env.WAITLIST.list({ prefix: 'contrib:', limit: 1000 });
-  for (const k of recs.keys) {
-    let rec = null; try { rec = JSON.parse(await env.WAITLIST.get(k.name)); } catch (e) { continue; }
-    if (rec && rec.submissionId) subs.add(rec.submissionId);
-  }
-
+  const total = parseInt((await env.WAITLIST.get('meta:submissions')) || '0', 10);
   const coverage = banksCO.length ? buildCoverage(banksCO, counts) : null;
-  return json({ total: subs.size, goal: CONTRIB_GOAL, banks, coverage }, 200, pub);
+  return json({ total, goal: CONTRIB_GOAL, banks, coverage }, 200, pub);
 }
 
 // GET /contrib/wall — muro público de colaboradores (anonimizado)
