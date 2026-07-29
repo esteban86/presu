@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { slug, resolveBankId, buildCoverage } from './coverage.js';
+import { slug, resolveBankId, buildCoverage, normalizeBanks } from './coverage.js';
 
 const BANKS = [
   { id: 'bancolombia', name: 'Bancolombia', aliases: [], products: { cuenta: 'ok', tarjeta: 'ok' } },
@@ -87,7 +87,13 @@ test('un id que no es el slug del name se rescata por alias', () => {
   const c = buildCoverage(malEscrito, {});
   const b = c.missing[0];
   assert.ok(b.aliases.indexOf('av-villas') !== -1, 'el slug del name debe viajar como alias');
-  assert.equal(resolveBankId('av-villas', malEscrito.map((x, i) => ({ ...x, aliases: b.aliases }))), 'avvillas');
+  assert.equal(resolveBankId('av-villas', normalizeBanks(malEscrito)), 'avvillas',
+    'resolveBankId debe rescatar sobre el contrato normalizado, que es lo que ve el Worker');
+});
+
+test('normalizeBanks es idempotente', () => {
+  const once = normalizeBanks([{ id: 'avvillas', name: 'AV Villas', aliases: ['AvVillas'], products: { tarjeta: 'wanted' } }]);
+  assert.deepEqual(normalizeBanks(once), once);
 });
 
 test('los alias declarados se normalizan con slug', () => {

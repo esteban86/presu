@@ -21,11 +21,32 @@ export function resolveBankId(rawSlug, banks) {
 }
 
 /**
+ * Devuelve el contrato con los alias normalizados y rescatados. Idempotente.
+ * El rescate tiene que aplicarse ANTES de cualquier uso del contrato (incluido
+ * resolveBankId en el Worker), no solo dentro de buildCoverage: si no, el
+ * cliente empareja bien pero el servidor descarta el contador en silencio.
+ */
+export function normalizeBanks(banks) {
+  const list = Array.isArray(banks) ? banks : [];
+  const out = [];
+  for (const b of list) {
+    if (!b || !b.id) continue;
+    const alias = [];
+    const declarados = Array.isArray(b.aliases) ? b.aliases : [];
+    for (const a of declarados) { const s = slug(a); if (s && alias.indexOf(s) === -1) alias.push(s); }
+    const propio = slug(b.name || b.id || '');
+    if (propio && propio !== b.id && alias.indexOf(propio) === -1) alias.push(propio);
+    out.push({ ...b, aliases: alias });
+  }
+  return out;
+}
+
+/**
  * @param banks  contrato: [{ id, name, aliases, products: { producto: 'ok'|'wanted' } }]
  * @param counts { [bankId]: { [producto]: number } }
  */
 export function buildCoverage(banks, counts) {
-  const list = Array.isArray(banks) ? banks : [];
+  const list = normalizeBanks(banks);
   const c = counts && typeof counts === 'object' ? counts : {};
   const supported = [], missing = [];
   let ok = 0, total = 0;
@@ -40,16 +61,7 @@ export function buildCoverage(banks, counts) {
       const entry = { producto, contributions: ((c[b.id] || {})[producto]) || 0 };
       if (estado === 'ok') { ok++; okProducts.push(entry); } else { wantedProducts.push(entry); }
     }
-    // Los alias emitidos se normalizan con slug() y siempre incluyen el slug del
-    // propio name cuando difiere del id. Asi, un id mal escrito en el contrato
-    // (p.ej. id "avvillas" para "AV Villas") no rompe en silencio todo el
-    // circuito de ese banco: el emparejamiento lo rescata por alias.
-    const alias = [];
-    const declarados = Array.isArray(b.aliases) ? b.aliases : [];
-    for (const a of declarados) { const s = slug(a); if (s && alias.indexOf(s) === -1) alias.push(s); }
-    const propio = slug(b.name || b.id || '');
-    if (propio && propio !== b.id && alias.indexOf(propio) === -1) alias.push(propio);
-    const head = { id: b.id, name: b.name || b.id, aliases: alias };
+    const head = { id: b.id, name: b.name || b.id, aliases: b.aliases };
     if (okProducts.length) supported.push({ ...head, products: okProducts });
     if (wantedProducts.length) missing.push({ ...head, products: wantedProducts });
   }

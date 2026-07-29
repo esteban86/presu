@@ -18,7 +18,7 @@
  * Bindings: KV "WAITLIST" · Secrets RESEND_API_KEY, ADMIN_TOKEN · Var NOTIFY_EMAIL
  */
 
-import { slug, resolveBankId, buildCoverage } from './coverage.js';
+import { slug, resolveBankId, buildCoverage, normalizeBanks } from './coverage.js';
 
 const SITE = 'https://presu.io';
 const ALLOWED_ORIGINS = [SITE, 'https://www.presu.io', 'https://presu.asimetrica.co', 'https://presu.com.co', 'http://localhost:4821', 'http://localhost:4796'];
@@ -669,6 +669,12 @@ const CONFIG_URL = 'https://raw.githubusercontent.com/esteban86/presu-releases/m
  * Lee el contrato de bancos. Cachea 10 min en KV y guarda una copia buena
  * como respaldo: si GitHub falla, servimos la ultima que funciono.
  * Devuelve [] si nunca hubo una — la pagina degrada sola.
+ *
+ * Devuelve el contrato ya pasado por normalizeBanks() (alias rescatados) en
+ * los tres retornos — cache fresco, fetch exitoso y catch — para que
+ * resolveBankId vea los mismos alias en TODO el Worker, no solo dentro de
+ * buildCoverage. Lo que se guarda en KV se queda crudo (tal como vino de la
+ * fuente): normalizar es barato y determinista, asi que se hace al leer.
  */
 async function loadBanksCO(env) {
   // El get va DENTRO de un try: get(key,'json') hace JSON.parse y una copia
@@ -676,16 +682,16 @@ async function loadBanksCO(env) {
   let cached = null;
   try { cached = await env.WAITLIST.get('cfg:banks:CO', 'json'); } catch (e) { cached = null; }
   const cachedBanks = (cached && Array.isArray(cached.banks)) ? cached.banks : null;
-  if (cachedBanks && cached.ts && (Date.now() - cached.ts) < 10 * 60 * 1000) return cachedBanks;
+  if (cachedBanks && cached.ts && (Date.now() - cached.ts) < 10 * 60 * 1000) return normalizeBanks(cachedBanks);
   try {
     const r = await fetch(CONFIG_URL, { cf: { cacheTtl: 300 } });
     if (!r.ok) throw new Error('http ' + r.status);
     const cfg = await r.json();
     const banks = (cfg && cfg.banks && Array.isArray(cfg.banks.CO)) ? cfg.banks.CO : [];
     await env.WAITLIST.put('cfg:banks:CO', JSON.stringify({ ts: Date.now(), banks }));
-    return banks;
+    return normalizeBanks(banks);
   } catch (e) {
-    return cachedBanks || [];
+    return normalizeBanks(cachedBanks || []);
   }
 }
 
