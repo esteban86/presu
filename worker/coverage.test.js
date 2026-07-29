@@ -81,3 +81,17 @@ test('tolera banks nulo o mal formado', () => {
   assert.equal(buildCoverage(null, null).formats.total, 0);
   assert.equal(buildCoverage([{ id: 'x' }], {}).formats.total, 0);
 });
+
+test('un id que no es el slug del name se rescata por alias', () => {
+  const malEscrito = [{ id: 'avvillas', name: 'AV Villas', aliases: [], products: { tarjeta: 'wanted' } }];
+  const c = buildCoverage(malEscrito, {});
+  const b = c.missing[0];
+  assert.ok(b.aliases.indexOf('av-villas') !== -1, 'el slug del name debe viajar como alias');
+  assert.equal(resolveBankId('av-villas', malEscrito.map((x, i) => ({ ...x, aliases: b.aliases }))), 'avvillas');
+});
+
+test('los alias declarados se normalizan con slug', () => {
+  const banks = [{ id: 'nu', name: 'Nu', aliases: ['NuBank', 'Nu  Colombia'], products: { tarjeta: 'ok' } }];
+  const c = buildCoverage(banks, {});
+  assert.deepEqual(c.supported[0].aliases, ['nubank', 'nu-colombia']);
+});

@@ -624,7 +624,7 @@
       document.getElementById('bankList').innerHTML = c.banks.map(function(b){return '<option value="'+esc(b)+'">';}).join('');
       var mon=document.getElementById('fMoneda'); if(!mon.value || mon.dataset.auto!=='0'){ mon.value=c.cur; mon.dataset.auto='1'; }
     }
-    sel.addEventListener('change', syncCountry); syncCountry();
+    sel.addEventListener('change', function(){ syncCountry(); syncProducto(); }); syncCountry();
     document.getElementById('fMoneda').addEventListener('input', function(){ this.dataset.auto='0'; });
     renderThumbs();
     var consent=document.getElementById('fConsent'), sendBtn=document.getElementById('sendBtn');

@@ -746,7 +746,7 @@ async function adminContribExport(request, env, cors) {
     let rec = null; try { rec = JSON.parse(await env.WAITLIST.get(k.name)); } catch (e) { continue; }
     let w = 0, h = 0, tokens = [];
     if (rec.jsonKey) { try { const o = await env.DOCS.get(rec.jsonKey); if (o) { const j = JSON.parse(await o.text()); w = j.w || 0; h = j.h || 0; tokens = j.tokens || []; } } catch (e) {} }
-    lines.push(JSON.stringify({ submissionId: rec.submissionId, page: rec.page, bank: rec.banco, country: rec.pais, currency: rec.moneda, type: rec.tipo, source: rec.source, image: rec.key, w, h, tokens }));
+    lines.push(JSON.stringify({ submissionId: rec.submissionId, page: rec.page, bank: rec.banco, country: rec.pais, currency: rec.moneda, type: rec.tipo, producto: rec.producto || '', source: rec.source, image: rec.key, w, h, tokens }));
   }
   return new Response(lines.join('\n'), { status: 200, headers: { 'Content-Type': 'application/x-ndjson; charset=utf-8', ...cors } });
 }
