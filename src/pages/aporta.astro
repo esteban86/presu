@@ -129,6 +129,19 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '';
     .cbar{height:9px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden}
     .cbar > i{display:block;height:100%;background:linear-gradient(90deg,var(--mint),var(--mint-bright));width:0;transition:width .8s cubic-bezier(.2,.7,.2,1)}
 
+    /* Cobertura por banco x producto */
+    .cov{background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin:0 0 18px}
+    .cov .lab{font-size:.78rem;color:var(--mut2);font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em;margin:0 0 10px}
+    .cov .big{font-family:var(--head);font-weight:700;font-size:1.5rem;color:#fff}
+    .covrow{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:.93rem;color:#D4D4D6}
+    .covrow em{font-style:normal;color:var(--mut2);font-family:var(--mono);font-size:.82rem}
+    .miss{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:9px;margin-top:10px}
+    .misscard{background:var(--bg3);border:1px solid var(--line2);border-radius:12px;padding:11px 13px;
+      text-align:left;font-family:inherit;color:var(--tx);cursor:pointer;transition:.16s}
+    .misscard:hover{border-color:var(--mint);background:rgba(52,211,153,.08)}
+    .misscard b{display:block;font-size:.94rem;font-weight:600;margin-bottom:3px}
+    .misscard span{font-size:.8rem;color:var(--mut2);font-family:var(--mono)}
+
     /* Dropzone */
     .drop{border:2px dashed var(--line2);border-radius:18px;background:var(--bg2);padding:38px 22px;text-align:center;
       transition:.18s;cursor:pointer}
@@ -236,7 +249,8 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '';
     var items = [];          // { canvas:<full-res>, boxes:[{x,y,w,h}], done:false, blob:null }
     var editIdx = 0;
     var progress = null;     // { total, goal, banks }
-    var meta = { pais:'CO', banco:'', moneda:'COP', tipo:'', nombre:'', correo:'', codigo:'' };
+    var coverage = null;   // { formats:{ok,total}, supported:[], missing:[] } o null
+    var meta = { pais:'CO', banco:'', producto:'', moneda:'COP', tipo:'', nombre:'', correo:'', codigo:'' };
 
     var stepEl = document.getElementById('step');
     var barEl = document.getElementById('bar');
@@ -254,11 +268,18 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '';
     function boot(){
       // Evita que soltar el archivo fuera de la zona haga que el navegador lo abra/descargue.
       ['dragover','drop'].forEach(function(ev){ window.addEventListener(ev, function(e){ e.preventDefault(); }, false); });
+      try {
+        var qs = new URLSearchParams(location.search);
+        var qb = (qs.get('banco')||'').trim();
+        var qp = (qs.get('producto')||'').trim().toLowerCase();
+        if (qb) meta.banco = qb;                                  // se valida contra el contrato al pintar el form
+        if (qp === 'cuenta' || qp === 'tarjeta') meta.producto = qp;
+      } catch(e) {}
       render(); loadProgress();
     }
     function loadProgress(){
       fetch(API+'/contrib/progress',{cache:'no-store'}).then(function(r){return r.json();})
-        .then(function(d){ if(d && typeof d.total==='number'){ progress=d; if(phase==='intro') renderIntro(); } })
+        .then(function(d){ if(d && typeof d.total==='number'){ progress=d; coverage = (d && d.coverage) || null; if(phase==='intro') renderIntro(); } })
         .catch(function(){});
     }
 
@@ -275,15 +296,37 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '';
     // ── Intro ──
     function renderIntro(){
       setBar(6);
-      var total = progress ? progress.total : null;
-      var banks = progress ? (progress.banks ? progress.banks.length : 0) : null;
-      var pct = total!=null ? Math.min(100, Math.round(total/GOAL*100)) : 0;
-      var collective = total!=null ? (
-        '<div class="collective">'+
-        '<div class="top"><span class="big">'+total+' <span style="font-size:1rem;color:var(--mut)">de '+GOAL+'</span></span>'+
-        '<span class="lab">'+(banks||0)+' bancos</span></div>'+
-        '<div class="cbar"><i style="width:'+pct+'%"></i></div></div>'
-      ) : '';
+      var PROD = { cuenta:'cuenta de ahorros', tarjeta:'tarjeta de crédito' };
+      var collective = '';
+      if (coverage && coverage.formats.total) {
+        var f = coverage.formats;
+        var pct = Math.round(f.ok / f.total * 100);
+        var okRows = coverage.supported.map(function(b){
+          return '<div class="covrow"><span>'+esc(b.name)+'</span><em>'+
+            b.products.map(function(p){ return esc(PROD[p.producto]||p.producto); }).join(' · ')+' ✓</em></div>';
+        }).join('');
+        var missCards = coverage.missing.map(function(b){
+          return b.products.map(function(p){
+            return '<button class="misscard" data-banco="'+esc(b.name)+'" data-producto="'+esc(p.producto)+'">'+
+              '<b>'+esc(b.name)+'</b><span>'+esc(PROD[p.producto]||p.producto)+'</span></button>';
+          }).join('');
+        }).join('');
+        collective =
+          '<div class="cov">'+
+            '<div class="lab">Cobertura</div>'+
+            '<div class="big">Presu lee '+f.ok+' <span style="font-size:1rem;color:var(--mut)">de '+f.total+' formatos colombianos</span></div>'+
+            '<div class="cbar" style="margin-top:9px"><i style="width:'+pct+'%"></i></div>'+
+            (okRows ? '<div style="margin-top:14px">'+okRows+'</div>' : '')+
+          '</div>'+
+          (missCards ? '<div class="cov"><div class="lab">Nos faltan — ¿tienes cuenta en alguno?</div>'+
+            '<div class="miss">'+missCards+'</div></div>' : '');
+      } else if (progress && progress.total != null) {
+        // Degradacion: sin contrato, el contador de siempre.
+        collective = '<div class="collective"><div class="top">'+
+          '<span class="big">'+progress.total+' <span style="font-size:1rem;color:var(--mut)">de '+GOAL+'</span></span>'+
+          '<span class="lab">'+((progress.banks||[]).length)+' bancos</span></div>'+
+          '<div class="cbar"><i style="width:'+Math.min(100,Math.round(progress.total/GOAL*100))+'%"></i></div></div>';
+      }
       shell(
         BRAND+
         '<div class="eb">'+SHIELD+' Aporte anónimo</div>'+
@@ -304,6 +347,13 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '';
         '<p class="consent2">Anonimizado en tu equipo, deja de ser un dato personal (Ley 1581 de 2012). Lo usamos solo para mejorar la lectura de formatos. <a href="/privacidad" style="color:var(--mint-bright)">Privacidad</a>.</p>'
       );
       document.getElementById('go').addEventListener('click', function(){ phase='upload'; render(); });
+      Array.prototype.forEach.call(document.querySelectorAll('.misscard'), function(el){
+        el.addEventListener('click', function(){
+          meta.banco = el.getAttribute('data-banco');
+          meta.producto = el.getAttribute('data-producto');
+          phase='upload'; render();
+        });
+      });
     }
 
     // ── Subida ──
@@ -586,6 +636,11 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '';
           '<div class="frow"><label class="field-label">Moneda</label><input class="field2" id="fMoneda" value="'+esc(meta.moneda)+'" placeholder="COP"></div>'+
         '</div>'+
         '<div class="frow"><label class="field-label">Banco / app</label><input class="field2" id="fBanco" list="bankList" placeholder="Empieza a escribir…" value="'+esc(meta.banco)+'"><datalist id="bankList"></datalist></div>'+
+        '<div class="frow" id="rowProducto" style="display:none"><label class="field-label">¿Qué producto es?</label><select class="field2" id="fProducto">'+
+          '<option value="">Elige…</option>'+
+          '<option value="cuenta">Cuenta de ahorros</option>'+
+          '<option value="tarjeta">Tarjeta de crédito</option>'+
+        '</select></div>'+
         '<div class="frow"><label class="field-label">Tipo de documento</label><select class="field2" id="fTipo">'+
           '<option value="">Elige…</option>'+
           '<option value="extracto">Extracto / estado de cuenta</option>'+
@@ -611,12 +666,50 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '';
         document.getElementById('bankList').innerHTML = c.banks.map(function(b){return '<option value="'+esc(b)+'">';}).join('');
         var mon=document.getElementById('fMoneda'); if(!mon.value || mon.dataset.auto!=='0'){ mon.value=c.cur; mon.dataset.auto='1'; }
       }
-      sel.addEventListener('change', syncCountry); syncCountry();
+      sel.addEventListener('change', function(){ syncCountry(); syncProducto(); }); syncCountry();
       document.getElementById('fMoneda').addEventListener('input', function(){ this.dataset.auto='0'; });
       renderThumbs();
       var consent=document.getElementById('fConsent'), sendBtn=document.getElementById('sendBtn');
       consent.addEventListener('change', function(){ sendBtn.disabled = !consent.checked; });
       sendBtn.addEventListener('click', submitAll);
+      // Empareja lo que el usuario ESCRIBE contra el contrato, por id o por alias.
+      // Los alias importan: el desplegable ofrece variantes como "RappiPay (Rappicard)".
+      function bankIdOf(nombreBanco){
+        if(!coverage || meta.pais!=='CO') return null;
+        // Mismo slug que el del Worker (coverage.js), incluidos el corte a 40 y el
+        // fallback: si divergen, el emparejamiento del cliente y el conteo del
+        // servidor dejan de coincidir.
+        var s = String(nombreBanco||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')
+                .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,40) || 'x';
+        var all = coverage.supported.concat(coverage.missing);
+        for(var i=0;i<all.length;i++){
+          if(all[i].id===s) return all[i].id;
+          if((all[i].aliases||[]).indexOf(s)!==-1) return all[i].id;
+        }
+        return null;
+      }
+      var lastBankId, seeded=false;
+      function syncProducto(){
+        var row=document.getElementById('rowProducto'), sel=document.getElementById('fProducto');
+        if(!row||!sel) return;
+        var id = bankIdOf((document.getElementById('fBanco')||{}).value);
+        // Al CAMBIAR de banco hay que limpiar el select, no solo meta.producto:
+        // submitAll relee sel.value del DOM, asi que un valor viejo pisaria el
+        // reset y se enviaria el producto del banco anterior sin que el usuario
+        // eligiera nada. La primera pasada solo siembra (respeta el enlace directo).
+        if(!seeded){ lastBankId=id; seeded=true; }
+        else if(id!==lastBankId){ meta.producto=''; sel.value=''; lastBankId=id; }
+        // Productos declarados para ese banco = los que aparecen en supported + missing
+        var todos = [];
+        if(id){ var all=coverage.supported.concat(coverage.missing);
+          all.forEach(function(x){ if(x.id===id) x.products.forEach(function(p){ if(todos.indexOf(p.producto)===-1) todos.push(p.producto); }); }); }
+        if(todos.length<2){ row.style.display='none'; meta.producto = todos.length===1 ? todos[0] : ''; return; }
+        row.style.display='';
+        Array.prototype.forEach.call(sel.options, function(o){ o.hidden = o.value!=='' && todos.indexOf(o.value)===-1; });
+        if(meta.producto) sel.value = meta.producto;
+      }
+      document.getElementById('fBanco').addEventListener('input', syncProducto);
+      syncProducto();
       // Turnstile (render explícito porque el form es dinámico). Inerte sin site key.
       try {
         var K=(document.querySelector('meta[name="ts-sitekey"]')||{}).content;
@@ -640,10 +733,15 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '';
       meta.banco=(document.getElementById('fBanco').value||'').trim();
       meta.moneda=(document.getElementById('fMoneda').value||'').trim();
       meta.tipo=document.getElementById('fTipo').value;
+      var selProd=document.getElementById('fProducto');
+      if(selProd && document.getElementById('rowProducto').style.display!=='none') meta.producto=selProd.value;
       var nombre=(document.getElementById('fNombre')||{}).value||'';
       var correo=(document.getElementById('fCorreo')||{}).value||'';
       if(!meta.banco){ errEl.textContent='Dinos de qué banco es.'; return; }
       if(!meta.tipo){ errEl.textContent='Elige el tipo de documento.'; return; }
+      if(document.getElementById('rowProducto') && document.getElementById('rowProducto').style.display!=='none' && !meta.producto){
+        errEl.textContent='Dinos si es cuenta de ahorros o tarjeta de crédito.'; return;
+      }
       meta.nombre=nombre.trim(); meta.correo=correo.trim();
       // Red de seguridad: si parece que quedó un dato personal sin tapar, avisa antes de enviar.
       if(items.some(remainingHasPII)){
@@ -656,7 +754,7 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '';
         var sid = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : (''+Date.now()+'-'+Math.round(Math.random()*1e9));
         var fd=new FormData();
         fd.append('pais',meta.pais); fd.append('banco',meta.banco); fd.append('moneda',meta.moneda);
-        fd.append('tipo',meta.tipo); fd.append('nombre',meta.nombre); fd.append('ref',meta.correo);
+        fd.append('tipo',meta.tipo); fd.append('producto',meta.producto); fd.append('nombre',meta.nombre); fd.append('ref',meta.correo);
         fd.append('botcheck',''); fd.append('n',String(items.length)); fd.append('sid',sid);
         fd.append('turnstile', tsTok);
         items.forEach(function(it,i){ fd.append('doc'+i, it.blob, 'doc'+i+'.jpg'); fd.append('tokens'+i, JSON.stringify(tokensOf(it))); });
@@ -695,7 +793,7 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '';
         '<div class="nav" style="justify-content:center;margin-top:10px"><button class="skip" id="again">Aportar otro documento</button></div>'+
         '<p class="consent2 center">Tu plata, clara. 🌿</p>'
       );
-      document.getElementById('again').addEventListener('click', function(){ items=[]; editIdx=0; meta.banco=''; meta.tipo=''; phase='upload'; render(); });
+      document.getElementById('again').addEventListener('click', function(){ items=[]; editIdx=0; meta.banco=''; meta.tipo=''; meta.producto=''; phase='upload'; render(); });
     }
 
     function confetti(){
