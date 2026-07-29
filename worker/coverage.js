@@ -1,7 +1,7 @@
 /**
  * Cobertura de formatos: cruza el contrato de bancos (config.json) con los
  * contadores de aportes. Modulo PURO — sin fetch, sin KV. Se prueba con
- * `node --test coverage.test.js`.
+ * `npm test` (vitest), junto al resto del repo.
  */
 
 export function slug(s) {
