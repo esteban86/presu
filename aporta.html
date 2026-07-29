@@ -592,8 +592,11 @@
     // Los alias importan: el desplegable ofrece variantes como "RappiPay (Rappicard)".
     function bankIdOf(nombreBanco){
       if(!coverage || meta.pais!=='CO') return null;
+      // Mismo slug que el del Worker (coverage.js), incluidos el corte a 40 y el
+      // fallback: si divergen, el emparejamiento del cliente y el conteo del
+      // servidor dejan de coincidir.
       var s = String(nombreBanco||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')
-              .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+              .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,40) || 'x';
       var all = coverage.supported.concat(coverage.missing);
       for(var i=0;i<all.length;i++){
         if(all[i].id===s) return all[i].id;
@@ -601,10 +604,17 @@
       }
       return null;
     }
+    var lastBankId, seeded=false;
     function syncProducto(){
       var row=document.getElementById('rowProducto'), sel=document.getElementById('fProducto');
       if(!row||!sel) return;
       var id = bankIdOf((document.getElementById('fBanco')||{}).value);
+      // Al CAMBIAR de banco hay que limpiar el select, no solo meta.producto:
+      // submitAll relee sel.value del DOM, asi que un valor viejo pisaria el
+      // reset y se enviaria el producto del banco anterior sin que el usuario
+      // eligiera nada. La primera pasada solo siembra (respeta el enlace directo).
+      if(!seeded){ lastBankId=id; seeded=true; }
+      else if(id!==lastBankId){ meta.producto=''; sel.value=''; lastBankId=id; }
       // Productos declarados para ese banco = los que aparecen en supported + missing
       var todos = [];
       if(id){ var all=coverage.supported.concat(coverage.missing);
@@ -691,7 +701,7 @@
       '<div class="nav" style="justify-content:center;margin-top:10px"><button class="skip" id="again">Aportar otro documento</button></div>'+
       '<p class="consent2 center">Tu plata, clara. 🌿</p>'
     );
-    document.getElementById('again').addEventListener('click', function(){ items=[]; editIdx=0; meta.banco=''; meta.tipo=''; phase='upload'; render(); });
+    document.getElementById('again').addEventListener('click', function(){ items=[]; editIdx=0; meta.banco=''; meta.tipo=''; meta.producto=''; phase='upload'; render(); });
   }
 
   function confetti(){
