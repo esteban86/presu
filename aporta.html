@@ -195,7 +195,8 @@
   var items = [];          // { canvas:<full-res>, boxes:[{x,y,w,h}], done:false, blob:null }
   var editIdx = 0;
   var progress = null;     // { total, goal, banks }
-  var meta = { pais:'CO', banco:'', moneda:'COP', tipo:'', nombre:'', correo:'', codigo:'' };
+  var coverage = null;   // { formats:{ok,total}, supported:[], missing:[] } o null
+  var meta = { pais:'CO', banco:'', producto:'', moneda:'COP', tipo:'', nombre:'', correo:'', codigo:'' };
 
   var stepEl = document.getElementById('step');
   var barEl = document.getElementById('bar');
@@ -213,11 +214,18 @@
   function boot(){
     // Evita que soltar el archivo fuera de la zona haga que el navegador lo abra/descargue.
     ['dragover','drop'].forEach(function(ev){ window.addEventListener(ev, function(e){ e.preventDefault(); }, false); });
+    try {
+      var qs = new URLSearchParams(location.search);
+      var qb = (qs.get('banco')||'').trim();
+      var qp = (qs.get('producto')||'').trim().toLowerCase();
+      if (qb) meta.banco = qb;                                  // se valida contra el contrato al pintar el form
+      if (qp === 'cuenta' || qp === 'tarjeta') meta.producto = qp;
+    } catch(e) {}
     render(); loadProgress();
   }
   function loadProgress(){
     fetch(API+'/contrib/progress',{cache:'no-store'}).then(function(r){return r.json();})
-      .then(function(d){ if(d && typeof d.total==='number'){ progress=d; if(phase==='intro') renderIntro(); } })
+      .then(function(d){ if(d && typeof d.total==='number'){ progress=d; coverage = (d && d.coverage) || null; if(phase==='intro') renderIntro(); } })
       .catch(function(){});
   }
 
@@ -545,6 +553,11 @@
         '<div class="frow"><label class="field-label">Moneda</label><input class="field2" id="fMoneda" value="'+esc(meta.moneda)+'" placeholder="COP"></div>'+
       '</div>'+
       '<div class="frow"><label class="field-label">Banco / app</label><input class="field2" id="fBanco" list="bankList" placeholder="Empieza a escribir…" value="'+esc(meta.banco)+'"><datalist id="bankList"></datalist></div>'+
+      '<div class="frow" id="rowProducto" style="display:none"><label class="field-label">¿Qué producto es?</label><select class="field2" id="fProducto">'+
+        '<option value="">Elige…</option>'+
+        '<option value="cuenta">Cuenta de ahorros</option>'+
+        '<option value="tarjeta">Tarjeta de crédito</option>'+
+      '</select></div>'+
       '<div class="frow"><label class="field-label">Tipo de documento</label><select class="field2" id="fTipo">'+
         '<option value="">Elige…</option>'+
         '<option value="extracto">Extracto / estado de cuenta</option>'+
@@ -575,6 +588,34 @@
     var consent=document.getElementById('fConsent'), sendBtn=document.getElementById('sendBtn');
     consent.addEventListener('change', function(){ sendBtn.disabled = !consent.checked; });
     sendBtn.addEventListener('click', submitAll);
+    // Empareja lo que el usuario ESCRIBE contra el contrato, por id o por alias.
+    // Los alias importan: el desplegable ofrece variantes como "RappiPay (Rappicard)".
+    function bankIdOf(nombreBanco){
+      if(!coverage || meta.pais!=='CO') return null;
+      var s = String(nombreBanco||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')
+              .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+      var all = coverage.supported.concat(coverage.missing);
+      for(var i=0;i<all.length;i++){
+        if(all[i].id===s) return all[i].id;
+        if((all[i].aliases||[]).indexOf(s)!==-1) return all[i].id;
+      }
+      return null;
+    }
+    function syncProducto(){
+      var row=document.getElementById('rowProducto'), sel=document.getElementById('fProducto');
+      if(!row||!sel) return;
+      var id = bankIdOf((document.getElementById('fBanco')||{}).value);
+      // Productos declarados para ese banco = los que aparecen en supported + missing
+      var todos = [];
+      if(id){ var all=coverage.supported.concat(coverage.missing);
+        all.forEach(function(x){ if(x.id===id) x.products.forEach(function(p){ if(todos.indexOf(p.producto)===-1) todos.push(p.producto); }); }); }
+      if(todos.length<2){ row.style.display='none'; meta.producto = todos.length===1 ? todos[0] : ''; return; }
+      row.style.display='';
+      Array.prototype.forEach.call(sel.options, function(o){ o.hidden = o.value!=='' && todos.indexOf(o.value)===-1; });
+      if(meta.producto) sel.value = meta.producto;
+    }
+    document.getElementById('fBanco').addEventListener('input', syncProducto);
+    syncProducto();
   }
   function renderThumbs(){
     var host=document.getElementById('thumbs'); if(!host) return; host.innerHTML='';
@@ -592,10 +633,15 @@
     meta.banco=(document.getElementById('fBanco').value||'').trim();
     meta.moneda=(document.getElementById('fMoneda').value||'').trim();
     meta.tipo=document.getElementById('fTipo').value;
+    var selProd=document.getElementById('fProducto');
+    if(selProd && document.getElementById('rowProducto').style.display!=='none') meta.producto=selProd.value;
     var nombre=(document.getElementById('fNombre')||{}).value||'';
     var correo=(document.getElementById('fCorreo')||{}).value||'';
     if(!meta.banco){ errEl.textContent='Dinos de qué banco es.'; return; }
     if(!meta.tipo){ errEl.textContent='Elige el tipo de documento.'; return; }
+    if(document.getElementById('rowProducto') && document.getElementById('rowProducto').style.display!=='none' && !meta.producto){
+      errEl.textContent='Dinos si es cuenta de ahorros o tarjeta de crédito.'; return;
+    }
     meta.nombre=nombre.trim(); meta.correo=correo.trim();
     // Red de seguridad: si parece que quedó un dato personal sin tapar, avisa antes de enviar.
     if(items.some(remainingHasPII)){
@@ -607,7 +653,7 @@
       var sid = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : (''+Date.now()+'-'+Math.round(Math.random()*1e9));
       var fd=new FormData();
       fd.append('pais',meta.pais); fd.append('banco',meta.banco); fd.append('moneda',meta.moneda);
-      fd.append('tipo',meta.tipo); fd.append('nombre',meta.nombre); fd.append('ref',meta.correo);
+      fd.append('tipo',meta.tipo); fd.append('producto',meta.producto); fd.append('nombre',meta.nombre); fd.append('ref',meta.correo);
       fd.append('botcheck',''); fd.append('n',String(items.length)); fd.append('sid',sid);
       items.forEach(function(it,i){ fd.append('doc'+i, it.blob, 'doc'+i+'.jpg'); fd.append('tokens'+i, JSON.stringify(tokensOf(it))); });
       return fetch(API+'/contrib',{method:'POST',body:fd});
