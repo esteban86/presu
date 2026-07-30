@@ -18,6 +18,8 @@
  * Bindings: KV "WAITLIST" · Secrets RESEND_API_KEY, ADMIN_TOKEN · Var NOTIFY_EMAIL
  */
 
+import { slug, resolveBankId, buildCoverage, normalizeBanks } from './coverage.js';
+
 const SITE = 'https://presu.io';
 const ALLOWED_ORIGINS = [SITE, 'https://www.presu.io', 'https://presu.asimetrica.co', 'https://presu.com.co', 'http://localhost:4821', 'http://localhost:4796'];
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -188,6 +190,7 @@ export default {
     if (request.method === 'GET' && path === '/contrib/wall') return contribWall(request, env, pub);
     if (request.method === 'GET' && path === '/admin/contrib') return adminContrib(request, env, cors);
     if (request.method === 'GET' && path === '/admin/contrib/export') return adminContribExport(request, env, cors);
+    if (request.method === 'GET' && path === '/admin/contrib/migrate') return adminContribMigrate(request, env, cors);
     if (request.method === 'GET' && path === '/admin/doc') return adminDoc(request, env, url);
 
     if (request.method !== 'POST') return json({ status: 'error', reason: 'method' }, 405, cors);
@@ -914,10 +917,6 @@ async function adminFollowupOne(request, env, cors) {
 // ── Aportes de documentos anonimizados (página /aporta) ──────
 const CONTRIB_GOAL = 500;
 const CONTRIB_MAXBYTES = 6 * 1024 * 1024; // 6MB por imagen (llegan ya comprimidas del cliente)
-function slug(s) {
-  return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
-    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'x';
-}
 async function contribBumpWall(env, key, name, count) {
   let lb = []; try { lb = JSON.parse((await env.WAITLIST.get('contrib_wall')) || '[]'); } catch (e) {}
   const i = lb.findIndex(function (x) { return x.key === key; });
@@ -938,6 +937,8 @@ async function contribSubmit(request, env, cors) {
   const banco = String(form.get('banco') || '').trim().slice(0, 60);
   const moneda = String(form.get('moneda') || '').trim().slice(0, 8);
   const tipo = String(form.get('tipo') || '').trim().slice(0, 20);
+  const productoRaw = String(form.get('producto') || '').trim().toLowerCase();
+  const producto = (productoRaw === 'cuenta' || productoRaw === 'tarjeta') ? productoRaw : '';
   const nombre = String(form.get('nombre') || '').trim().slice(0, 80);
   const ref = String(form.get('ref') || '').trim().slice(0, 80);
   const sid = String(form.get('sid') || '').trim().slice(0, 48) || crypto.randomUUID(); // agrupa páginas del mismo extracto
@@ -971,13 +972,24 @@ async function contribSubmit(request, env, cors) {
       const flat = parsed.tokens.map(function (t) { return t.t; }).join(' ').slice(0, 80000);
       if (flat) { txtKey = base + '.txt'; await env.DOCS.put(txtKey, flat, { httpMetadata: { contentType: 'text/plain; charset=utf-8' } }); }
     }
-    await env.WAITLIST.put('contrib:' + id, JSON.stringify({ id, submissionId: sid, page: d.idx, source, key, jsonKey, txtKey, tokenCount, pais, banco, moneda, tipo, size: f.size, ts: Date.now() }));
+    await env.WAITLIST.put('contrib:' + id, JSON.stringify({ id, submissionId: sid, page: d.idx, source, key, jsonKey, txtKey, tokenCount, pais, banco, producto, tipo, moneda, size: f.size, ts: Date.now() }));
     ids.push(id);
   }
   const total = parseInt((await env.WAITLIST.get('meta:contribs')) || '0', 10) + ids.length;
   await env.WAITLIST.put('meta:contribs', String(total));
   const bankKey = 'contrib_bank:' + pais + ':' + slug(banco);
   await env.WAITLIST.put(bankKey, String(parseInt((await env.WAITLIST.get(bankKey)) || '0', 10) + ids.length));
+  if (producto) {
+    const pKey = 'contrib_prod:' + pais + ':' + slug(banco) + ':' + producto;
+    await env.WAITLIST.put(pKey, String(parseInt((await env.WAITLIST.get(pKey)) || '0', 10) + ids.length));
+  }
+  // Total en EXTRACTOS: contador O(1). Antes se recorrian todos los registros
+  // al leer, lo que ademas se estancaba al topar el limite de list().
+  if (!(await env.WAITLIST.get('sub:' + sid))) {
+    await env.WAITLIST.put('sub:' + sid, '1');
+    const st = parseInt((await env.WAITLIST.get('meta:submissions')) || '0', 10) + 1;
+    await env.WAITLIST.put('meta:submissions', String(st));
+  }
   // Crédito opcional al colaborador: por correo o por código de Fundador
   let contributor = null;
   let email = EMAIL_RE.test(ref) ? ref.toLowerCase() : null;
@@ -996,17 +1008,67 @@ async function contribSubmit(request, env, cors) {
   return json({ status: 'ok', n: ids.length, progress: { total, goal: CONTRIB_GOAL }, contributor }, 200, cors);
 }
 
-// GET /contrib/progress — contador público para la barra colectiva
+const CONFIG_URL = 'https://raw.githubusercontent.com/esteban86/presu-releases/main/config.json';
+
+/**
+ * Lee el contrato de bancos. Cachea 10 min en KV y guarda una copia buena
+ * como respaldo: si GitHub falla, servimos la ultima que funciono.
+ * Devuelve [] si nunca hubo una — la pagina degrada sola.
+ *
+ * Devuelve el contrato ya pasado por normalizeBanks() (alias rescatados) en
+ * los tres retornos — cache fresco, fetch exitoso y catch — para que
+ * resolveBankId vea los mismos alias en TODO el Worker, no solo dentro de
+ * buildCoverage. Lo que se guarda en KV se queda crudo (tal como vino de la
+ * fuente): normalizar es barato y determinista, asi que se hace al leer.
+ */
+async function loadBanksCO(env) {
+  // El get va DENTRO de un try: get(key,'json') hace JSON.parse y una copia
+  // corrupta lanzaria antes del try de abajo, sin que nada la atrape.
+  let cached = null;
+  try { cached = await env.WAITLIST.get('cfg:banks:CO', 'json'); } catch (e) { cached = null; }
+  const cachedBanks = (cached && Array.isArray(cached.banks)) ? cached.banks : null;
+  if (cachedBanks && cached.ts && (Date.now() - cached.ts) < 10 * 60 * 1000) return normalizeBanks(cachedBanks);
+  try {
+    const r = await fetch(CONFIG_URL, { cf: { cacheTtl: 300 } });
+    if (!r.ok) throw new Error('http ' + r.status);
+    const cfg = await r.json();
+    const banks = (cfg && cfg.banks && Array.isArray(cfg.banks.CO)) ? cfg.banks.CO : [];
+    await env.WAITLIST.put('cfg:banks:CO', JSON.stringify({ ts: Date.now(), banks }));
+    return normalizeBanks(banks);
+  } catch (e) {
+    return normalizeBanks(cachedBanks || []);
+  }
+}
+
+// GET /contrib/progress — cobertura publica: que formatos leemos y cuales faltan
 async function contribProgress(request, env, pub) {
-  const total = parseInt((await env.WAITLIST.get('meta:contribs')) || '0', 10);
-  const list = await env.WAITLIST.list({ prefix: 'contrib_bank:', limit: 1000 });
+  const banksCO = await loadBanksCO(env);
+
+  // Dos prefijos distintos, dos lecturas sin ambiguedad.
+  const byBank = await env.WAITLIST.list({ prefix: 'contrib_bank:', limit: 1000 });
   const banks = [];
-  for (const k of list.keys) {
-    const parts = k.name.split(':');
+  for (const k of byBank.keys) {
+    const parts = k.name.split(':'); // contrib_bank : pais : slug
+    if (parts.length !== 3) continue;
     banks.push({ pais: parts[1], banco: parts[2], count: parseInt((await env.WAITLIST.get(k.name)) || '0', 10) });
   }
   banks.sort(function (a, b) { return b.count - a.count; });
-  return json({ total, goal: CONTRIB_GOAL, banks }, 200, pub);
+
+  const byProd = await env.WAITLIST.list({ prefix: 'contrib_prod:', limit: 1000 });
+  const counts = {};
+  for (const k of byProd.keys) {
+    const parts = k.name.split(':'); // contrib_prod : pais : slug : producto
+    if (parts.length !== 4 || parts[1] !== 'CO') continue;
+    const id = resolveBankId(parts[2], banksCO);
+    if (!id) continue;
+    const n = parseInt((await env.WAITLIST.get(k.name)) || '0', 10);
+    counts[id] = counts[id] || {};
+    counts[id][parts[3]] = (counts[id][parts[3]] || 0) + n;
+  }
+
+  const total = parseInt((await env.WAITLIST.get('meta:submissions')) || '0', 10);
+  const coverage = banksCO.length ? buildCoverage(banksCO, counts) : null;
+  return json({ total, goal: CONTRIB_GOAL, banks, coverage }, 200, pub);
 }
 
 // GET /contrib/wall — muro público de colaboradores (anonimizado)
@@ -1035,9 +1097,56 @@ async function adminContribExport(request, env, cors) {
     let rec = null; try { rec = JSON.parse(await env.WAITLIST.get(k.name)); } catch (e) { continue; }
     let w = 0, h = 0, tokens = [];
     if (rec.jsonKey) { try { const o = await env.DOCS.get(rec.jsonKey); if (o) { const j = JSON.parse(await o.text()); w = j.w || 0; h = j.h || 0; tokens = j.tokens || []; } } catch (e) {} }
-    lines.push(JSON.stringify({ submissionId: rec.submissionId, page: rec.page, bank: rec.banco, country: rec.pais, currency: rec.moneda, type: rec.tipo, source: rec.source, image: rec.key, w, h, tokens }));
+    lines.push(JSON.stringify({ submissionId: rec.submissionId, page: rec.page, bank: rec.banco, country: rec.pais, currency: rec.moneda, type: rec.tipo, producto: rec.producto || '', source: rec.source, image: rec.key, w, h, tokens }));
   }
   return new Response(lines.join('\n'), { status: 200, headers: { 'Content-Type': 'application/x-ndjson; charset=utf-8', ...cors } });
+}
+
+// GET /admin/contrib/migrate[?dry=0] — reconstruye los contadores por banco x
+// producto y rellena el total de extractos. En SECO por defecto: reporta que
+// escribiria sin escribir nada.
+async function adminContribMigrate(request, env, cors) {
+  if (!authed(request, env)) return json({ error: 'unauthorized' }, 401, cors);
+  const dry = new URL(request.url).searchParams.get('dry') !== '0';
+  const banksCO = await loadBanksCO(env);
+  const tally = {}, subs = new Set();
+  const skipped = { sinProducto: 0, bancoDesconocido: 0, sinSubmissionId: 0 };
+  let registros = 0, cursor;
+  // Sigue el cursor: con limit 1000 y una pagina por documento, un solo list()
+  // truncaria el relleno en silencio justo cuando la campana funcione.
+  do {
+    const page = await env.WAITLIST.list({ prefix: 'contrib:', limit: 1000, cursor });
+    for (const k of page.keys) {
+      registros++;
+      let rec = null; try { rec = JSON.parse(await env.WAITLIST.get(k.name)); } catch (e) { continue; }
+      if (!rec) continue;
+      if (rec.submissionId) subs.add(rec.submissionId); else skipped.sinSubmissionId++;
+      if (!rec.banco) continue;
+      if (!rec.producto) { skipped.sinProducto++; continue; }
+      // La llave se arma con el slug CRUDO de lo que el usuario escribio, igual
+      // que contribSubmit. Si aca se usara el id canonico del contrato, un banco
+      // escrito como variante ("RappiPay (Rappicard)") quedaria en dos llaves
+      // distintas que contribProgress resuelve al mismo banco y suma: contaria
+      // doble. Reconstruir tiene que reproducir lo que el camino en vivo escribio.
+      const bslug = slug(rec.banco);
+      if (!resolveBankId(bslug, banksCO)) skipped.bancoDesconocido++; // solo informativo
+      const key = 'contrib_prod:' + (rec.pais || 'CO') + ':' + bslug + ':' + rec.producto;
+      tally[key] = (tally[key] || 0) + 1;
+    }
+    cursor = page.list_complete ? null : page.cursor;
+  } while (cursor);
+
+  if (!dry) {
+    for (const key of Object.keys(tally)) await env.WAITLIST.put(key, String(tally[key]));
+    for (const sid of subs) await env.WAITLIST.put('sub:' + sid, '1');
+    await env.WAITLIST.put('meta:submissions', String(subs.size));
+  }
+  return json({
+    dry, registros,
+    escribiria: tally,
+    extractos: subs.size,
+    omitidos: skipped,
+  }, 200, cors);
 }
 
 // GET /admin/doc?id=&t= — sirve la imagen redactada desde R2 (para la galería admin).
