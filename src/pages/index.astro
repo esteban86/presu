@@ -329,6 +329,12 @@ const faqs = [
         <span class="plan-badge">Recomendado</span>
         <h3>Presu automático</h3>
         <p class="plan-tag">Lo mismo, sin que tengas que hacer nada</p>
+        <p class="plan-price"><strong>$19.990</strong> al mes</p>
+        <p class="plan-price-alt">
+          O <strong>$199.990</strong> al año —te ahorras dos meses—. Para la casa, hasta 4 personas por
+          <strong>$34.990</strong> al mes.
+        </p>
+        <p class="plan-pay">Pagas con PSE o Nequi. No necesitas tarjeta de crédito.</p>
         <ul class="plan-list">
           <li>Tu correo trae los movimientos solo</li>
           <li>Tu celular, siempre al día</li>
@@ -1348,6 +1354,29 @@ const faqs = [
     margin: 0 0 var(--space-5);
     font-size: var(--text-body);
     color: var(--text-secondary);
+  }
+  /* El precio. Grande pero no gritado: acá no es un muro —nada se bloquea— sino la
+     prueba de que lo gratis es real. Solo se ve qué es gratis cuando se ve qué se paga. */
+  .plan-price {
+    margin: 0 0 var(--space-2);
+    font-size: var(--text-body);
+    color: var(--text-secondary);
+  }
+  .plan-price strong {
+    font-size: var(--text-h3);
+    color: var(--text-primary);
+  }
+  .plan-price-alt,
+  .plan-pay {
+    margin: 0 0 var(--space-2);
+    font-size: var(--text-label);
+    color: var(--text-secondary);
+  }
+  /* Los medios de pago van pegados al precio a propósito: en Colombia la mayoría no
+     tiene tarjeta de crédito, y no decirlo hace que el precio se lea como inalcanzable. */
+  .plan-pay {
+    margin-bottom: var(--space-5);
+    color: var(--text-primary);
   }
   .plan-list {
     list-style: none;
