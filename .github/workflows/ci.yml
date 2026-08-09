@@ -31,11 +31,18 @@ jobs:
       - name: Type-check (astro check)
         run: npm run check
 
+      # El build va ANTES de los tests, y no es cosmético: dos suites revisan el
+      # HTML CONSTRUIDO (legales-sin-venta, movil-sin-venta) porque lo que abre un
+      # revisor de App Store es la página SERVIDA — un layout que cambie por debajo
+      # dejaría el fuente inocente y la página culpable. Con el orden anterior
+      # `dist/` no existía al correr vitest, así que esos dos guardianes de
+      # cumplimiento fallaban SIEMPRE en CI y solo pasaban en local, donde suele
+      # quedar un dist/ viejo de una corrida anterior.
+      - name: Build (astro build)
+        run: npm run build
+
       - name: Unit tests (vitest)
         run: npm test
 
       - name: Lint (eslint)
         run: npm run lint
-
-      - name: Build (astro build)
-        run: npm run build
