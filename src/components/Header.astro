@@ -1,6 +1,27 @@
 ---
-// Header.astro — nav sticky con fondo glass (DS v2). Sin props por ahora.
+// Header.astro — nav sticky con fondo glass (DS v2).
 import Logo from './Logo.astro';
+
+export interface Props {
+  /**
+   * Ocultar TODO lo que lleva a comprar: los enlaces de navegación (entre ellos
+   * «Planes») y el botón de la lista de espera. Queda solo la marca.
+   *
+   * Es una restricción de la App Store, no una preferencia de diseño. El
+   * 2026-07-31 Apple rechazó la app de iOS por la guía 3.1.1 citando el nombre de
+   * un plan — y ese nombre NO salía del código del móvil: salió de esta web, que
+   * es la Marketing URL de la ficha. La app enlaza «Política de privacidad» y
+   * «Términos» a estas páginas, así que desde dentro de la app se llegaba a los
+   * precios en un clic. Ese es el puente que la guía objeta.
+   *
+   * Las páginas legales son las únicas que lo usan, y por eso: son las que la app
+   * abre. Si algún día se enlaza otra página desde el móvil, tiene que pedirlo
+   * también.
+   */
+  sinVenta?: boolean;
+}
+
+const { sinVenta = false } = Astro.props;
 ---
 <header class="site-header">
   <div class="wrap">
@@ -13,19 +34,23 @@ import Logo from './Logo.astro';
         </a>
       </div>
 
-      <nav class="nav-links" id="nav-links" aria-label="Navegación principal">
-        <a class="nav-link" href="/#como">Cómo</a>
-        <a class="nav-link" href="/#privacidad">Privacidad</a>
-        <a class="nav-link" href="/#planes">Planes</a>
-        <a class="nav-link" href="/aporta">Aporta 🌱</a>
-      </nav>
+      {!sinVenta && (
+        <nav class="nav-links" id="nav-links" aria-label="Navegación principal">
+          <a class="nav-link" href="/#como">Cómo</a>
+          <a class="nav-link" href="/#privacidad">Privacidad</a>
+          <a class="nav-link" href="/#planes">Planes</a>
+          <a class="nav-link" href="/aporta">Aporta 🌱</a>
+        </nav>
+      )}
 
-      <div class="nav-actions">
-        <a class="btn-cta" href="/#waitlist">Únete a la lista</a>
-        <button class="nav-burger" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="nav-links">
-          <span></span><span></span><span></span>
-        </button>
-      </div>
+      {!sinVenta && (
+        <div class="nav-actions">
+          <a class="btn-cta" href="/#waitlist">Únete a la lista</a>
+          <button class="nav-burger" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="nav-links">
+            <span></span><span></span><span></span>
+          </button>
+        </div>
+      )}
     </div>
   </div>
 </header>
