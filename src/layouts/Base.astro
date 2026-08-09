@@ -8,12 +8,15 @@ export interface Props {
   title: string;
   description?: string;
   ogImage?: string;
+  /** Encabezado sin nada que lleve a comprar. Ver el porqué en Header.astro. */
+  sinVenta?: boolean;
 }
 
 const {
   title,
   description = 'Presu — tus gastos personales, claros.',
   ogImage = 'https://presu.io/presu-og.png',
+  sinVenta = false,
 } = Astro.props;
 // URL canónica limpia: contra Astro.site (siempre presu.io, nunca el host de staging)
 // y sin `.html` (build.format:'file' genera /aporta.html que redirige 308).
@@ -71,7 +74,7 @@ const canonical = new URL(Astro.url.pathname.replace(/index\.html$/, '').replace
     </script>
   </head>
   <body class="presu-grain">
-    <Header />
+    <Header sinVenta={sinVenta} />
     <slot />
     <Footer />
 
