@@ -57,7 +57,7 @@
         {
           "@type": "Question",
           "name": "¿Tiene costo?",
-          "acceptedAnswer": { "@type": "Answer", "text": "Puedes empezar gratis con la importación manual y el panel básico. Habrá un plan completo con funciones automáticas; definiremos los precios al lanzar." }
+          "acceptedAnswer": { "@type": "Answer", "text": "Al instalar Presu en tu computador tienes un mes con todo encendido, sin tarjeta. Después sigues gratis para siempre, con tu historial, tus presupuestos y la categorización con inteligencia artificial. Lo único que se apaga es lo automático: que tu correo traiga los movimientos solo y que tu celular se mantenga al día." }
         },
         {
           "@type": "Question",
