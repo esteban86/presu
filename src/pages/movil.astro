@@ -1,0 +1,150 @@
+---
+// Página de la app MÓVIL de Presu.
+//
+// Existe para ser la Marketing URL de las fichas de App Store y Google Play, y por
+// eso tiene una regla que no se puede relajar sin pensarlo:
+//
+//   NO NOMBRA PLANES, NO MUESTRA PRECIOS, NO ENLAZA A COMPRAR, Y NO DICE QUE LA
+//   APP DE ESCRITORIO SEA DE PAGO.
+//
+// No es pudor comercial: el envío a iOS fue rechazado el 2026-07-31 bajo la
+// guideline 3.1.1 citando el término «Plan Completo», que NUNCA estuvo en el código
+// del móvil — salió de la portada de presu.io, que era la Marketing URL. O sea que
+// lo enlazado desde la ficha entra en lo que revisan. Por eso esta página existe
+// aparte de la portada.
+//
+// Y responde al otro riesgo del expediente: que la app móvil parezca inútil sin una
+// compra externa (el perfil por el que rechazaron a Hey en 2020). Todo lo que se
+// cuenta acá funciona en el celular SOLO, sin cuenta y sin computador.
+//
+// Cada afirmación de esta página está verificada contra el código del móvil
+// (2026-08-09). Lo que NO se promete, a propósito:
+//   - Dictar el gasto: la transcripción de iOS escribe los miles con COMA
+//     («20,000») y el parser pierde el monto ahí — medido. Vuelve cuando la serie
+//     del issue #518 lo arregle.
+// Ver docs/precios.md y docs/ux/paywall.md en el repo de la app.
+import StaticPage from '../layouts/StaticPage.astro';
+---
+
+<StaticPage
+  title="Presu en tu celular"
+  description="Anota un gasto apenas ocurre: tómale una foto al recibo y Presu lee el monto, el comercio y la fecha. Mira tus presupuestos al día, donde estés."
+>
+  <header class="mv-head">
+    <a class="mv-logo" href="/" aria-label="Presu — inicio">
+      <span class="wordmark"><span class="wm-bar" aria-hidden="true"></span><span class="wm-text">presu</span></span>
+    </a>
+  </header>
+
+  <main class="mv-wrap">
+    <h1>Tu plata, en el bolsillo.</h1>
+    <p class="mv-lead">
+      Los gastos se olvidan en minutos. Presu en el celular está para el momento exacto en que ocurren: sacas el
+      teléfono, lo anotas y sigues con tu día.
+    </p>
+
+    <section class="mv-cards" aria-label="Qué hace Presu en tu celular">
+      <article class="mv-card">
+        <h2>Tómale una foto al recibo</h2>
+        <p>
+          Presu lee el <strong>monto</strong>, el <strong>comercio</strong> y la <strong>fecha</strong>, y te los deja
+          listos para confirmar. Sirve con recibos, facturas y con las notificaciones de tu banco.
+        </p>
+      </article>
+
+      <article class="mv-card">
+        <h2>O anótalo en dos toques</h2>
+        <p>
+          Un teclado numérico grande, hecho para escribir plata rápido. Eliges la categoría y ya —sin formularios
+          largos ni campos que no vas a llenar.
+        </p>
+      </article>
+
+      <article class="mv-card">
+        <h2>Mira si vas bien</h2>
+        <p>
+          Tus presupuestos del mes, cuánto llevas gastado y tus últimos movimientos. Presu te dice si vas a tu ritmo
+          de siempre o más rápido, sin que tengas que hacer cuentas.
+        </p>
+      </article>
+    </section>
+
+    <section class="mv-note" aria-label="Privacidad">
+      <h2>Tus datos son tuyos</h2>
+      <p>
+        Tus movimientos se guardan <strong>en tu celular</strong>. Si además usas Presu en el computador, lo que viaja
+        entre tus dispositivos va <strong>cifrado de extremo a extremo</strong>: el servidor guarda bultos cifrados y
+        no puede leer tus montos, tus comercios ni tus cuentas. Nosotros tampoco.
+      </p>
+      <p class="mv-links">
+        <a href="/privacidad">Política de privacidad</a> · <a href="/terminos">Términos</a>
+      </p>
+    </section>
+  </main>
+</StaticPage>
+
+<style>
+  .mv-head {
+    padding: var(--space-6) var(--space-5) 0;
+  }
+  .mv-logo {
+    display: inline-flex;
+    text-decoration: none;
+  }
+  .mv-wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: var(--space-6) var(--space-5) var(--space-8);
+  }
+  .mv-wrap h1 {
+    margin: 0 0 var(--space-3);
+    font-family: var(--font-display);
+    font-size: var(--text-h1);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+  }
+  .mv-lead {
+    margin: 0 0 var(--space-8);
+    font-size: var(--text-body-lg);
+    color: var(--text-secondary);
+  }
+  .mv-cards {
+    display: grid;
+    gap: var(--space-4);
+  }
+  .mv-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: var(--space-5);
+  }
+  .mv-card h2 {
+    margin: 0 0 var(--space-2);
+    font-size: var(--text-h3);
+    color: var(--text-primary);
+  }
+  .mv-card p {
+    margin: 0;
+    font-size: var(--text-body);
+    color: var(--text-secondary);
+  }
+  .mv-note {
+    margin-top: var(--space-8);
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--border);
+  }
+  .mv-note h2 {
+    margin: 0 0 var(--space-2);
+    font-size: var(--text-h3);
+    color: var(--text-primary);
+  }
+  .mv-note p {
+    margin: 0 0 var(--space-2);
+    font-size: var(--text-body);
+    color: var(--text-secondary);
+  }
+  .mv-links a {
+    color: var(--text-secondary);
+  }
+</style>
