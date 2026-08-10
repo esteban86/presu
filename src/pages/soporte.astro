@@ -1,0 +1,195 @@
+---
+// Página de SOPORTE de Presu.
+//
+// Existe para poder ponerla como «Support URL» de las fichas de App Store y Google
+// Play. Hasta ahora ese campo apuntaba a la portada, que muestra precios — la misma
+// exposición que motivó el rechazo 3.1.1 del 2026-07-31, donde el revisor entró por
+// la Marketing URL y citó un término que solo existía en la web.
+//
+// Por eso hereda la regla de /movil, y `sinVenta` en el layout hace la mitad del
+// trabajo (quita el menú comercial):
+//
+//   NO NOMBRA PLANES, NO MUESTRA PRECIOS Y NO ENLAZA A COMPRAR.
+//
+// Pero una página de soporte tiene una obligación EXTRA que /movil no tiene: **servir
+// de verdad para pedir ayuda**. Apple revisa que ese enlace haga lo que dice. Por eso
+// el contacto va arriba de todo y no escondido al final.
+//
+// Los dos canales son los REALES, verificados contra lo ya publicado:
+//   - soporte@presu.io — aparece en PRIVACY.md, aviso-privacidad y la 404.
+//   - wa.me/573001303558 — el mismo de la página de descarga.
+// Si alguno cambia, cambia también en esos sitios o la app promete algo que no existe.
+//
+// Lo vigila `src/test/soporte-sin-venta.test.js`.
+import Base from '../layouts/Base.astro';
+---
+
+<Base
+  sinVenta
+  title="Soporte · Presu"
+  description="¿Necesitas ayuda con Presu? Escríbenos a soporte@presu.io o por WhatsApp, y mira las preguntas más frecuentes."
+>
+  <main class="sp-wrap">
+    <h1>¿Necesitas ayuda?</h1>
+    <p class="sp-lead">Escríbenos y te respondemos. Somos un equipo pequeño en Colombia, así que contesta una persona.</p>
+
+    <section class="sp-canales" aria-label="Cómo contactarnos">
+      <a class="sp-canal" href="mailto:soporte@presu.io">
+        <span class="sp-canal-t">Correo</span>
+        <span class="sp-canal-v">soporte@presu.io</span>
+        <span class="sp-canal-n">Para cualquier cosa. Es el canal que deja constancia.</span>
+      </a>
+      <a class="sp-canal" href="https://wa.me/573001303558" target="_blank" rel="noopener">
+        <span class="sp-canal-t">WhatsApp</span>
+        <span class="sp-canal-v">+57 300 130 3558</span>
+        <span class="sp-canal-n">Si prefieres escribir por chat.</span>
+      </a>
+    </section>
+
+    <p class="sp-aviso">
+      <strong>No nos mandes capturas con tu cédula ni números de cuenta.</strong> No los necesitamos para ayudarte, y
+      un chat no es lugar para eso.
+    </p>
+
+    <h2>Preguntas frecuentes</h2>
+
+    <details class="sp-q">
+      <summary>¿Qué puedo hacer desde el celular?</summary>
+      <p>
+        Anotar un gasto apenas ocurre —tomándole una foto al recibo o escribiéndolo en dos toques— y mirar tus
+        presupuestos y tus últimos movimientos. Funciona por sí solo, sin cuenta.
+      </p>
+    </details>
+
+    <details class="sp-q">
+      <summary>¿Qué bancos lee Presu?</summary>
+      <p>
+        Hoy Bancolombia, Nu, Davivienda, RappiCard y Scotiabank. Si el tuyo no está, escríbenos: los vamos sumando
+        según lo que nos pide la gente.
+      </p>
+    </details>
+
+    <details class="sp-q">
+      <summary>Mi extracto en PDF pide contraseña</summary>
+      <p>
+        Es normal: varios bancos protegen el archivo con tu número de cédula. Presu te la pide al importarlo y la usa
+        solo para abrir ese PDF, en tu computador.
+      </p>
+    </details>
+
+    <details class="sp-q">
+      <summary>¿Mis datos salen de mi dispositivo?</summary>
+      <p>
+        Tus movimientos, cuentas y presupuestos se guardan en tu equipo. Si usas Presu en más de un dispositivo, lo que
+        viaja entre ellos va cifrado de extremo a extremo: el servidor guarda bultos cifrados y no puede leer tus
+        montos ni tus comercios. Está todo detallado en la <a href="/privacidad">política de privacidad</a>.
+      </p>
+    </details>
+
+    <details class="sp-q">
+      <summary>Mis dos dispositivos muestran números distintos</summary>
+      <p>
+        Escríbenos con lo que ves en cada uno —la cifra y la pantalla— y lo revisamos. No hace falta que nos mandes
+        tus datos: con los dos números y la fecha nos alcanza para encontrarlo.
+      </p>
+    </details>
+
+    <details class="sp-q">
+      <summary>Quiero borrar mis datos</summary>
+      <p>
+        Desde la app de escritorio, en Ajustes, puedes resetear tus datos o borrarlo todo. Y si registraste tu correo,
+        puedes pedirnos que lo eliminemos escribiéndonos: es tu derecho de Habeas Data (Ley 1581 de 2012).
+      </p>
+    </details>
+
+    <p class="sp-pie">
+      <a href="/privacidad">Política de privacidad</a> · <a href="/terminos">Términos</a>
+    </p>
+  </main>
+</Base>
+
+<style>
+  .sp-wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: var(--space-8) var(--space-5);
+  }
+  .sp-wrap h1 {
+    margin: 0 0 var(--space-3);
+    font-family: var(--font-display);
+    font-size: var(--text-h1);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+  }
+  .sp-lead {
+    margin: 0 0 var(--space-6);
+    font-size: var(--text-body-lg);
+    color: var(--text-secondary);
+  }
+  /* El contacto va ARRIBA: quien llega acá viene con un problema, no a leer. */
+  .sp-canales {
+    display: grid;
+    gap: var(--space-4);
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    margin-bottom: var(--space-4);
+  }
+  .sp-canal {
+    display: block;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: var(--space-5);
+    text-decoration: none;
+  }
+  .sp-canal-t {
+    display: block;
+    font-size: var(--text-label);
+    color: var(--text-secondary);
+  }
+  .sp-canal-v {
+    display: block;
+    margin: var(--space-1) 0;
+    font-size: var(--text-h3);
+    color: var(--text-primary);
+  }
+  .sp-canal-n {
+    display: block;
+    font-size: var(--text-label);
+    color: var(--text-secondary);
+  }
+  .sp-aviso {
+    margin: 0 0 var(--space-8);
+    font-size: var(--text-label);
+    color: var(--text-secondary);
+  }
+  .sp-wrap h2 {
+    margin: 0 0 var(--space-4);
+    font-size: var(--text-h2);
+    color: var(--text-primary);
+  }
+  .sp-q {
+    border-top: 1px solid var(--border);
+    padding: var(--space-4) 0;
+  }
+  .sp-q summary {
+    cursor: pointer;
+    font-size: var(--text-body);
+    color: var(--text-primary);
+  }
+  .sp-q p {
+    margin: var(--space-3) 0 0;
+    font-size: var(--text-body);
+    color: var(--text-secondary);
+  }
+  .sp-pie {
+    margin-top: var(--space-8);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--border);
+    font-size: var(--text-label);
+  }
+  .sp-pie a,
+  .sp-q a {
+    color: var(--text-secondary);
+  }
+</style>
