@@ -79,23 +79,26 @@ describe('las páginas legales no contradicen a la tabla de precios', () => {
   /**
    * El corazón del test: la portada y los términos tienen que poner el celular en el MISMO
    * plan. Si alguien lo mueve en un lado y olvida el otro, esto se cae — que es exactamente
-   * lo que no pasó en julio.
+   * lo que NO pasó en julio, y por eso la web quedó un mes diciendo lo contrario del código.
+   *
+   * OJO CON EL ALCANCE: esto vigila que CONCUERDEN, no en qué plan está. Si alguien mueve el
+   * celular a pago en los dos lados a la vez, este test pasa. Lo específico —que el celular
+   * esté en la columna gratis— lo fija `celular-gratis.test.js`. Los dos juntos cierran; este
+   * solo, no. Si algún día se borra aquel, esto deja de proteger lo que parece proteger.
    */
   it('la portada y los términos ponen el celular en el mismo plan', () => {
     const enGratisPortada = beneficiosDe('plan reveal').some((b) => CELULAR.test(b));
     const enPagoPortada = beneficiosDe('plan plan--pro reveal').some((b) => CELULAR.test(b));
-    const enGratisTerminos = CELULAR.test(vinetaDePlan('gratis'));
-    const enPagoTerminos = CELULAR.test(vinetaDePlan('Pro'));
 
     expect(
-      { portada: enGratisPortada, terminos: enGratisTerminos },
-      'la portada y los términos no coinciden en si el celular es gratis',
-    ).toEqual({ portada: enGratisPortada, terminos: enGratisPortada });
+      CELULAR.test(vinetaDePlan('gratis')),
+      `la portada ${enGratisPortada ? 'SÍ' : 'NO'} pone el celular en el plan gratis, y los términos dicen lo contrario`,
+    ).toBe(enGratisPortada);
 
     expect(
-      { portada: enPagoPortada, terminos: enPagoTerminos },
-      'la portada y los términos no coinciden en si el celular es de pago',
-    ).toEqual({ portada: enPagoPortada, terminos: enPagoPortada });
+      CELULAR.test(vinetaDePlan('Pro')),
+      `la portada ${enPagoPortada ? 'SÍ' : 'NO'} pone el celular en el plan de pago, y los términos dicen lo contrario`,
+    ).toBe(enPagoPortada);
   });
 
   /**
@@ -143,8 +146,9 @@ describe('las páginas legales no contradicen a la tabla de precios', () => {
    * cambió. Las dos páginas venían de julio con el contenido de agosto.
    */
   it('las dos páginas legales declaran la misma fecha de actualización', () => {
-    const fecha = (h) => (plano(h).match(/Última actualización:\s*([^<]{5,40}?)\s{2,}|Última actualización:\s*([\d]+ de \w+ de \d{4})/) || [])
-      .slice(1).find(Boolean);
+    // `plano()` ya quitó las etiquetas y colapsó los espacios, así que acá se busca sobre
+    // texto corrido: «Última actualización: 11 de agosto de 2026».
+    const fecha = (h) => plano(h).match(/Última actualización:\s*(\d{1,2} de \p{L}+ de \d{4})/u)?.[1];
     const fT = fecha(terminos);
     const fP = fecha(privacidad);
     expect(fT, 'terminos no declara fecha de actualización').toBeTruthy();
