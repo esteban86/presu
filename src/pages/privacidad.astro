@@ -10,9 +10,9 @@ import Base from '../layouts/Base.astro';
     <div class="legal-wrap">
       <p class="eyebrow">Legal</p>
       <h1>Política de privacidad</h1>
-      <p class="updated">Última actualización: 19 de julio de 2026</p>
+      <p class="updated">Última actualización: 11 de agosto de 2026</p>
 
-      <p class="lede">Presu es una aplicación de escritorio de finanzas personales que funciona <strong>principalmente en tu equipo</strong>. Tus <strong>datos financieros</strong> —cuentas, transacciones, extractos, presupuestos, categorías— <strong>viven en tus dispositivos</strong> y no se envían a Presu ni a terceros en texto legible. Si activas la sincronización entre dispositivos (Pro), viajan <strong>cifrados de extremo a extremo</strong> por un servidor que no puede leerlos (detalle abajo).</p>
+      <p class="lede">Presu es una aplicación de escritorio de finanzas personales que funciona <strong>principalmente en tu equipo</strong>. Tus <strong>datos financieros</strong> —cuentas, transacciones, extractos, presupuestos, categorías— <strong>viven en tus dispositivos</strong> y no se envían a Presu ni a terceros en texto legible. Si activas la sincronización entre dispositivos, viajan <strong>cifrados de extremo a extremo</strong> por un servidor que no puede leerlos (detalle abajo).</p>
       <p>Algunas funciones opcionales o del plan Pro usan servicios en la nube operados por Presu / <strong>Asimétrica</strong> (Presu IA, licencias y pagos). En esos casos viaja únicamente el dato mínimo que se describe abajo —nunca tu base de datos completa— y siempre con cédula y números de cuenta <strong>enmascarados</strong> cuando aplica.</p>
 
       <h2>Qué datos se guardan y dónde</h2>
@@ -23,7 +23,7 @@ import Base from '../layouts/Base.astro';
       </ul>
       <div class="callout"><strong>Importante:</strong> la base de datos <code>gastos.db</code> y sus backups se guardan <strong>sin cifrar</strong> en disco (solo las credenciales se cifran). Si te preocupa el acceso físico a tu equipo, activa el cifrado de disco del sistema (FileVault en macOS, BitLocker en Windows). Está en evaluación cifrar también la base de datos en una versión futura.</div>
 
-      <h2>Sincronización entre tus dispositivos (opcional, parte de Pro)</h2>
+      <h2>Sincronización entre tus dispositivos (opcional, gratis)</h2>
       <p>Si activas la sincronización (para usar Presu en más de un computador o con la app del celular), tus datos viajan entre tus dispositivos a través de un servidor intermedio («relay») operado por Presu en Cloudflare. Cómo funciona:</p>
       <ul>
         <li><strong>Cifrado de extremo a extremo, de conocimiento cero.</strong> Cada cambio se cifra (AES-256-GCM) <strong>en tu dispositivo</strong> con una llave que solo tus dispositivos conocen, derivada de tu frase de acceso. El servidor almacena únicamente los blobs cifrados: <strong>no puede leer tus montos, comercios, cuentas, ni ningún contenido financiero</strong>, y nosotros tampoco.</li>
@@ -40,7 +40,7 @@ import Base from '../layouts/Base.astro';
       </ul>
 
       <h2>Presu IA (categorización y lectura en la nube)</h2>
-      <p>Presu IA es opcional (es parte del plan Pro; el plan gratis usa un modelo local en tu equipo). Cuando está activa:</p>
+      <p>Presu IA <strong>viene activa por defecto</strong> y está incluida en <strong>todos los planes</strong>: el gratis con un límite mensual de uso y los de pago con uno mayor. Puedes cambiarla cuando quieras en <strong>Ajustes » Presu IA</strong>, sea a un <strong>modelo local</strong> que corre en tu equipo (para categorizar no sale nada a la nube) o a <strong>tu propia clave</strong> de OpenAI/OpenRouter. Cuando está activa:</p>
       <ul>
         <li>Solo se envía a nuestro servidor el <strong>texto enmascarado</strong> del movimiento o del extracto/correo (con cédula y números de cuenta ocultos) para sugerir categorías o extraer movimientos. <strong>No guardamos ese texto</strong>; se usa para responder y se descarta.</li>
         <li><strong>Foto de recibo (app móvil):</strong> cuando tú tocas la cámara y capturas o eliges una imagen, esa imagen se envía <strong>sin enmascarar</strong> a Presu IA con el único fin de leer el monto, el comercio y la fecha de ese gasto. Se envía <strong>solo</strong> cuando tú disparas la captura, viaja con el <strong>id aleatorio de dispositivo</strong> (no tu nombre ni tu correo) y <strong>no se guarda</strong>: se usa para responder y se descarta.</li>
