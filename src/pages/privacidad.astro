@@ -44,7 +44,7 @@ import Base from '../layouts/Base.astro';
       <ul>
         <li>Solo se envía a nuestro servidor el <strong>texto enmascarado</strong> del movimiento o del extracto/correo (con cédula y números de cuenta ocultos) para sugerir categorías o extraer movimientos. <strong>No guardamos ese texto</strong>; se usa para responder y se descarta.</li>
         <li><strong>Foto de recibo (app móvil):</strong> cuando tú tocas la cámara y capturas o eliges una imagen, esa imagen se envía <strong>sin enmascarar</strong> a Presu IA con el único fin de leer el monto, el comercio y la fecha de ese gasto. Se envía <strong>solo</strong> cuando tú disparas la captura, viaja con el <strong>id aleatorio de dispositivo</strong> (no tu nombre ni tu correo) y <strong>no se guarda</strong>: se usa para responder y se descarta.</li>
-        <li>Para controlar costos y abuso llevamos <strong>contadores por dispositivo</strong> identificados por un <strong>id aleatorio</strong> (no por tu nombre ni tu correo).</li>
+        <li>Para controlar costos y abuso llevamos <strong>contadores por dispositivo</strong> identificados por un <strong>id aleatorio</strong> (no por tu nombre ni tu correo). De esos contadores derivamos <strong>totales agregados</strong> —cuántos equipos usaron la IA en el mes y cuántos llegaron al límite— para saber si los límites de cada plan están bien puestos. Esos totales son números sueltos: no llevan id de dispositivo ni ningún dato tuyo.</li>
         <li>También puedes usar <strong>tu propia API key</strong> (OpenAI/OpenRouter), en cuyo caso aplica la política de privacidad del proveedor que elijas.</li>
         <li>El procesamiento se realiza a través de proveedores de IA; solo reciben lo descrito arriba.</li>
       </ul>
