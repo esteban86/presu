@@ -142,17 +142,64 @@ describe('las páginas legales no contradicen a la tabla de precios', () => {
   });
 
   /**
+   * El cuerpo de los correos de banco viaja SIN enmascarar a Presu IA
+   * (`gmail-sync.ts` arma el prompt con `stripHtmlToText(body)` y no pasa por el scrub),
+   * a diferencia del texto del extracto, que sí se enmascara. Durante meses las dos
+   * copias de la política dijeron lo contrario: «el texto enmascarado del movimiento o
+   * del extracto/correo». Se descubrió el 2026-08-21 revisando el código para otra cosa,
+   * no por un reclamo.
+   *
+   * Los dos lados del guardia importan. Que la divulgación ESTÉ evita volver a la
+   * promesa falsa; que no se pueda meter «correo» en la lista de lo enmascarado evita
+   * que vuelva por la puerta de al lado al reescribir la viñeta.
+   */
+  it('privacidad divulga que el cuerpo del correo NO va enmascarado', () => {
+    const t = plano(privacidad);
+    expect(
+      /cuerpo del correo se envía sin enmascarar/i.test(t),
+      'desapareció la divulgación de que el cuerpo del correo viaja sin enmascarar',
+    ).toBe(true);
+    expect(
+      /texto enmascarado del movimiento o del extracto\s*\/?\s*correo/i.test(t),
+      'volvió la frase que promete enmascarado también para el correo: el código no lo hace',
+    ).toBe(false);
+  });
+
+  /**
    * Un documento publicado que cambia de fondo y conserva su fecha vieja se lee como que no
    * cambió. Las dos páginas venían de julio con el contenido de agosto.
+   *
+   * **Por qué ya no se compara una página contra la otra** (cambio del 2026-08-21): la
+   * versión anterior exigía que las DOS declararan la misma fecha, usando «se movieron
+   * juntas» como señal de «alguien las revisó juntas». Esa aproximación se rompe el primer
+   * día que hay que corregir UNA sola: al corregir privacidad —el cuerpo de los correos no
+   * viaja enmascarado y la política decía que sí— el test obligaba a fechar los términos
+   * como actualizados sin haberlos tocado, que es la misma mentira que este guardia vino a
+   * evitar, con el signo cambiado.
+   *
+   * La fecha esperada de cada página queda FIJADA acá, y eso es más estricto que la
+   * igualdad: tocar una legal sin pasar por este archivo falla. El acto que el guardia
+   * quería forzar —que alguien decida la fecha a conciencia— sigue siendo obligatorio; lo
+   * que se cae es la exigencia de que las dos se muevan al mismo tiempo.
    */
-  it('las dos páginas legales declaran la misma fecha de actualización', () => {
-    // `plano()` ya quitó las etiquetas y colapsó los espacios, así que acá se busca sobre
-    // texto corrido: «Última actualización: 11 de agosto de 2026».
-    const fecha = (h) => plano(h).match(/Última actualización:\s*(\d{1,2} de \p{L}+ de \d{4})/u)?.[1];
-    const fT = fecha(terminos);
-    const fP = fecha(privacidad);
-    expect(fT, 'terminos no declara fecha de actualización').toBeTruthy();
-    expect(fP, 'privacidad no declara fecha de actualización').toBeTruthy();
-    expect(fP, 'las dos legales declaran fechas distintas: una se actualizó y la otra no').toBe(fT);
-  });
+  const FECHAS_DECLARADAS = {
+    // Al cambiar el fondo de una de estas páginas, subí SU fecha —en la página y acá—.
+    privacidad: '21 de agosto de 2026',
+    terminos: '11 de agosto de 2026',
+  };
+
+  it.each(Object.entries(FECHAS_DECLARADAS))(
+    '%s declara exactamente la fecha fijada en el test',
+    (nombre, esperada) => {
+      // `plano()` ya quitó las etiquetas y colapsó los espacios, así que acá se busca sobre
+      // texto corrido: «Última actualización: 21 de agosto de 2026».
+      const html = nombre === 'privacidad' ? privacidad : terminos;
+      const declarada = plano(html).match(/Última actualización:\s*(\d{1,2} de \p{L}+ de \d{4})/u)?.[1];
+      expect(declarada, `${nombre} no declara fecha de actualización`).toBeTruthy();
+      expect(
+        declarada,
+        `${nombre} declara «${declarada}» y el test espera «${esperada}»: si cambiaste el fondo de la página, subí las dos; si no lo cambiaste, no le muevas la fecha`,
+      ).toBe(esperada);
+    },
+  );
 });
