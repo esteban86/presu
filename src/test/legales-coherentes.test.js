@@ -142,26 +142,42 @@ describe('las páginas legales no contradicen a la tabla de precios', () => {
   });
 
   /**
-   * El cuerpo de los correos de banco viaja SIN enmascarar a Presu IA
-   * (`gmail-sync.ts` arma el prompt con `stripHtmlToText(body)` y no pasa por el scrub),
-   * a diferencia del texto del extracto, que sí se enmascara. Durante meses las dos
-   * copias de la política dijeron lo contrario: «el texto enmascarado del movimiento o
-   * del extracto/correo». Se descubrió el 2026-08-21 revisando el código para otra cosa,
-   * no por un reclamo.
+   * El cuerpo de los correos de banco SÍ viaja enmascarado (`gmail-sync.ts` lo pasa por el
+   * scrub antes de armar el prompt), igual que el texto del extracto. No siempre fue así:
+   * durante meses viajó crudo mientras las dos copias de la política prometían lo contrario
+   * («el texto enmascarado del movimiento o del extracto/correo»). Se descubrió el
+   * 2026-08-21 revisando el código para otra cosa, no por un reclamo, y se cerró en el
+   * escritorio al día siguiente.
    *
-   * Los dos lados del guardia importan. Que la divulgación ESTÉ evita volver a la
-   * promesa falsa; que no se pueda meter «correo» en la lista de lo enmascarado evita
-   * que vuelva por la puerta de al lado al reescribir la viñeta.
+   * **Por qué este guardia cambió de signo.** Su versión anterior EXIGÍA la frase «el cuerpo
+   * del correo se envía sin enmascarar». Al arreglar el código esa frase pasó a ser falsa, y
+   * el guardia habría trabado la mentira nueva — el mismo defecto que vino a evitar, con el
+   * signo cambiado. La lección no es que sobre: es que un guardia sobre un texto publicado
+   * tiene que vigilar lo que HOY hace el código, y se revisa cuando el código cambia.
+   *
+   * Lo que vigila ahora son los DOS LÍMITES MEDIDOS del enmascarado, que es lo frágil: son
+   * la parte incómoda del párrafo, la primera que se cae al «resumir», y sin ella la página
+   * vuelve a prometer de más. El otro lado prohíbe la promesa lisa —«sin cédula, números de
+   * cuenta ni nombres»— porque el enmascarado no la cumple: una cuenta de 10 dígitos pasa, y
+   * el nombre del titular solo se tapa si Presu ya lo aprendió de un extracto.
    */
-  it('privacidad divulga que el cuerpo del correo NO va enmascarado', () => {
+  it('privacidad dice los dos límites del enmascarado, sin prometer de más', () => {
     const t = plano(privacidad);
     expect(
-      /cuerpo del correo se envía sin enmascarar/i.test(t),
-      'desapareció la divulgación de que el cuerpo del correo viaja sin enmascarar',
+      /de 10 dígitos.*(11 o más)/is.test(t),
+      'desapareció el límite de que una cuenta de 10 dígitos puede pasar sin taparse',
     ).toBe(true);
     expect(
-      /texto enmascarado del movimiento o del extracto\s*\/?\s*correo/i.test(t),
-      'volvió la frase que promete enmascarado también para el correo: el código no lo hace',
+      /nombre del titular solo se tapa si Presu\s*ya lo aprendió/i.test(t),
+      'desapareció el límite de que el nombre del titular solo se tapa si Presu ya lo aprendió',
+    ).toBe(true);
+    expect(
+      /sin cédula, números de cuenta ni nombres/i.test(t),
+      'volvió la promesa lisa «sin cédula, números de cuenta ni nombres»: el enmascarado no la cumple',
+    ).toBe(false);
+    expect(
+      /cuerpo del correo se envía sin enmascarar/i.test(t),
+      'quedó la frase vieja de que el cuerpo del correo va crudo: el código ya lo enmascara',
     ).toBe(false);
   });
 
@@ -184,7 +200,7 @@ describe('las páginas legales no contradicen a la tabla de precios', () => {
    */
   const FECHAS_DECLARADAS = {
     // Al cambiar el fondo de una de estas páginas, subí SU fecha —en la página y acá—.
-    privacidad: '21 de agosto de 2026',
+    privacidad: '22 de agosto de 2026',
     terminos: '11 de agosto de 2026',
   };
 
