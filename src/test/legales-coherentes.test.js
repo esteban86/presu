@@ -142,17 +142,90 @@ describe('las páginas legales no contradicen a la tabla de precios', () => {
   });
 
   /**
+   * El cuerpo de los correos de banco SÍ viaja enmascarado (`gmail-sync.ts` lo pasa por el
+   * scrub antes de armar el prompt), igual que el texto del extracto. No siempre fue así:
+   * durante meses viajó crudo mientras las dos copias de la política prometían lo contrario
+   * («el texto enmascarado del movimiento o del extracto/correo»). Se descubrió el
+   * 2026-08-21 revisando el código para otra cosa, no por un reclamo, y se cerró en el
+   * escritorio al día siguiente.
+   *
+   * **Por qué este guardia cambió de signo.** Su versión anterior EXIGÍA la frase «el cuerpo
+   * del correo se envía sin enmascarar». Al arreglar el código esa frase pasó a ser falsa, y
+   * el guardia habría trabado la mentira nueva — el mismo defecto que vino a evitar, con el
+   * signo cambiado. La lección no es que sobre: es que un guardia sobre un texto publicado
+   * tiene que vigilar lo que HOY hace el código, y se revisa cuando el código cambia.
+   *
+   * Lo que vigila ahora son los DOS LÍMITES MEDIDOS del enmascarado, que es lo frágil: son
+   * la parte incómoda del párrafo, la primera que se cae al «resumir», y sin ella la página
+   * vuelve a prometer de más. El otro lado prohíbe la promesa lisa —«sin cédula, números de
+   * cuenta ni nombres»— porque el enmascarado no la cumple: una cuenta de 10 dígitos pasa, y
+   * el nombre del titular solo se tapa si Presu ya lo aprendió de un extracto.
+   */
+  it('privacidad dice los dos límites del enmascarado, sin prometer de más', () => {
+    const t = plano(privacidad);
+    expect(
+      /de 10 dígitos.*(11 o más)/is.test(t),
+      'desapareció el límite de que una cuenta de 10 dígitos puede pasar sin taparse',
+    ).toBe(true);
+    expect(
+      /nombre del titular solo se tapa si Presu\s*ya lo aprendió/i.test(t),
+      'desapareció el límite de que el nombre del titular solo se tapa si Presu ya lo aprendió',
+    ).toBe(true);
+    expect(
+      /sin cédula, números de cuenta ni nombres/i.test(t),
+      'volvió la promesa lisa «sin cédula, números de cuenta ni nombres»: el enmascarado no la cumple',
+    ).toBe(false);
+    expect(
+      /cuerpo del correo se envía sin enmascarar/i.test(t),
+      'quedó la frase vieja de que el cuerpo del correo va crudo: el código ya lo enmascara',
+    ).toBe(false);
+    // El enmascarado existe en el código pero NO en la versión que la gente tiene
+    // instalada (la publicada es Presu 1.8 / build 1.24.0). Sin esta viñeta, la
+    // página afirma de la app instalada algo que esa app no hace — el mismo
+    // sobre-prometer que este guardia persigue, solo que por desfase de release.
+    // Se puede quitar —esta aserción incluida— cuando el enmascarado ya esté en la
+    // versión publicada; hasta entonces, quitarla es sobre-prometer.
+    expect(
+      /Hasta\s+Presu 1\.8/i.test(t),
+      'desapareció la aclaración de desde qué versión enmascara: la app publicada todavía no lo hace',
+    ).toBe(true);
+  });
+
+  /**
    * Un documento publicado que cambia de fondo y conserva su fecha vieja se lee como que no
    * cambió. Las dos páginas venían de julio con el contenido de agosto.
+   *
+   * **Por qué ya no se compara una página contra la otra** (cambio del 2026-08-21): la
+   * versión anterior exigía que las DOS declararan la misma fecha, usando «se movieron
+   * juntas» como señal de «alguien las revisó juntas». Esa aproximación se rompe el primer
+   * día que hay que corregir UNA sola: al corregir privacidad —el cuerpo de los correos no
+   * viaja enmascarado y la política decía que sí— el test obligaba a fechar los términos
+   * como actualizados sin haberlos tocado, que es la misma mentira que este guardia vino a
+   * evitar, con el signo cambiado.
+   *
+   * La fecha esperada de cada página queda FIJADA acá, y eso es más estricto que la
+   * igualdad: tocar una legal sin pasar por este archivo falla. El acto que el guardia
+   * quería forzar —que alguien decida la fecha a conciencia— sigue siendo obligatorio; lo
+   * que se cae es la exigencia de que las dos se muevan al mismo tiempo.
    */
-  it('las dos páginas legales declaran la misma fecha de actualización', () => {
-    // `plano()` ya quitó las etiquetas y colapsó los espacios, así que acá se busca sobre
-    // texto corrido: «Última actualización: 11 de agosto de 2026».
-    const fecha = (h) => plano(h).match(/Última actualización:\s*(\d{1,2} de \p{L}+ de \d{4})/u)?.[1];
-    const fT = fecha(terminos);
-    const fP = fecha(privacidad);
-    expect(fT, 'terminos no declara fecha de actualización').toBeTruthy();
-    expect(fP, 'privacidad no declara fecha de actualización').toBeTruthy();
-    expect(fP, 'las dos legales declaran fechas distintas: una se actualizó y la otra no').toBe(fT);
-  });
+  const FECHAS_DECLARADAS = {
+    // Al cambiar el fondo de una de estas páginas, subí SU fecha —en la página y acá—.
+    privacidad: '22 de agosto de 2026',
+    terminos: '11 de agosto de 2026',
+  };
+
+  it.each(Object.entries(FECHAS_DECLARADAS))(
+    '%s declara exactamente la fecha fijada en el test',
+    (nombre, esperada) => {
+      // `plano()` ya quitó las etiquetas y colapsó los espacios, así que acá se busca sobre
+      // texto corrido: «Última actualización: 21 de agosto de 2026».
+      const html = nombre === 'privacidad' ? privacidad : terminos;
+      const declarada = plano(html).match(/Última actualización:\s*(\d{1,2} de \p{L}+ de \d{4})/u)?.[1];
+      expect(declarada, `${nombre} no declara fecha de actualización`).toBeTruthy();
+      expect(
+        declarada,
+        `${nombre} declara «${declarada}» y el test espera «${esperada}»: si cambiaste el fondo de la página, subí las dos; si no lo cambiaste, no le muevas la fecha`,
+      ).toBe(esperada);
+    },
+  );
 });
