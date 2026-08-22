@@ -179,6 +179,16 @@ describe('las páginas legales no contradicen a la tabla de precios', () => {
       /cuerpo del correo se envía sin enmascarar/i.test(t),
       'quedó la frase vieja de que el cuerpo del correo va crudo: el código ya lo enmascara',
     ).toBe(false);
+    // El enmascarado existe en el código pero NO en la versión que la gente tiene
+    // instalada (la publicada es Presu 1.8 / build 1.24.0). Sin esta viñeta, la
+    // página afirma de la app instalada algo que esa app no hace — el mismo
+    // sobre-prometer que este guardia persigue, solo que por desfase de release.
+    // Se puede quitar —esta aserción incluida— cuando el enmascarado ya esté en la
+    // versión publicada; hasta entonces, quitarla es sobre-prometer.
+    expect(
+      /Hasta\s+Presu 1\.8/i.test(t),
+      'desapareció la aclaración de desde qué versión enmascara: la app publicada todavía no lo hace',
+    ).toBe(true);
   });
 
   /**
