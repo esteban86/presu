@@ -131,25 +131,10 @@ const faqs = [
     <div class="hero-grid">
       <!-- Izquierda: el argumento + captura -->
       <div class="hero-copy">
-        <span class="pill-badge"><span class="ping"></span> 🌊 Nueva Ola · abre el 21 de julio, mediodía</span>
-        <h1>La <span class="mintword">Nueva Ola</span> de Presu abre el 21 de julio.</h1>
-        <p class="pitch">La beta de pioneros ya está corriendo. La siguiente tanda —la Nueva Ola— abre el 21 de julio al mediodía.</p>
+        <span class="pill-badge"><span class="ping"></span> 🌊 Nueva Ola · lista de espera abierta</span>
+        <h1>La <span class="mintword">Nueva Ola</span> de Presu está por abrir.</h1>
+        <p class="pitch">Presu reúne tus gastos de todos tus bancos y en un minuto ves a dónde se va tu plata —sin planillas, sin claves del banco.</p>
         <p class="sub">Déjanos tu correo y entras en la <b>Nueva Ola</b>. ¿Quieres adelantarte? Tienes dos formas 👇</p>
-
-        <div class="countdown" id="countdown">
-          <span class="cd-top">Falta para la Nueva Ola</span>
-          <div class="cd-units" role="timer" aria-label="Cuenta regresiva para la beta">
-            <div class="cd-u"><b id="cd-d">00</b><span>días</span></div>
-            <span class="cd-sep">:</span>
-            <div class="cd-u"><b id="cd-h">00</b><span>horas</span></div>
-            <span class="cd-sep">:</span>
-            <div class="cd-u"><b id="cd-m">00</b><span>min</span></div>
-            <span class="cd-sep">:</span>
-            <div class="cd-u"><b id="cd-s">00</b><span>seg</span></div>
-          </div>
-          <span class="cd-live">● La Nueva Ola ya abrió —entra y reclama tu acceso.</span>
-          <p class="cd-note">Faltan para la <b>Nueva Ola</b>. ¿Ya eres pionero de la beta? Ya tienes acceso —revisa tu correo 📩.</p>
-        </div>
 
         <form id="hero-form" class="capture" novalidate>
           <div class="capture-row">
@@ -323,7 +308,7 @@ const faqs = [
       </div>
     </div>
     <div class="offer reveal">
-      <span class="os-eb" id="os-eb-date">Beta en curso · Nueva Ola abre el 21 de julio</span>
+      <span class="os-eb" id="os-eb-date">Nueva Ola · lista de espera abierta</span>
       <p class="offer-lead"><strong>No pagas nada</strong> por la beta —y además te llevas esto:</p>
       <ul class="offer-stack">
         <li>
@@ -368,7 +353,7 @@ const faqs = [
     <div class="cta-glow" aria-hidden="true"></div>
     <div class="sec-head reveal">
       <h2>Sé de los primeros en usar <span class="mark">Presu</span>.</h2>
-      <p class="sec-lead" id="waitlist-lede">La beta de pioneros ya está corriendo; la <b>Nueva Ola</b> abre el <b>21 de julio, mediodía</b>. Déjanos tu correo y entras. Los pioneros ya tienen acceso —revisa tu correo. Sin spam.</p>
+      <p class="sec-lead" id="waitlist-lede">Déjanos tu correo y entras en la <b>Nueva Ola</b>. Te avisamos apenas abramos cupos. Sin spam.</p>
       <div class="proof hidden" id="proof-wait">
         <span class="proof-dot" aria-hidden="true"></span><span class="avatars" aria-hidden="true"><i class="av"></i><i class="av"></i><i class="av"></i><i class="av"></i></span>
         <b class="count">—</b><span class="proof-txt">&nbsp;personas ya en la Nueva Ola</span>
@@ -2078,7 +2063,7 @@ const faqs = [
           if (late) {
             heroOk.querySelector('strong')!.textContent = '¡Listo, estás en la Nueva Ola! 🌊';
             heroOk.querySelector('span span')!.textContent =
-              'Abre el 21 de julio al mediodía. Comparte tu link para subir en la fila.';
+              'Te avisamos apenas abramos cupos. Comparte tu link para subir en la fila.';
           }
           heroOk.classList.remove('hidden');
           heroOk.classList.add('pop-in');
