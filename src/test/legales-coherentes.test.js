@@ -142,6 +142,62 @@ describe('las páginas legales no contradicen a la tabla de precios', () => {
   });
 
   /**
+   * La lectura alojada cambia la frontera de acceso: el Worker puede leer candidatos
+   * bancarios aunque la app esté cerrada. La página pública es el destino que ve Google
+   * durante OAuth, así que debe explicar la automatización, los proveedores y la ruta de
+   * PDF antes de aceptar una credencial real.
+   */
+  it('privacidad explica la ingesta alojada automática y sus tres entradas', () => {
+    const t = plano(privacidad);
+    expect(/Gmail automático alojado/i.test(t), 'falta la divulgación de Gmail alojado').toBe(true);
+    expect(
+      /no tienes que enviar cada correo/i.test(t),
+      'la página no dice que la lectura continúa automáticamente después de autorizar Gmail',
+    ).toBe(true);
+    expect(/Outlook automático alojado/i.test(t), 'falta la divulgación de Outlook alojado').toBe(true);
+    expect(/PDF alojado elegido por ti/i.test(t), 'falta la divulgación del PDF alojado').toBe(true);
+    expect(
+      /todavía no activo en producción/i.test(t),
+      'la página presenta la ingesta alojada como activa en producción antes del rollout',
+    ).toBe(true);
+  });
+
+  /**
+   * El envío es automático después de un permiso único, pero ese permiso empieza apagado.
+   * Son dos decisiones distintas y ambas tienen que quedar claras: no pedir una muestra por
+   * evento y no convertir la contribución en condición para importar.
+   */
+  it('privacidad describe las muestras automáticas como permiso previo y revocable', () => {
+    const t = plano(privacidad);
+    expect(/apagadas hasta que tú las actives/i.test(t), 'las señales dejaron de declararse opt-in').toBe(true);
+    expect(
+      /si activas este permiso una vez, Presu envía automáticamente/i.test(t),
+      'falta explicar que no hay un botón de envío por cada muestra',
+    ).toBe(true);
+    expect(/hasta 180 días/i.test(t), 'falta el límite de retención de muestras').toBe(true);
+    expect(/No incluye el PDF original/i.test(t), 'falta aclarar que la muestra no incluye el PDF').toBe(true);
+    expect(/puedes revocar muestras individuales/i.test(t), 'falta el control de revocación').toBe(true);
+    expect(
+      /Muestras[^.]{0,220}activad[ao] por defecto/is.test(t),
+      'la página volvió a declarar las muestras activas por defecto',
+    ).toBe(false);
+  });
+
+  it('privacidad no promete que las finanzas jamás salen del equipo', () => {
+    const t = plano(privacidad);
+    expect(/Tus finanzas nunca salen de tu equipo/i.test(t), 'la promesa absoluta ignora IA e ingesta alojada').toBe(
+      false,
+    );
+    expect(/Solo salen en texto legible para las funciones en la nube que actives/i.test(t)).toBe(true);
+  });
+
+  it('privacidad declara la retención local configurable hasta 365 días', () => {
+    const t = plano(privacidad);
+    expect(/política inicial es de 365 días/i.test(t)).toBe(true);
+    expect(/puede configurarse entre 1 y 365 días/i.test(t)).toBe(true);
+  });
+
+  /**
    * El cuerpo de los correos de banco SÍ viaja enmascarado (`gmail-sync.ts` lo pasa por el
    * scrub antes de armar el prompt), igual que el texto del extracto. No siempre fue así:
    * durante meses viajó crudo mientras las dos copias de la política prometían lo contrario
@@ -210,7 +266,7 @@ describe('las páginas legales no contradicen a la tabla de precios', () => {
    */
   const FECHAS_DECLARADAS = {
     // Al cambiar el fondo de una de estas páginas, subí SU fecha —en la página y acá—.
-    privacidad: '22 de agosto de 2026',
+    privacidad: '11 de septiembre de 2026',
     terminos: '11 de agosto de 2026',
   };
 
