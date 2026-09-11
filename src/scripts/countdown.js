@@ -18,23 +18,6 @@ export function target(now) {
   return now < BETA ? BETA : OLA;
 }
 
-/**
- * En qué fase del lanzamiento está la landing:
- *   'beta'    — la beta de pioneros sigue abierta; se cuenta hacia BETA.
- *   'ola'     — la beta cerró; se promete la Nueva Ola y se cuenta hacia OLA.
- *   'abierta' — la Nueva Ola ya salió; el hero entrega el producto.
- *
- * Existe porque durante meses solo hubo DOS fases: pasado OLA el hero seguía
- * clavado en "abre el 21 de julio" mientras el countdown ya decía "ya abrió",
- * y la página se contradecía sola. El orden importa: se evalúa de la fase más
- * reciente a la más antigua.
- */
-export function phase(now) {
-  if (now >= OLA) return 'abierta';
-  if (now >= BETA) return 'ola';
-  return 'beta';
-}
-
 /** Descompone un diff en milisegundos en días/horas/minutos/segundos. */
 export function parts(diffMs) {
   const totalSeconds = Math.max(0, Math.floor(diffMs / 1000));
