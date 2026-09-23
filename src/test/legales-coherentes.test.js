@@ -163,13 +163,17 @@ describe('las páginas legales no contradicen a la tabla de precios', () => {
   });
 
   /**
-   * El envío es automático después de un permiso único, pero ese permiso empieza apagado.
-   * Son dos decisiones distintas y ambas tienen que quedar claras: no pedir una muestra por
-   * evento y no convertir la contribución en condición para importar.
+   * Las señales sin contenido financiero son opt-out; las muestras con contenido
+   * siguen necesitando permiso previo, aunque luego se envíen automáticamente.
    */
   it('privacidad describe las muestras automáticas como permiso previo y revocable', () => {
     const t = plano(privacidad);
-    expect(/apagadas hasta que tú las actives/i.test(t), 'las señales dejaron de declararse opt-in').toBe(true);
+    expect(/Salud de parseo, hitos de uso y bancos elegidos vienen encendidos/i.test(t)).toBe(true);
+    expect(/puedes apagarlos por separado/i.test(t)).toBe(true);
+    expect(
+      /Las muestras de formatos, el procesamiento alojado y la lectura con IA que llevan contenido financiero permanecen apagados hasta que tú los actives/i.test(t),
+      'el contenido financiero dejó de requerir permiso previo',
+    ).toBe(true);
     expect(
       /si activas este permiso una vez, Presu envía automáticamente/i.test(t),
       'falta explicar que no hay un botón de envío por cada muestra',
@@ -266,7 +270,7 @@ describe('las páginas legales no contradicen a la tabla de precios', () => {
    */
   const FECHAS_DECLARADAS = {
     // Al cambiar el fondo de una de estas páginas, subí SU fecha —en la página y acá—.
-    privacidad: '11 de septiembre de 2026',
+    privacidad: '22 de septiembre de 2026',
     terminos: '11 de agosto de 2026',
   };
 
