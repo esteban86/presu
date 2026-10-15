@@ -1,0 +1,13 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "io.presu.app",
+      "sha256_cert_fingerprints": [
+        "97:26:9B:D4:FB:2C:33:1D:40:31:13:0A:85:25:EC:D0:B3:8C:78:A5:AC:4A:7C:F5:9C:C3:62:97:AA:F6:0A:E2",
+        "D9:AA:DF:84:2A:B8:13:9D:2C:24:22:F0:D2:38:08:BD:D2:9E:FE:06:71:4E:E9:EF:E3:19:82:F4:53:62:AF:F7"
+      ]
+    }
+  }
+]
