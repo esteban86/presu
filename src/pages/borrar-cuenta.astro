@@ -1,0 +1,183 @@
+---
+// Página pública para BORRAR la cuenta de Presu.
+//
+// Existe porque Google Play la exige para declarar «Sí» en «¿Los usuarios pueden
+// pedir que se borren sus datos?» (Seguridad de los datos): una URL pública que nombre
+// la app, diga cómo pedir el borrado y qué se borra y qué se conserva. Se pega tal cual
+// en Play Console, así que la ruta /borrar-cuenta no se cambia sin cambiarla allá.
+//
+// 🔴 Nada de lo que dice esta página se escribió de memoria. Cada hecho sale de:
+//   - PRIVACY.md de presu-desktop, secciones «Borrar tu cuenta», «Registro de
+//     consentimientos de finanzas abiertas» y «Licencias y pagos».
+//   - El código de la app: en el celular, `mobile/app/(tabs)/ajustes.tsx` (pestaña «Más»,
+//     grupo «Privacidad y cuenta») y `mobile/src/components/BorrarLaCuenta.tsx`; en el
+//     escritorio, `src/components/settings/BorrarMiCuenta.tsx` (Ajustes › Cuenta y plan).
+//   - El plazo por correo: /politica-tratamiento-datos, punto 9 (reclamos).
+// Si cambia el flujo de la app o PRIVACY.md, esta página cambia en el mismo momento.
+//
+// Hereda la regla de /soporte (no nombra planes, no muestra precios, no enlaza a
+// comprar) y la vigila `src/test/borrar-cuenta.test.js`.
+import Base from '../layouts/Base.astro';
+---
+
+<Base
+  sinVenta
+  title="Borrar tu cuenta · Presu"
+  description="Cómo borrar tu cuenta de Presu y los datos que guardamos de ti: desde la app del celular, desde el escritorio o escribiendo a soporte@presu.io."
+>
+  <main class="bc-wrap">
+    <h1>Borrar tu cuenta de Presu</h1>
+    <p class="bc-lead">
+      Así borras tu cuenta de <strong>Presu</strong>, la app de finanzas personales, y todo lo que guardamos de ti en
+      nuestro servidor. Lo puedes hacer tú mismo desde la app, sin escribirnos.
+    </p>
+
+    <p class="bc-nota">
+      <strong>Presu funciona sin cuenta.</strong> Si nunca vinculaste tu celular o tu computador a una cuenta, no hay
+      cuenta que borrar: tus movimientos están solo en tu aparato. Para borrarlos, mira
+      <a href="#en-tu-aparato">«Lo que está en tus aparatos»</a> más abajo.
+    </p>
+
+    <h2>Desde el celular</h2>
+    <ol class="bc-pasos">
+      <li>Abre Presu y toca la pestaña <strong>«Más»</strong>.</li>
+      <li>
+        Al final, en <strong>«Privacidad y cuenta»</strong>, toca <strong>«Borrar mi cuenta de Presu»</strong>. Esta
+        opción aparece solo si el celular está vinculado a tu cuenta.
+      </li>
+      <li>Toca <strong>«Enviarme el código»</strong>. Te mandamos un código de 6 dígitos al correo de tu cuenta.</li>
+      <li>Escribe el código y toca <strong>«Borrar mi cuenta»</strong>.</li>
+    </ol>
+
+    <h2>Desde el escritorio</h2>
+    <ol class="bc-pasos">
+      <li>Abre Presu y entra a <strong>Ajustes › Cuenta y plan</strong>.</li>
+      <li>En <strong>«Tu cuenta de Presu»</strong>, toca <strong>«Borrar mi cuenta…»</strong>.</li>
+      <li>Toca <strong>«Enviarme el código»</strong>. Te mandamos un código de 6 dígitos al correo de tu cuenta.</li>
+      <li>Escribe el código y toca <strong>«Borrar mi cuenta»</strong>.</li>
+    </ol>
+    <p class="bc-detalle">
+      El código siempre llega al correo de la cuenta, nunca a otro que se escriba en ese momento: así nadie puede borrar
+      tu cuenta solo por tener tu teléfono o tu computador en la mano.
+    </p>
+
+    <h2>Si ya no tienes la app</h2>
+    <p>
+      Escríbenos a <a href="mailto:soporte@presu.io?subject=Borrar%20mi%20cuenta%20de%20Presu">soporte@presu.io</a>
+      pidiendo que borremos tu cuenta, y dinos el correo con el que la creaste. Es tu derecho de supresión de Habeas
+      Data (Ley 1581 de 2012). Te respondemos en un máximo de <strong>15 días hábiles</strong> desde el día siguiente a
+      recibir tu correo; si no alcanzamos, te avisamos y lo resolvemos en máximo 8 días hábiles más, como dice nuestra
+      <a href="/politica-tratamiento-datos">Política de Tratamiento de Datos</a>.
+    </p>
+
+    <h2>Qué se borra</h2>
+    <p>Todo lo que guardamos de ti en nuestro servidor:</p>
+    <ul class="bc-lista">
+      <li>Tu correo y el vínculo con tus aparatos.</li>
+      <li>La configuración cifrada de la sincronización y el registro cifrado de cambios.</li>
+      <li>Tu uso.</li>
+      <li>Tus permisos y conexiones de importación alojada.</li>
+      <li>Los archivos de esa importación: los PDF y correos que hayamos procesado.</li>
+    </ul>
+    <p class="bc-detalle">
+      Si algún archivo no se puede borrar en ese momento, queda en una cola y se borra en el siguiente barrido.
+      <strong>No se puede deshacer:</strong> lo que estaba solo en el servidor no se recupera.
+    </p>
+
+    <h2>Qué se conserva, y por cuánto tiempo</h2>
+    <ul class="bc-lista">
+      <li>
+        <strong>El registro de autorizaciones de finanzas abiertas</strong>: qué permitiste, cuándo y cuándo lo
+        retiraste. La Ley 1581 nos obliga a poder demostrar que hubo autorización, así que lo conservamos durante el plazo
+        que fije la norma. No contiene datos financieros —ni montos, ni movimientos, ni números de cuenta—, y al borrar la
+        cuenta se le anota que retiraste todas tus autorizaciones.
+      </li>
+      <li>
+        <strong>Los datos de tu medio de pago</strong>, si alguna vez pagaste: nunca los tuvimos. Los maneja Wompi, la
+        pasarela de pagos, bajo su propia política de privacidad.
+      </li>
+    </ul>
+
+    <h2 id="en-tu-aparato">Lo que está en tus aparatos</h2>
+    <p>
+      Borrar la cuenta no toca lo que tienes en tu celular o tu computador: tus movimientos se quedan ahí. El aparato
+      queda desvinculado y, en el escritorio, además se apaga la sincronización y se quita la licencia de ese equipo. Si
+      también quieres borrar lo de cada aparato:
+    </p>
+    <ul class="bc-lista">
+      <li>En el celular: <strong>«Más» › «Borrar los datos de este celular»</strong>.</li>
+      <li>En el escritorio: <strong>Ajustes › Tus datos</strong>, opción <strong>«Dejar Presu como nuevo»</strong>.</li>
+    </ul>
+
+    <h2>Si tienes un plan familiar</h2>
+    <p>
+      Si otras personas ya activaron tu plan familiar, el borrado se detiene y te lo decimos: de esa cuenta cuelga el
+      acceso de ellas. Sácalas del plan y vuelve a intentarlo.
+    </p>
+
+    <p class="bc-pie">
+      ¿Dudas? Escríbenos a <a href="mailto:soporte@presu.io">soporte@presu.io</a>. ·
+      <a href="/privacidad">Política de privacidad</a> · <a href="/soporte">Soporte</a>
+    </p>
+  </main>
+</Base>
+
+<style>
+  .bc-wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: var(--space-8) var(--space-5);
+  }
+  .bc-wrap h1 {
+    margin: 0 0 var(--space-3);
+    font-family: var(--font-display);
+    font-size: var(--text-h1);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+  }
+  .bc-wrap h2 {
+    margin: var(--space-8) 0 var(--space-3);
+    font-size: var(--text-h2);
+    color: var(--text-primary);
+  }
+  .bc-wrap p,
+  .bc-wrap li {
+    font-size: var(--text-body);
+    color: var(--text-secondary);
+  }
+  .bc-wrap strong {
+    color: var(--text-primary);
+  }
+  .bc-wrap a {
+    color: var(--text-primary);
+  }
+  .bc-lead {
+    margin: 0 0 var(--space-5);
+    font-size: var(--text-body-lg);
+  }
+  .bc-nota {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: var(--space-5);
+  }
+  .bc-pasos,
+  .bc-lista {
+    margin: 0;
+    padding-left: var(--space-5);
+  }
+  .bc-pasos li,
+  .bc-lista li {
+    margin-bottom: var(--space-2);
+  }
+  .bc-detalle {
+    font-size: var(--text-label);
+  }
+  .bc-pie {
+    margin-top: var(--space-8);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--border);
+    font-size: var(--text-label);
+  }
+</style>
