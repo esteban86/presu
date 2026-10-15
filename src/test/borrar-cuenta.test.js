@@ -47,7 +47,8 @@ describe('/borrar-cuenta dice lo que Google Play exige', () => {
   it('da los pasos desde el celular y desde el escritorio, con los nombres de la app', () => {
     if (!hayBuild) return;
     const t = textoVisible(readFileSync(RUTA, 'utf8'));
-    expect(t, 'falta la pestaña del celular').toMatch(/«Más»/);
+    // «Más» sale también en «Lo que está en tus aparatos»: se ancla en el PASO, no en la palabra.
+    expect(t, 'falta la pestaña del celular').toMatch(/toca la pestaña «Más»/);
     expect(t, 'falta la fila que borra la cuenta').toMatch(/«Borrar mi cuenta de Presu»/);
     expect(t, 'falta la sección del escritorio').toMatch(/Ajustes › Cuenta y plan/);
     expect(t, 'falta el botón que confirma').toMatch(/«Borrar mi cuenta»/);
@@ -56,7 +57,8 @@ describe('/borrar-cuenta dice lo que Google Play exige', () => {
   it('deja pedirlo por correo a quien ya no tiene la app, con un plazo', () => {
     if (!hayBuild) return;
     const html = readFileSync(RUTA, 'utf8');
-    expect(html, 'no se puede escribir por correo').toMatch(/href="mailto:soporte@presu\.io/);
+    // El pie también enlaza a soporte@presu.io: se ancla en el enlace del camino por correo.
+    expect(html, 'no se puede pedir por correo').toMatch(/href="mailto:soporte@presu\.io\?subject=Borrar/);
     expect(textoVisible(html), 'no dice en cuánto tiempo respondemos').toMatch(/15 días hábiles/);
   });
 
