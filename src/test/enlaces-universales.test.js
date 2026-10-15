@@ -39,6 +39,33 @@ describe('apple-app-site-association', () => {
   });
 });
 
+/**
+ * Android verifica el dominio al INSTALAR la app: este archivo tiene que estar publicado antes del
+ * build que trae el `intentFilter`. La primera huella es la clave de firma de apps de Google Play
+ * (la que firma lo que se instala desde la tienda, la del bloque «Digital Asset Links JSON» de Play
+ * Console); la segunda, la clave de subida, para los builds que se instalan sin pasar por Play.
+ */
+describe('assetlinks.json', () => {
+  const ASSETLINKS = '.well-known/assetlinks.json';
+  const enlaces = JSON.parse(readFileSync(join(RAIZ, 'public', ASSETLINKS), 'utf8'));
+
+  it('delega los enlaces a io.presu.app con la clave de firma de Play primero', () => {
+    expect(enlaces).toHaveLength(1);
+    expect(enlaces[0].relation).toEqual(['delegate_permission/common.handle_all_urls']);
+    expect(enlaces[0].target.namespace).toBe('android_app');
+    expect(enlaces[0].target.package_name).toBe('io.presu.app');
+    const huellas = enlaces[0].target.sha256_cert_fingerprints;
+    expect(huellas[0]).toMatch(/^97:26:9B:D4:/);
+    for (const h of huellas) expect(h).toMatch(/^([0-9A-F]{2}:){31}[0-9A-F]{2}$/);
+  });
+
+  it('llega al build tal cual (Pages lo sirve como JSON por la extensión)', () => {
+    const construido = join(RAIZ, 'dist', ASSETLINKS);
+    expect(existsSync(construido), `falta dist/${ASSETLINKS} — corre npm run build`).toBe(true);
+    expect(JSON.parse(readFileSync(construido, 'utf8'))).toEqual(enlaces);
+  });
+});
+
 describe('/abrir/* (respaldo)', () => {
   const fuente = readFileSync(join(RAIZ, 'src', 'pages', 'abrir', '[...ruta].astro'), 'utf8');
   const plantilla = fuente.split('---').slice(2).join('---');
