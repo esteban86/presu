@@ -1,0 +1,61 @@
+---
+// Respaldo de los enlaces universales del celular (#3830 del repo de la app).
+//
+// Un enlace `https://presu.io/abrir/<pantalla>` abre esa pantalla en la app del celular: lo
+// declaran `/.well-known/apple-app-site-association` y `app.json` de la app. Esta página es
+// lo que se ve cuando el enlace NO abre la app: no está instalada, se tocó en el computador,
+// o el navegador no pasa el enlace a la app (algunos navegadores dentro de otras apps).
+//
+// Se sirve en el momento (como /r), no se construye: tiene que responder a cualquier
+// /abrir/*, y la lista de pantallas vive en la app, no acá.
+//
+// La regla de /movil vale también acá: un enlace de un correo puede llegar a un revisor de las
+// tiendas. NO nombra planes, NO muestra precios, NO enlaza a comprar (por eso `sinVenta`).
+// El `noindex` va en la cabecera: Base no lo ofrece y la página no tiene nada que buscar.
+import Base from '../../layouts/Base.astro';
+
+export const prerender = false;
+
+Astro.response.headers.set('X-Robots-Tag', 'noindex');
+Astro.response.headers.set('Cache-Control', 'public, max-age=300');
+---
+
+<Base
+  sinVenta
+  title="Abre Presu en tu celular"
+  description="Este enlace abre una pantalla de Presu en tu celular."
+>
+  <main class="ab-wrap">
+    <h1>Este enlace se abre en tu celular.</h1>
+    <p>
+      Si tienes Presu en el celular, toca el enlace desde ahí y te lleva directo a la pantalla. Si
+      lo abriste dentro de otra app y llegaste aquí, prueba abrirlo en el navegador del teléfono.
+    </p>
+    <p>
+      ¿Todavía no tienes la app? <a href="/movil">Mira cómo es Presu en el celular</a>.
+    </p>
+  </main>
+</Base>
+
+<style>
+  .ab-wrap {
+    max-width: 560px;
+    margin: 0 auto;
+    padding: var(--space-8) var(--space-5);
+  }
+  .ab-wrap h1 {
+    margin: 0 0 var(--space-4);
+    font-family: var(--font-display);
+    font-size: var(--text-h2);
+    line-height: 1.15;
+    color: var(--text-primary);
+  }
+  .ab-wrap p {
+    margin: 0 0 var(--space-3);
+    font-size: var(--text-body);
+    color: var(--text-secondary);
+  }
+  .ab-wrap a {
+    color: var(--text-primary);
+  }
+</style>
