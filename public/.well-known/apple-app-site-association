@@ -1,0 +1,13 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["XNJ2U58WL3.io.presu.app"],
+        "components": [
+          { "/": "/abrir", "comment": "Abre la app del celular en el Inicio" },
+          { "/": "/abrir/*", "comment": "Abre una pantalla de la app del celular" }
+        ]
+      }
+    ]
+  }
+}
