@@ -168,19 +168,22 @@ describe('las páginas legales no contradicen a la tabla de precios', () => {
    */
   it('privacidad describe las muestras automáticas como permiso previo y revocable', () => {
     const t = plano(privacidad);
-    expect(/Salud de parseo, hitos de uso y bancos elegidos vienen encendidos/i.test(t)).toBe(true);
-    expect(/puedes apagarlos por separado/i.test(t)).toBe(true);
+    // Desde el 22-oct-2026 la página es la copia de PRIVACY.md (ver
+    // privacidad-es-la-de-la-app.test.js): las mismas propiedades, con las palabras de la app.
+    expect(/señales anónimas vienen encendidas/i.test(t)).toBe(true);
+    expect(/salud de parseo.{0,40}hitos de uso.{0,40}bancos que elegiste/is.test(t)).toBe(true);
+    expect(/puedes apagarlas cuando quieras/i.test(t)).toBe(true);
     expect(
-      /Las muestras de formatos, el procesamiento alojado y la lectura con IA que llevan contenido financiero permanecen apagados hasta que tú los actives/i.test(t),
+      /Lo que lleva contenido de tus extractos está apagado hasta que tú lo actives/i.test(t),
       'el contenido financiero dejó de requerir permiso previo',
     ).toBe(true);
     expect(
-      /si activas este permiso una vez, Presu envía automáticamente/i.test(t),
+      /Autorizas una vez/i.test(t),
       'falta explicar que no hay un botón de envío por cada muestra',
     ).toBe(true);
-    expect(/hasta 180 días/i.test(t), 'falta el límite de retención de muestras').toBe(true);
-    expect(/No incluye el PDF original/i.test(t), 'falta aclarar que la muestra no incluye el PDF').toBe(true);
-    expect(/puedes revocar muestras individuales/i.test(t), 'falta el control de revocación').toBe(true);
+    expect(/hasta 90 días/i.test(t), 'falta el límite de retención de muestras').toBe(true);
+    expect(/nunca el PDF/i.test(t), 'falta aclarar que la muestra no incluye el PDF').toBe(true);
+    expect(/puedes retirar una muestra o todas/i.test(t), 'falta el control de revocación').toBe(true);
     expect(
       /Muestras[^.]{0,220}activad[ao] por defecto/is.test(t),
       'la página volvió a declarar las muestras activas por defecto',
@@ -239,16 +242,9 @@ describe('las páginas legales no contradicen a la tabla de precios', () => {
       /cuerpo del correo se envía sin enmascarar/i.test(t),
       'quedó la frase vieja de que el cuerpo del correo va crudo: el código ya lo enmascara',
     ).toBe(false);
-    // El enmascarado existe en el código pero NO en la versión que la gente tiene
-    // instalada (la publicada es Presu 1.8 / build 1.24.0). Sin esta viñeta, la
-    // página afirma de la app instalada algo que esa app no hace — el mismo
-    // sobre-prometer que este guardia persigue, solo que por desfase de release.
-    // Se puede quitar —esta aserción incluida— cuando el enmascarado ya esté en la
-    // versión publicada; hasta entonces, quitarla es sobre-prometer.
-    expect(
-      /Hasta\s+Presu 1\.8/i.test(t),
-      'desapareció la aclaración de desde qué versión enmascara: la app publicada todavía no lo hace',
-    ).toBe(true);
+    // Aquí se exigía la aclaración «Hasta Presu 1.8 el correo iba sin enmascarar», con la
+    // condición escrita de quitarla cuando el enmascarado estuviera en la versión publicada.
+    // Se quitó el 22-oct-2026: la publicada es la 1.45.0.
   });
 
   /**
@@ -270,7 +266,7 @@ describe('las páginas legales no contradicen a la tabla de precios', () => {
    */
   const FECHAS_DECLARADAS = {
     // Al cambiar el fondo de una de estas páginas, subí SU fecha —en la página y acá—.
-    privacidad: '22 de septiembre de 2026',
+    privacidad: '22 de octubre de 2026',
     terminos: '11 de agosto de 2026',
   };
 
