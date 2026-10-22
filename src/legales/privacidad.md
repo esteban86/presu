@@ -679,6 +679,26 @@ completo (User-Agent), ni la dirección IP, ni tu correo, ni ningún identificad
 totales para entender la demanda (por ejemplo, cuánta gente intenta descargar desde el celular). No está
 ligado a ninguna cuenta.
 
+## Aportes de documentos (programa «Sembradores»)
+
+En [presu.io/aporta](https://presu.io/aporta) puedes aportar, de forma **voluntaria y anónima**, un
+extracto o un pantallazo de transacciones para ayudarnos a que Presu aprenda a leer más bancos.
+Cómo cuidamos tu privacidad:
+
+- El documento se **anonimiza en tu propio navegador**: las zonas que tapas se eliminan de los
+  píxeles y el archivo original (PDF o imagen) **nunca se sube**. Viajan la imagen ya tapada y
+  aplanada, sin metadatos, y **el texto que quedó a la vista** después de tapar —cada palabra con su
+  posición en la página—, para entender cómo están armadas sus columnas. Lo que tapas no viaja ni
+  en la imagen ni en el texto.
+- Guardamos esa **imagen anonimizada**, ese **texto** y datos no personales del formato: **país,
+  banco, producto, moneda y tipo** de documento. No pedimos tu identidad; nombre y correo son
+  **opcionales** (solo si quieres aparecer en el Muro o que te contactemos).
+- Usamos los aportes **únicamente** para mejorar la lectura de formatos bancarios. No los
+  compartimos con terceros ni los usamos con otro fin.
+- Como el dato se entrega **anonimizado**, no constituye dato personal. Si dejaste tu correo y
+  quieres que borremos tu aporte, escríbenos (ver Contacto) y lo hacemos en máximo **15 días
+  hábiles**.
+
 ## Tus controles
 
 - Puedes desconectar tus correos (Ajustes » Correo y extractos) y quitar tu licencia de este
