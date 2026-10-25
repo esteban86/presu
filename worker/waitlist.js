@@ -178,6 +178,7 @@ export default {
 
     if (request.method === 'GET' && path === '/survey') return surveyCheck(request, env, pub, url);
     if (request.method === 'POST' && path === '/survey') return surveySubmit(request, env, cors);
+    if (request.method === 'POST' && path === '/survey/link') return surveyLink(request, env, cors);
     if (request.method === 'GET' && path === '/admin/survey') return adminSurvey(request, env, cors);
     if (path === '/admin/survey-batch') return adminSurveyBatch(request, env, cors);
     if (path === '/admin/survey-one') return adminSurveyOne(request, env, cors);
@@ -260,7 +261,7 @@ export default {
       }
     } catch (e) { console.error('subscribe: correo de bienvenida falló', maskEmail(email), e && e.message); /* los correos nunca deben romper el registro */ }
 
-    const resp = { status: 'ok', total, ref: code };
+    const resp = { status: 'ok', total, ref: code, st: await surveyToken(env, email) };
     if (url.searchParams.has('debug')) resp.mail = mail;
     return json(resp, 200, cors);
   },
@@ -617,6 +618,10 @@ async function trackRedirect(request, env, url) {
   const path = REDIRECT_DEST[to] || '/';
   let dest = SITE + path;
   if (e) dest += (path.indexOf('?') > -1 ? '&' : '?') + 'e=' + encodeURIComponent(e) + (to === 'encuesta' ? '&nuevo=1' : '');
+  // La firma de la encuesta viaja en el link del correo y solo se reenvía si es válida para ESE correo.
+  // (Antes /r añadía el code del pionero para cualquier correo: quien pidiera /r?e=<otro> obtenía su code.)
+  const t = url.searchParams.get('t') || '';
+  if (e && to === 'encuesta' && t && (await surveyTokenOk(env, e, t))) dest += '&t=' + encodeURIComponent(t);
   try {
     // Rate-limit el TRACKING (no la redirección): si un bot spamea /r, deja de
     // escribir clicks/contadores pero el usuario siempre es redirigido.
@@ -630,10 +635,6 @@ async function trackRedirect(request, env, url) {
         let r = {}; try { r = JSON.parse(raw); } catch (err) {}
         r.clickedAt = ts; r.clickDevice = device; r.clickTo = to; r.clickCount = (r.clickCount || 0) + 1;
         await env.WAITLIST.put('email:' + e, JSON.stringify(r));
-        // Pasa el código del pionero a la encuesta para que precargue SUS respuestas
-        // sin exponer PII a quien solo conozca el correo (el code no viaja en el HTML
-        // del correo; se añade aquí, server-side, tras validar que el registro existe).
-        if (to === 'encuesta' && r.ref) dest += '&code=' + encodeURIComponent(r.ref);
       }
     }
   } catch (err) { /* el tracking nunca debe romper la redirección */ }
@@ -765,31 +766,64 @@ async function esPioneroCheck(request, env, pub, url) {
   return json({ pionero: cohortOf(rec) === 'pionero' }, 200, pub);
 }
 
-// GET /survey?e=correo → ¿está en la lista?, ¿ya respondió?, nombre + answers previos (para precargar/reanudar)
+// POST /survey/link {email} → manda el enlace firmado al correo, si está en la lista.
+// Responde igual exista o no (no revela quién está inscrito); 1 correo cada 15 min por dirección.
+async function surveyLink(request, env, cors) {
+  if (!(await rateLimit(env.RL, 'svlink:' + clientIp(request), 10, 600))) return json({ status: 'error', reason: 'rate' }, 429, cors);
+  let body; try { body = await request.json(); } catch (e) { return json({ status: 'error', reason: 'json' }, 400, cors); }
+  if (body.botcheck) return json({ status: 'sent' }, 200, cors); // honeypot
+  const email = String(body.email || '').trim().toLowerCase();
+  if (!EMAIL_RE.test(email)) return json({ status: 'error', reason: 'email' }, 400, cors);
+  const raw = await env.WAITLIST.get('email:' + email);
+  if (raw && env.RESEND_API_KEY && !(await env.WAITLIST.get('survey_link:' + email))) {
+    await env.WAITLIST.put('survey_link:' + email, '1', { expirationTtl: 900 });
+    let rec = {}; try { rec = JSON.parse(raw); } catch (e) {}
+    rec.email = email; rec.st = await surveyToken(env, email);
+    await sendResend(env, { to: email, reply_to: env.NOTIFY_EMAIL || undefined, subject: 'Tu enlace a la encuesta de Presu', html: surveyLinkHtml(rec), campaign: 'encuesta-enlace' });
+  }
+  return json({ status: 'sent' }, 200, cors);
+}
+
+// Firma del enlace de la encuesta: HMAC del correo con una llave derivada de ADMIN_TOKEN (etiqueta propia).
+// Sin ADMIN_TOKEN no hay firma válida: la encuesta falla cerrada en vez de quedar abierta.
+export async function surveyToken(env, email) {
+  if (!env.ADMIN_TOKEN) return '';
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey('raw', enc.encode(env.ADMIN_TOKEN), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const sig = new Uint8Array(await crypto.subtle.sign('HMAC', key, enc.encode('survey:v1:' + email)));
+  return btoa(String.fromCharCode(...sig.slice(0, 16))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+async function surveyTokenOk(env, email, t) {
+  const want = await surveyToken(env, email);
+  const got = String(t || '');
+  if (!want || got.length !== want.length) return false;
+  let diff = 0;
+  for (let i = 0; i < want.length; i++) diff |= want.charCodeAt(i) ^ got.charCodeAt(i);
+  return diff === 0;
+}
+
+// GET /survey?e=correo&t=firma → ¿ya respondió?, nombre + answers previos (para precargar/reanudar).
+// Sin firma válida no dice nada (ni si el correo está en la lista): la página pide el enlace por correo.
 async function surveyCheck(request, env, pub, url) {
   const email = String(url.searchParams.get('e') || '').trim().toLowerCase();
   if (!EMAIL_RE.test(email)) return json({ found: false }, 200, pub);
+  if (!(await surveyTokenOk(env, email, url.searchParams.get('t')))) return json({ found: false, link: true }, 200, pub);
   const raw = await env.WAITLIST.get('email:' + email);
   if (!raw) return json({ found: false }, 200, pub);
   let rec = {}; try { rec = JSON.parse(raw); } catch (e) {}
   let sv = {}; const svRaw = await env.WAITLIST.get('survey:' + email);
   if (svRaw) { try { sv = JSON.parse(svRaw); } catch (e) {} }
-  const base = { found: true, answered: !!svRaw, completed: !!sv.completed };
-  // PII (nombre, celular, respuestas previas) SOLO si el código del pionero
-  // coincide con su registro. Sin esto, cualquiera cosechaba teléfono + perfil
-  // financiero con solo el correo. El link personalizado del correo trae el code.
-  const code = String(url.searchParams.get('code') || '').trim().toUpperCase();
-  if (!code || !rec.ref || code !== rec.ref) return json(base, 200, pub);
-  return json({ ...base, nombre: rec.nombre || '', celular: rec.celular || '', answers: sv.answers || {} }, 200, pub);
+  return json({ found: true, answered: !!svRaw, completed: !!sv.completed, nombre: rec.nombre || '', celular: rec.celular || '', answers: sv.answers || {} }, 200, pub);
 }
 
-// POST /survey {email, answers, complete?} → guarda de forma INCREMENTAL (merge), solo si el correo ya está en la waitlist.
+// POST /survey {email, t, answers, complete?} → guarda de forma INCREMENTAL (merge), solo con la firma del correo.
 // Cada envío parcial fusiona sus campos con lo ya guardado, así no se pierde nada si abandonan a la mitad.
 async function surveySubmit(request, env, cors) {
   let body; try { body = await request.json(); } catch (e) { return json({ status: 'error', reason: 'json' }, 400, cors); }
   if (body.botcheck) return json({ status: 'ok' }, 200, cors); // honeypot
   const email = String(body.email || '').trim().toLowerCase();
   if (!EMAIL_RE.test(email)) return json({ status: 'error', reason: 'email' }, 400, cors);
+  if (!(await surveyTokenOk(env, email, body.t))) return json({ status: 'error', reason: 'link' }, 403, cors);
   if (!(await env.WAITLIST.get('email:' + email))) return json({ status: 'error', reason: 'not_in_list' }, 403, cors);
   const ans = body.answers || {};
   const clean = {};
@@ -846,7 +880,7 @@ async function runSurveyBatch(env, limit) {
     let rec = {}; try { rec = JSON.parse((await env.WAITLIST.get('email:' + email)) || '{}'); } catch (e) {}
     rec.email = email;
     if (!env.RESEND_API_KEY) { errors++; continue; }
-    const res = await sendResend(env, { to: email, reply_to: env.NOTIFY_EMAIL || undefined, subject: SURVEY_SUBJECT, html: surveyEmailHtml(rec), campaign: 'encuesta' });
+    const res = await sendResend(env, { to: email, reply_to: env.NOTIFY_EMAIL || undefined, subject: SURVEY_SUBJECT, html: surveyEmailHtml(Object.assign(rec, { st: await surveyToken(env, email) })), campaign: 'encuesta' });
     if (res.ok) { await env.WAITLIST.put('survey_sent:' + email, String(Date.now())); sent++; } else errors++;
   }
   return { sent, skipped, errors, scanned: list.keys.length };
@@ -866,7 +900,7 @@ async function runFollowupBatch(env, limit) {
     rec.email = email;
     if (cohortOf(rec) !== 'pionero') { await env.WAITLIST.put('followup_sent:' + email, 'skip'); skipped++; continue; } // Nueva Ola: excluida
     if (!env.RESEND_API_KEY) { errors++; continue; }
-    const res = await sendResend(env, { to: email, reply_to: env.NOTIFY_EMAIL || undefined, subject: FOLLOWUP_SUBJECT, html: followupHtml(rec), campaign: 'followup' });
+    const res = await sendResend(env, { to: email, reply_to: env.NOTIFY_EMAIL || undefined, subject: FOLLOWUP_SUBJECT, html: followupHtml(Object.assign(rec, { st: await surveyToken(env, email) })), campaign: 'followup' });
     if (res.ok) { await env.WAITLIST.put('followup_sent:' + email, String(Date.now())); sent++; } else errors++;
   }
   return { sent, skipped, errors, scanned: list.keys.length };
@@ -887,7 +921,7 @@ async function adminSurveyOne(request, env, cors) {
   let rec = {}; const raw = await env.WAITLIST.get('email:' + email);
   if (raw) { try { rec = JSON.parse(raw); } catch (e) {} }
   rec.email = email;
-  const res = await sendResend(env, { to: email, reply_to: env.NOTIFY_EMAIL || undefined, subject: SURVEY_SUBJECT, html: surveyEmailHtml(rec), campaign: 'encuesta' });
+  const res = await sendResend(env, { to: email, reply_to: env.NOTIFY_EMAIL || undefined, subject: SURVEY_SUBJECT, html: surveyEmailHtml(Object.assign(rec, { st: await surveyToken(env, email) })), campaign: 'encuesta' });
   if (res.ok) { await env.WAITLIST.put('survey_sent:' + email, String(Date.now())); return json({ status: 'sent', id: res.id }, 200, cors); }
   return json({ status: 'error', detail: res }, 502, cors);
 }
@@ -909,7 +943,7 @@ async function adminFollowupOne(request, env, cors) {
   let rec = {}; const raw = await env.WAITLIST.get('email:' + email);
   if (raw) { try { rec = JSON.parse(raw); } catch (e) {} }
   rec.email = email;
-  const res = await sendResend(env, { to: email, reply_to: env.NOTIFY_EMAIL || undefined, subject: FOLLOWUP_SUBJECT, html: followupHtml(rec), campaign: 'followup' });
+  const res = await sendResend(env, { to: email, reply_to: env.NOTIFY_EMAIL || undefined, subject: FOLLOWUP_SUBJECT, html: followupHtml(Object.assign(rec, { st: await surveyToken(env, email) })), campaign: 'followup' });
   if (res.ok) { await env.WAITLIST.put('followup_sent:' + email, String(Date.now())); return json({ status: 'sent', id: res.id }, 200, cors); }
   return json({ status: 'error', detail: res }, 502, cors);
 }
@@ -1284,9 +1318,24 @@ function tierEmailHtml(t, rec, env) {
   return '<!doctype html><html><head><meta charset="utf-8"><meta name="color-scheme" content="dark"><meta name="supported-color-schemes" content="dark"><style>:root{color-scheme:dark}</style></head><body style="margin:0;background:#08080A;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#F4F4F3">' + EMAIL_HEADER + '<div style="max-width:520px;margin:0 auto;padding:20px 28px 36px"><p style="font-size:18px;margin:0 0 16px">' + hola + '</p>' + body + '<p style="font-size:13px;color:#8A8A90;margin:18px 0 0">Tu plata, clara.</p></div></body></html>';
 }
 
+function surveyLinkHtml(r) {
+  const hola = r.nombre ? 'Hola, ' + esc(r.nombre) + ' 👋' : 'Hola 👋';
+  const survey = SITE + '/r?e=' + encodeURIComponent(r.email || '') + '&to=encuesta&c=enlace&t=' + (r.st || '');
+  return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark"><meta name="supported-color-schemes" content="dark"><style>:root{color-scheme:dark}</style></head><body style="margin:0;background:#08080A;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#F4F4F3">
+  ${EMAIL_HEADER}
+  <div style="max-width:540px;margin:0 auto;padding:20px 24px 32px">
+    <p style="font-size:16px;color:#A1A1A6;margin:0 0 14px">${hola}</p>
+    <p style="font-size:16px;line-height:1.55;color:#D4D4D6;margin:0 0 22px">Aquí está tu enlace personal a la encuesta de Presu. Con él retomas donde quedaste.</p>
+    <div style="text-align:center;margin:0 0 24px">
+      <a href="${survey}" style="display:inline-block;background:#34D399;color:#08231A;font-weight:800;font-size:17px;text-decoration:none;padding:16px 30px;border-radius:14px">Abrir la encuesta →</a>
+    </div>
+    <p style="font-size:12px;line-height:1.6;color:#6B6B72;margin:0;text-align:center">Si no lo pediste, ignora este correo.</p>
+  </div></body></html>`;
+}
+
 function surveyEmailHtml(r) {
   const hola = r.nombre ? 'Hola, ' + esc(r.nombre) + ' 👋' : 'Hola 👋';
-  const survey = SITE + '/r?e=' + encodeURIComponent(r.email || '') + '&to=encuesta&c=encuesta';
+  const survey = SITE + '/r?e=' + encodeURIComponent(r.email || '') + '&to=encuesta&c=encuesta&t=' + (r.st || '');
   return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark"><meta name="supported-color-schemes" content="dark"><style>:root{color-scheme:dark}</style></head><body style="margin:0;background:#08080A;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#F4F4F3">
   ${EMAIL_HEADER}
   <div style="max-width:540px;margin:0 auto;padding:20px 24px 32px">
@@ -1305,7 +1354,7 @@ function surveyEmailHtml(r) {
 function followupHtml(r) {
   const hola = r.nombre ? 'Hola, ' + esc(r.nombre) + ' 👋' : 'Hola 👋';
   const dl = SITE + '/r?e=' + encodeURIComponent(r.email || '') + '&to=descargar&c=followup';
-  const survey = SITE + '/r?e=' + encodeURIComponent(r.email || '') + '&to=encuesta&c=followup';
+  const survey = SITE + '/r?e=' + encodeURIComponent(r.email || '') + '&to=encuesta&c=followup&t=' + (r.st || '');
   return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark"><meta name="supported-color-schemes" content="dark"><style>
   :root{color-scheme:dark;supported-color-schemes:dark}
   /* Gmail invierte y marca con data-ogsc (texto) / data-ogsb (fondo): los forzamos de vuelta al oscuro de marca */

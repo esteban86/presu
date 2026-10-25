@@ -219,7 +219,7 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '';
     @media (prefers-reduced-motion:reduce){ .step.anim,.conf i{animation:none!important} }
   </style>
 
-  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" integrity="sha512-q+4liFwdPC/bNdhUpZx6aXDx/h77yEQtn4I1slHydcbZK34nLaR3cAeYSJshoxIOq3mjEf7xJE8YWIUHMn+oCQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script is:inline>
   (function(){
     'use strict';
@@ -428,7 +428,7 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '';
     }
     function renderPdf(file){
       return file.arrayBuffer().then(function(buf){
-        var task = pdfjsLib.getDocument({ data: buf });
+        var task = pdfjsLib.getDocument({ data: buf, isEvalSupported: false }); // CVE-2024-4367: un PDF armado no ejecuta JS
         // PDF con clave (común en extractos): la pedimos aquí; NO se sube ni se guarda,
         // solo descifra localmente para poder rasterizarlo.
         task.onPassword = function(updatePassword, reason){
