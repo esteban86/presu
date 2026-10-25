@@ -482,7 +482,7 @@ import StaticPage from '../layouts/StaticPage.astro';
         g.forEach(function(r){
           var img=API+'/admin/doc?id='+encodeURIComponent(r.id)+'&t='+encodeURIComponent(tok);
           html+='<div class="pg"><a href="'+img+'" target="_blank" rel="noopener"><img loading="lazy" src="'+img+'"></a>'+
-            '<div class="pmeta"><span>'+(r.source||'')+' · '+(r.tokenCount||0)+' tok</span></div></div>';
+            '<div class="pmeta"><span>'+esc(r.source||'')+' · '+esc(r.tokenCount||0)+' tok</span></div></div>';
         });
         html+='</div></div>';
       });

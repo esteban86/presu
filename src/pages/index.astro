@@ -1973,13 +1973,13 @@ const faqs = [
   // ── Ventana post-registro: encuesta opcional (Nombre → WhatsApp → perfil) en un iframe ──
   // Reutiliza encuesta.html en modo nuevo+embed; guarda incremental (cada campo apenas se llena).
   let connectShown = false;
-  function openConnect(email: string) {
+  function openConnect(email: string, st?: string) {
     if (connectShown || !email) return;
     connectShown = true;
     const ov = document.getElementById('connect-modal');
     if (!ov) return;
     const iframe = ov.querySelector<HTMLIFrameElement>('iframe');
-    if (iframe) iframe.src = '/encuesta.html?e=' + encodeURIComponent(email) + '&nuevo=1&embed=1';
+    if (iframe) iframe.src = '/encuesta.html?e=' + encodeURIComponent(email) + '&t=' + encodeURIComponent(st || '') + '&nuevo=1&embed=1';
     ov.classList.add('is-open');
     document.body.style.overflow = 'hidden';
     if (typeof (window as any).gtag === 'function') (window as any).gtag('event', 'connect_open');
@@ -2105,7 +2105,7 @@ const faqs = [
           bumpCount();
           celebrate();
           track('persona', late ? 'tanda2' : 'hero');
-          openConnect(email);
+          openConnect(email, (res as any)?.st);
         },
         () => {
           btnLoading(heroForm, false);
@@ -2188,7 +2188,7 @@ const faqs = [
           bumpCount();
           celebrate();
           track(perfil, 'form');
-          openConnect(email);
+          openConnect(email, (res as any)?.st);
         },
         () => {
           btnLoading(form, false);

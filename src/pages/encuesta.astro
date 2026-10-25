@@ -160,7 +160,7 @@ import StaticPage from '../layouts/StaticPage.astro';
       : 'https://presu-waitlist-staging.asimetrica.workers.dev';
     var qs = new URLSearchParams(location.search);
     var email = (qs.get('e') || qs.get('email') || '').trim().toLowerCase();
-    var code = (qs.get('code') || qs.get('c') || '').trim().toUpperCase(); // gatea la precarga de PII
+    var tok = (qs.get('t') || '').trim();      // firma del enlace: sin ella el servidor no muestra ni guarda nada
     var nombre = '';
     var MODE_NUEVO = qs.get('nuevo') === '1';  // post-registro: sin bloque beta, WhatsApp temprano
     var EMBED = qs.get('embed') === '1';       // dentro del modal/iframe de la landing
@@ -300,7 +300,7 @@ import StaticPage from '../layouts/StaticPage.astro';
     function boot(){
       render(); // muestra "cargando…"
       if(!email){ phase='gate'; render(); return; }
-      fetch(API+'/survey?e='+encodeURIComponent(email)+(code?'&code='+encodeURIComponent(code):''),{cache:'no-store'})
+      fetch(API+'/survey?e='+encodeURIComponent(email)+'&t='+encodeURIComponent(tok),{cache:'no-store'})
         .then(function(r){return r.json();})
         .then(function(d){
           if(!d || !d.found){ phase='gate'; render(); return; }
@@ -334,16 +334,16 @@ import StaticPage from '../layouts/StaticPage.astro';
 
     function setBar(p){ barEl.style.width = Math.max(0,Math.min(100,p))+'%'; }
 
-    // Correo no encontrado / sin correo
+    // Sin enlace firmado: pedimos el enlace personal por correo
     function renderGate(){
       setBar(0);
       shell(
         '<div class="eb">Encuesta de Fundadores</div>'+
         '<h1 class="q">Confirma tu correo</h1>'+
-        '<p class="help">Esta encuesta es solo para quienes ya están en la lista de espera. Usa el mismo correo con el que te inscribiste.</p>'+
+        '<p class="help">Esta encuesta es solo para quienes ya están en la lista de espera. Escribe el correo con el que te inscribiste y te enviamos tu enlace personal.</p>'+
         '<input class="field" id="gateInput" type="email" inputmode="email" autocomplete="email" placeholder="tu@correo.com" value="'+esc(email)+'">'+
         '<div class="err" id="gateErr"></div>'+
-        '<div class="nav"><button class="btn btn-mint" id="gateBtn">Continuar <span class="kbd">↵</span></button></div>'
+        '<div class="nav"><button class="btn btn-mint" id="gateBtn">Enviarme el enlace <span class="kbd">↵</span></button></div>'
       );
       var inp = document.getElementById('gateInput');
       inp.focus();
@@ -351,16 +351,16 @@ import StaticPage from '../layouts/StaticPage.astro';
         var v = inp.value.trim().toLowerCase();
         var errEl = document.getElementById('gateErr');
         if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)){ errEl.textContent='Escribe un correo válido.'; return; }
-        errEl.textContent='Verificando…';
-        fetch(API+'/survey?e='+encodeURIComponent(v),{cache:'no-store'}).then(function(r){return r.json();}).then(function(d){
-          if(!d || !d.found){ errEl.textContent='Ese correo no está en la lista. ¿Usaste otro al inscribirte?'; return; }
-          email=v; nombre=d.nombre||'';
-          if(d.answers && typeof d.answers==='object') answers = d.answers;
-          if(d.celular && !answers.celular) answers.celular = d.celular;
-          lastSaved = JSON.stringify(answers);
-          if(d.completed){ phase='already'; render(); return; }
-          phase='intro'; render();
-        }).catch(function(){ errEl.textContent='No pudimos verificar. Intenta de nuevo.'; });
+        errEl.textContent='Enviando…';
+        fetch(API+'/survey/link',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:v})})
+          .then(function(r){return r.json();}).then(function(d){
+            if(!d || d.status!=='sent'){ errEl.textContent = d && d.reason==='rate' ? 'Demasiados intentos. Prueba en unos minutos.' : 'No pudimos enviarlo. Intenta de nuevo.'; return; }
+            shell(
+              '<div class="eb">Encuesta de Fundadores</div>'+
+              '<h1 class="q">Revisa tu correo 📩</h1>'+
+              '<p class="help">Si <b>'+esc(v)+'</b> está en la lista, te llega un enlace para responder. Ábrelo desde ese correo.</p>'
+            );
+          }).catch(function(){ errEl.textContent='No pudimos enviarlo. Intenta de nuevo.'; });
       }
       document.getElementById('gateBtn').addEventListener('click', go);
       inp.addEventListener('keydown', function(e){ if(e.key==='Enter') go(); });
@@ -586,7 +586,7 @@ import StaticPage from '../layouts/StaticPage.astro';
         if(payload === lastSaved) return;   // nada cambió desde el último guardado
         lastSaved = payload;
         fetch(API+'/survey',{method:'POST',headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({email:email, answers:answers})}).catch(function(){});
+          body:JSON.stringify({email:email, t:tok, answers:answers})}).catch(function(){});
       } catch(e){}
     }
 
@@ -605,7 +605,7 @@ import StaticPage from '../layouts/StaticPage.astro';
     function submit(){
       phase='done'; setBar(100); renderSending();
       fetch(API+'/survey',{method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({email:email, answers:answers, complete:true})})
+        body:JSON.stringify({email:email, t:tok, answers:answers, complete:true})})
         .then(function(r){return r.json();})
         .then(function(d){
           if(d && (d.status==='ok'||d.status==='updated')){ renderDone(); }
@@ -615,7 +615,7 @@ import StaticPage from '../layouts/StaticPage.astro';
     }
     function renderSending(){ backEl.style.display='none'; shell('<div class="center" style="color:var(--mut)">Guardando tus respuestas…</div>'); }
     function renderError(reason){
-      var msg = reason==='not_in_list' ? 'Ese correo no está en la lista.' : 'No pudimos guardar. Revisa tu conexión.';
+      var msg = reason==='not_in_list' ? 'Ese correo no está en la lista.' : reason==='link' ? 'Este enlace no es válido. Pide uno nuevo desde presu.io/encuesta.' : 'No pudimos guardar. Revisa tu conexión.';
       shell('<h1 class="q center">Ups 😅</h1><p class="lead center">'+msg+'</p>'+
         '<div class="nav center" style="justify-content:center"><button class="btn btn-mint" id="retry">Reintentar</button></div>');
       document.getElementById('retry').addEventListener('click', submit);
