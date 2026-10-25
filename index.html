@@ -1189,7 +1189,7 @@
       document.head.appendChild(st);
     })();
     var connectShown = false;
-    function openConnect(email){
+    function openConnect(email, st){
       if(connectShown || !email) return; connectShown = true;
       var ov = document.getElementById('connect-modal');
       if(!ov){
@@ -1199,7 +1199,7 @@
         ov.addEventListener('click', function(e){ if(e.target===ov) closeConnect(); });
         ov.querySelector('.cm-close').addEventListener('click', closeConnect);
       }
-      ov.querySelector('iframe').src = '/encuesta.html?e=' + encodeURIComponent(email) + '&nuevo=1&embed=1';
+      ov.querySelector('iframe').src = '/encuesta.html?e=' + encodeURIComponent(email) + '&t=' + encodeURIComponent(st || '') + '&nuevo=1&embed=1';
       ov.classList.add('on'); document.body.style.overflow = 'hidden';
       if(typeof gtag==='function') gtag('event','connect_open');
       if(window.plausible) window.plausible('Connect Open');
@@ -1302,7 +1302,7 @@
       heroErr.style.display='none';
       btnLoading(heroForm, true);
       send({ perfil:'persona', correo:email, origen:(LATE?'tanda2':'hero'), ref:REF },
-        function(res){ heroForm.style.display='none'; if(LATE){ heroOk.querySelector('strong').textContent='¡Listo, estás en la Nueva Ola! 🌊'; heroOk.querySelector('span').textContent='Abre el 15 de julio a las 4pm. Comparte tu link para subir en la fila — o aporta un documento para entrar antes.'; } heroOk.classList.add('pop-in'); heroOk.style.display='flex'; celebrate(heroOk); if(res&&res.ref) heroOk.insertAdjacentHTML('afterend', referralCTA(res.ref)); bumpCount(); if(typeof gtag==='function') gtag('event','generate_lead',{perfil:'persona',origen:(LATE?'tanda2':'hero')}); if(window.plausible) window.plausible('Waitlist Signup',{props:{perfil:'persona',origen:(LATE?'tanda2':'hero')}}); openConnect(email); },
+        function(res){ heroForm.style.display='none'; if(LATE){ heroOk.querySelector('strong').textContent='¡Listo, estás en la Nueva Ola! 🌊'; heroOk.querySelector('span').textContent='Abre el 15 de julio a las 4pm. Comparte tu link para subir en la fila — o aporta un documento para entrar antes.'; } heroOk.classList.add('pop-in'); heroOk.style.display='flex'; celebrate(heroOk); if(res&&res.ref) heroOk.insertAdjacentHTML('afterend', referralCTA(res.ref)); bumpCount(); if(typeof gtag==='function') gtag('event','generate_lead',{perfil:'persona',origen:(LATE?'tanda2':'hero')}); if(window.plausible) window.plausible('Waitlist Signup',{props:{perfil:'persona',origen:(LATE?'tanda2':'hero')}}); openConnect(email, res&&res.st); },
         function(){ btnLoading(heroForm, false); heroErr.textContent='Algo falló de nuestro lado. Reintenta en un momento.'; heroErr.style.display='block'; },
         function(){ heroForm.style.display='none'; heroOk.querySelector('strong').textContent='¡Ya estás inscrito! 🎉'; heroOk.querySelector('span').textContent = LATE ? 'Si eres pionero de la beta, ya tienes acceso (revisa tu correo 📩). Si no, te avisamos cuando abra la Nueva Ola el 15 de julio.' : 'Ese correo ya está inscrito. Te avisamos primero cuando abramos.'; heroOk.classList.add('pop-in'); heroOk.style.display='flex'; openConnect(email); });
     });
@@ -1338,7 +1338,7 @@
         empresa: perfil === 'empresa' ? form.empresa.value.trim() : '',
         empleados: perfil === 'empresa' ? form.empleados.value.trim() : '', ref: REF
       },
-      function(res){ form.classList.add('hidden'); var s=document.getElementById('waitlist-success'); s.classList.add('pop-in'); s.classList.remove('hidden'); celebrate(s); if(res&&res.ref) s.insertAdjacentHTML('beforeend', referralCTA(res.ref)); bumpCount(); if(typeof gtag==='function') gtag('event','generate_lead',{perfil:perfil,origen:'form'}); if(window.plausible) window.plausible('Waitlist Signup',{props:{perfil:perfil}}); openConnect(email); },
+      function(res){ form.classList.add('hidden'); var s=document.getElementById('waitlist-success'); s.classList.add('pop-in'); s.classList.remove('hidden'); celebrate(s); if(res&&res.ref) s.insertAdjacentHTML('beforeend', referralCTA(res.ref)); bumpCount(); if(typeof gtag==='function') gtag('event','generate_lead',{perfil:perfil,origen:'form'}); if(window.plausible) window.plausible('Waitlist Signup',{props:{perfil:perfil}}); openConnect(email, res&&res.st); },
       function(){ btnLoading(form, false); showError('wl-err', true); },
       function(){ var s=document.getElementById('waitlist-success'); s.querySelector('h3').textContent='¡Ya estás en la lista! 🎉'; s.querySelector('p').textContent='Ese correo ya está inscrito. Te avisamos primero cuando abramos cupos.'; form.classList.add('hidden'); s.classList.add('pop-in'); s.classList.remove('hidden'); openConnect(email); });
     });

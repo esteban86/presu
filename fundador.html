@@ -88,6 +88,7 @@
 <div class="toast" id="toast">¡Copiado!</div>
 
 <script>
+  function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c];});}
 (function(){
   var API = ['presu.asimetrica.co','presu.io','www.presu.io','presu.com.co'].indexOf(location.hostname) !== -1
     ? 'https://presu-waitlist.asimetrica.workers.dev'
@@ -140,12 +141,12 @@
       cc.innerHTML = '<h2>Círculo privado 🎉</h2>'
         + '<p class="muted" style="margin-top:0">Tu acceso de Círculo: grupo privado + voto en el roadmap.</p>'
         + (me.unlock.whatsapp ? '<a class="btn btn-mint" style="display:inline-block;text-decoration:none;margin:4px 0 14px" href="'+me.unlock.whatsapp+'" target="_blank" rel="noopener">Unirme al grupo privado →</a>' : '')
-        + '<ul class="tiers"><li class="on"><span class="dot">🗳️</span><span><b>Voto en el roadmap</b> — <a href="/roadmap.html?code='+code+'" style="color:var(--mint-bright)">abrir el tablero →</a></span></li>' + mc + '</ul>';
+        + '<ul class="tiers"><li class="on"><span class="dot">🗳️</span><span><b>Voto en el roadmap</b> — <a href="/roadmap.html?code='+encodeURIComponent(code)+'" style="color:var(--mint-bright)">abrir el tablero →</a></span></li>' + mc + '</ul>';
     }
 
     var top = (lb && lb.top) || [];
     document.getElementById('rank').innerHTML = top.length
-      ? top.map(function(x,i){ return '<li class="'+(i<3?'top3':'')+'"><span class="pos">'+(i+1)+'</span><span class="nm">'+x.name+'</span><span class="ct">'+x.count+'</span></li>'; }).join('')
+      ? top.map(function(x,i){ return '<li class="'+(i<3?'top3':'')+'"><span class="pos">'+(i+1)+'</span><span class="nm">'+esc(x.name)+'</span><span class="ct">'+esc(x.count)+'</span></li>'; }).join('')
       : '<li><span class="nm" style="color:var(--mut)">Aún nadie en el ranking. ¡Sé el primero!</span></li>';
   }).catch(function(){ document.getElementById('loading').textContent='No pudimos cargar tu progreso. Intenta de nuevo.'; });
 
