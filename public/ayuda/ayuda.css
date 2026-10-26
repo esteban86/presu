@@ -142,6 +142,7 @@
 .ayuda .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
 .ayuda .card{display:block;background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:18px;color:var(--tx);transition:.15s}
 .ayuda .card:hover{border-color:var(--mint);text-decoration:none;transform:translateY(-1px)}
+.ayuda .card .t,.ayuda .card .d,.ayuda .card .m,.ayuda .next .k,.ayuda .next .t{display:block}
 .ayuda .card .t{font-family:var(--head);font-weight:600;font-size:1.06rem;line-height:1.3}
 .ayuda .card .d{color:var(--mut);font-size:.88rem;margin-top:6px}
 .ayuda .card .m{font-family:var(--mono);font-size:.68rem;color:var(--mut2);margin-top:10px}
