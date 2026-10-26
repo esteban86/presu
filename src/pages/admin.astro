@@ -87,6 +87,26 @@ import StaticPage from '../layouts/StaticPage.astro';
     var view = location.hash === '#encuesta' ? 'encuesta' : (location.hash === '#registros' ? 'registros' : (location.hash === '#clics' ? 'clics' : (location.hash === '#usuarios' ? 'usuarios' : 'aportes')));
     function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c];});}
 
+    // Las imágenes de /admin/doc se piden con fetch + cabecera X-Admin-Token y se muestran
+    // como blob: (el token ya no va en la URL, donde quedaba en historial y logs).
+    var DOC_URLS = {};
+    function fetchDoc(id, kind){
+      return fetch(API+'/admin/doc?id='+encodeURIComponent(id)+(kind?'&kind='+kind:''),{headers:{'X-Admin-Token':tok},cache:'no-store'})
+        .then(function(r){ if(!r.ok) throw new Error('doc '+r.status); return r; });
+    }
+    function docBlobUrl(id){
+      if(!DOC_URLS[id]) DOC_URLS[id]=fetchDoc(id).then(function(r){return r.blob();}).then(function(b){return URL.createObjectURL(b);})
+        .catch(function(e){ delete DOC_URLS[id]; throw e; });
+      return DOC_URLS[id];
+    }
+    function hydrateDocs(){
+      var imgs=app.querySelectorAll('img[data-doc]');
+      var load=function(im){ docBlobUrl(im.getAttribute('data-doc')).then(function(u){ im.src=u; var a=im.closest('a'); if(a) a.href=u; }).catch(function(){}); };
+      if(!('IntersectionObserver' in window)){ Array.prototype.forEach.call(imgs,load); return; }
+      var io=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ io.unobserve(e.target); load(e.target); } }); },{rootMargin:'400px'});
+      Array.prototype.forEach.call(imgs,function(im){ io.observe(im); });
+    }
+
     // Junta las páginas de un envío en UN solo PDF (en el navegador).
     function loadJsPDF(){ if(window.jspdf&&window.jspdf.jsPDF) return Promise.resolve(); if(loadJsPDF._p) return loadJsPDF._p; loadJsPDF._p=new Promise(function(res,rej){ var s=document.createElement('script'); s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'; s.onload=res; s.onerror=rej; document.head.appendChild(s); }); return loadJsPDF._p; }
     function loadJSZip(){ if(window.JSZip) return Promise.resolve(); if(loadJSZip._p) return loadJSZip._p; loadJSZip._p=new Promise(function(res,rej){ var s=document.createElement('script'); s.src='https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js'; s.onload=res; s.onerror=rej; document.head.appendChild(s); }); return loadJSZip._p; }
@@ -95,8 +115,8 @@ import StaticPage from '../layouts/StaticPage.astro';
     function buildPdf(g){
       var JsPDF=(window.jspdf&&window.jspdf.jsPDF)||window.jsPDF;
       return Promise.all(g.map(function(r){
-        var pImg=new Promise(function(res){ var im=new Image(); im.crossOrigin='anonymous'; im.onload=function(){res(im);}; im.onerror=function(){res(null);}; im.src=API+'/admin/doc?id='+encodeURIComponent(r.id)+'&t='+encodeURIComponent(tok)+'&c=1'; });
-        var pTok=fetch(API+'/admin/doc?id='+encodeURIComponent(r.id)+'&t='+encodeURIComponent(tok)+'&kind=json').then(function(x){return x.json();}).catch(function(){return null;});
+        var pImg=docBlobUrl(r.id).then(function(u){ return new Promise(function(res){ var im=new Image(); im.onload=function(){res(im);}; im.onerror=function(){res(null);}; im.src=u; }); }).catch(function(){ return null; });
+        var pTok=fetchDoc(r.id,'json').then(function(x){return x.json();}).catch(function(){return null;});
         return Promise.all([pImg,pTok]).then(function(a){ return { img:a[0], lay:a[1] }; });
       })).then(function(pages){
         pages=pages.filter(function(p){return p.img;}); // imagen faltante → se omite
@@ -480,13 +500,12 @@ import StaticPage from '../layouts/StaticPage.astro';
         html+='<div class="group"><div class="ghead"><b>'+esc(f.banco||'?')+'</b>'+
           '<span><span class="tag">'+esc(f.pais||'')+'</span> <span class="tag">'+esc(f.moneda||'')+'</span> <span class="tag">'+esc(f.tipo||'')+'</span> <span class="tag">'+g.length+' pág</span> <button class="btn pdf-btn" style="padding:7px 13px;font-size:.85rem" data-sid="'+esc(k)+'" data-banco="'+esc(f.banco||'doc')+'">📄 Descargar PDF</button></span></div><div class="pages">';
         g.forEach(function(r){
-          var img=API+'/admin/doc?id='+encodeURIComponent(r.id)+'&t='+encodeURIComponent(tok);
-          html+='<div class="pg"><a href="'+img+'" target="_blank" rel="noopener"><img loading="lazy" src="'+img+'"></a>'+
+          html+='<div class="pg"><a target="_blank" rel="noopener"><img alt="" data-doc="'+esc(r.id)+'"></a>'+
             '<div class="pmeta"><span>'+esc(r.source||'')+' · '+esc(r.tokenCount||0)+' tok</span></div></div>';
         });
         html+='</div></div>';
       });
-      app.innerHTML=html; wire();
+      app.innerHTML=html; wire(); hydrateDocs();
     }
 
     function wire(){

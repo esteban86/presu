@@ -39,6 +39,8 @@ const TIERS = [
   { min: 7, name: 'Círculo privado' },
   { min: 15, name: 'Masterclass' },
 ];
+const SIGNUPS_PER_IP_DAY = 40; // registros por IP en 24 h (holgado para una oficina/universidad con NAT)
+const REFERRALS_PER_IP_DAY = 3; // referidos que un IP puede acreditar a un mismo código en 24 h
 const CAP = 1000; // cupos máximos antes del lanzamiento; al llegar, se cierran los registros.
 const CAMPAIGN_SUBJECT = 'Presu abrió 🌿 ya ves a dónde se va tu plata';
 const CAMPAIGN_BATCH = 30; // envíos por disparo del cron (bajo el límite de subrequests)
@@ -192,7 +194,7 @@ export default {
     if (request.method === 'GET' && path === '/admin/contrib') return adminContrib(request, env, cors);
     if (request.method === 'GET' && path === '/admin/contrib/export') return adminContribExport(request, env, cors);
     if (request.method === 'GET' && path === '/admin/contrib/migrate') return adminContribMigrate(request, env, cors);
-    if (request.method === 'GET' && path === '/admin/doc') return adminDoc(request, env, url);
+    if (request.method === 'GET' && path === '/admin/doc') return adminDoc(request, env, url, cors);
 
     if (request.method !== 'POST') return json({ status: 'error', reason: 'method' }, 405, cors);
 
@@ -202,6 +204,9 @@ export default {
 
     const ip = clientIp(request);
     if (!(await rateLimit(env.RL, 'sub:' + ip, 12, 60))) return json({ status: 'error', reason: 'rate' }, 429, cors);
+    // Tope diario por IP: la ventana de 1 min frena ráfagas, pero un bot lento podía
+    // llenar los CAP cupos (o mandar la bienvenida a miles de direcciones ajenas).
+    if (!(await rateLimit(env.RL, 'subd:' + ip, SIGNUPS_PER_IP_DAY, 86400))) return json({ status: 'error', reason: 'rate' }, 429, cors);
 
     const email = String(data.correo || data.email || '').trim().toLowerCase();
     if (!EMAIL_RE.test(email) || isDisposable(email)) return json({ status: 'error', reason: 'email' }, 400, cors);
@@ -234,7 +239,10 @@ export default {
 
     // Acreditar al referidor — solo si es efectivo (registro nuevo válido) y no auto-referido
     const refCode = String(data.ref || '').trim().toUpperCase();
-    if (refCode) {
+    // Un mismo IP solo acredita unos pocos referidos por código al día: sin esto, un
+    // script registraba direcciones inventadas con ?ref= y desbloqueaba los niveles.
+    // El registro entra igual; solo no suma al referidor.
+    if (refCode && (await rateLimit(env.RL, 'refd:' + refCode + ':' + ip, REFERRALS_PER_IP_DAY, 86400))) {
       const credited = await creditReferral(env, refCode, email);
       if (credited) record.referredBy = credited.referrer;
     }
@@ -262,7 +270,8 @@ export default {
     } catch (e) { console.error('subscribe: correo de bienvenida falló', maskEmail(email), e && e.message); /* los correos nunca deben romper el registro */ }
 
     const resp = { status: 'ok', total, ref: code, st: await surveyToken(env, email) };
-    if (url.searchParams.has('debug')) resp.mail = mail;
+    // La respuesta cruda de Resend (ids, errores de cuenta) solo para el admin.
+    if (url.searchParams.has('debug') && authed(request, env)) resp.mail = mail;
     return json(resp, 200, cors);
   },
 
@@ -460,7 +469,16 @@ async function adminWaitlist(request, env, cors, url) {
   }
   return json({ total: rows.length, rows }, 200, cors);
 }
-function authed(request, env) { return env.ADMIN_TOKEN && (request.headers.get('X-Admin-Token') || '') === env.ADMIN_TOKEN; }
+// El token admin solo viaja en la cabecera X-Admin-Token (nunca en la URL: quedaría en
+// historial, logs y Referer) y se compara en tiempo constante (=== corta en el primer
+// carácter distinto y filtra el prefijo correcto por tiempo de respuesta).
+export function safeEqual(a, b) {
+  a = String(a == null ? '' : a); b = String(b == null ? '' : b);
+  let diff = a.length ^ b.length;
+  for (let i = 0; i < b.length; i++) diff |= (a.charCodeAt(i) || 0) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+function authed(request, env) { return !!env.ADMIN_TOKEN && safeEqual(request.headers.get('X-Admin-Token') || '', env.ADMIN_TOKEN); }
 
 // POST /admin/backup — dispara el respaldo a R2 bajo demanda (mismo que el cron). Token.
 async function adminBackup(request, env, cors) {
@@ -951,6 +969,15 @@ async function adminFollowupOne(request, env, cors) {
 // ── Aportes de documentos anonimizados (página /aporta) ──────
 const CONTRIB_GOAL = 500;
 const CONTRIB_MAXBYTES = 6 * 1024 * 1024; // 6MB por imagen (llegan ya comprimidas del cliente)
+const CONTRIB_MAXFILES = 12; // páginas por aporte
+const CONTRIB_PER_IP_DAY = 30; // aportes por IP en 24 h
+// Tipo real por magic bytes. null = no es una imagen aceptada.
+export function sniffImage(buf) {
+  const b = new Uint8Array(buf, 0, Math.min(8, buf.byteLength));
+  if (b.length >= 3 && b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) return 'image/jpeg';
+  if (b.length >= 8 && b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47 && b[4] === 0x0d && b[5] === 0x0a && b[6] === 0x1a && b[7] === 0x0a) return 'image/png';
+  return null;
+}
 async function contribBumpWall(env, key, name, count) {
   let lb = []; try { lb = JSON.parse((await env.WAITLIST.get('contrib_wall')) || '[]'); } catch (e) {}
   const i = lb.findIndex(function (x) { return x.key === key; });
@@ -966,6 +993,7 @@ async function contribSubmit(request, env, cors) {
   if (form.get('botcheck')) return json({ status: 'ok' }, 200, cors); // honeypot
   const ip = clientIp(request);
   if (!(await rateLimit(env.RL, 'contrib:' + ip, 8, 60))) return json({ status: 'error', reason: 'rate' }, 429, cors);
+  if (!(await rateLimit(env.RL, 'contribd:' + ip, CONTRIB_PER_IP_DAY, 86400))) return json({ status: 'error', reason: 'rate' }, 429, cors);
   if (!(await verifyTurnstile(env, form.get('turnstile'), ip))) return json({ status: 'error', reason: 'captcha' }, 403, cors);
   const pais = (String(form.get('pais') || '').trim().slice(0, 4)) || 'XX';
   const banco = String(form.get('banco') || '').trim().slice(0, 60);
@@ -973,7 +1001,7 @@ async function contribSubmit(request, env, cors) {
   const tipo = String(form.get('tipo') || '').trim().slice(0, 20);
   const productoRaw = String(form.get('producto') || '').trim().toLowerCase();
   const producto = (productoRaw === 'cuenta' || productoRaw === 'tarjeta') ? productoRaw : '';
-  const nombre = String(form.get('nombre') || '').trim().slice(0, 80);
+  const nombre = String(form.get('nombre') || '').replace(/[<>]/g, '').trim().slice(0, 80);
   const ref = String(form.get('ref') || '').trim().slice(0, 80);
   const sid = String(form.get('sid') || '').trim().slice(0, 48) || crypto.randomUUID(); // agrupa páginas del mismo extracto
   if (!banco || !tipo) return json({ status: 'error', reason: 'fields' }, 400, cors);
@@ -984,16 +1012,26 @@ async function contribSubmit(request, env, cors) {
     if (m && v && typeof v === 'object' && v.size) docs.push({ idx: parseInt(m[1], 10), file: v });
   }
   docs.sort(function (a, b) { return a.idx - b.idx; });
-  if (docs.length > 12) docs.length = 12; // tope de páginas por aporte (anti-abuso de R2)
   if (!docs.length) return json({ status: 'error', reason: 'no_files' }, 400, cors);
+  // Tope de páginas por aporte (anti-abuso de R2): se rechaza en vez de truncar en silencio.
+  if (docs.length > CONTRIB_MAXFILES) return json({ status: 'error', reason: 'too_many' }, 413, cors);
+  // Validar TODO antes de escribir nada: tamaño y tipo real por magic bytes (el
+  // Content-Type del multipart lo pone el cliente). Solo imágenes ya aplanadas:
+  // la página exporta JPEG; PNG se acepta por si un navegador no exporta JPEG.
+  // PDF no: el original nunca debe salir del equipo.
+  for (const d of docs) {
+    if (d.file.size > CONTRIB_MAXBYTES) return json({ status: 'error', reason: 'too_big' }, 413, cors);
+    d.buf = await d.file.arrayBuffer();
+    d.type = sniffImage(d.buf);
+    if (!d.type) return json({ status: 'error', reason: 'file_type' }, 415, cors);
+  }
   const ids = [];
   for (const d of docs) {
     const f = d.file;
-    if (f.size > CONTRIB_MAXBYTES) return json({ status: 'error', reason: 'too_big' }, 413, cors);
     const id = crypto.randomUUID();
     const base = 'doc/' + pais + '/' + slug(banco) + '/' + id;
-    const key = base + '.jpg';
-    await env.DOCS.put(key, await f.arrayBuffer(), { httpMetadata: { contentType: 'image/jpeg' } });
+    const key = base + (d.type === 'image/png' ? '.png' : '.jpg');
+    await env.DOCS.put(key, d.buf, { httpMetadata: { contentType: d.type } });
     // Tokens con posición (x,y,w,h) anónimos → JSON estructurado para el parser. Sin PDF, sin PII.
     let parsed = null; try { parsed = JSON.parse(String(form.get('tokens' + d.idx) || 'null')); } catch (e) {}
     let jsonKey = null, txtKey = null, tokenCount = 0, source = '';
@@ -1006,7 +1044,7 @@ async function contribSubmit(request, env, cors) {
       const flat = parsed.tokens.map(function (t) { return t.t; }).join(' ').slice(0, 80000);
       if (flat) { txtKey = base + '.txt'; await env.DOCS.put(txtKey, flat, { httpMetadata: { contentType: 'text/plain; charset=utf-8' } }); }
     }
-    await env.WAITLIST.put('contrib:' + id, JSON.stringify({ id, submissionId: sid, page: d.idx, source, key, jsonKey, txtKey, tokenCount, pais, banco, producto, tipo, moneda, size: f.size, ts: Date.now() }));
+    await env.WAITLIST.put('contrib:' + id, JSON.stringify({ id, submissionId: sid, page: d.idx, source, key, jsonKey, txtKey, tokenCount, pais, banco, producto, tipo, moneda, size: f.size, contentType: d.type, ts: Date.now() }));
     ids.push(id);
   }
   const total = parseInt((await env.WAITLIST.get('meta:contribs')) || '0', 10) + ids.length;
@@ -1024,20 +1062,27 @@ async function contribSubmit(request, env, cors) {
     const st = parseInt((await env.WAITLIST.get('meta:submissions')) || '0', 10) + 1;
     await env.WAITLIST.put('meta:submissions', String(st));
   }
-  // Crédito opcional al colaborador: por correo o por código de Fundador
+  // Crédito opcional al colaborador: por correo o por código de Fundador.
+  // Nadie verifica que quien sube sea dueño de ese correo, así que el crédito a una
+  // identidad solo va a alguien YA inscrito y el muro muestra el nombre de SU
+  // registro (o su correo enmascarado), nunca el nombre libre del formulario: antes
+  // cualquiera ponía cualquier nombre sobre el correo de otra persona. Un correo que
+  // no está en la lista no se acredita: el aporte cuenta como anónimo con el nombre.
   let contributor = null;
   let email = EMAIL_RE.test(ref) ? ref.toLowerCase() : null;
   if (!email && /^[A-Z0-9]{5,9}$/.test(ref.toUpperCase())) email = await env.WAITLIST.get('code:' + ref.toUpperCase());
-  if (email) {
+  const contribRec = email ? await env.WAITLIST.get('email:' + email) : null;
+  if (email && contribRec) {
+    let crec = {}; try { crec = JSON.parse(contribRec); } catch (e) {}
     const n = parseInt((await env.WAITLIST.get('contrib_by:' + email)) || '0', 10) + ids.length;
     await env.WAITLIST.put('contrib_by:' + email, String(n));
-    await contribBumpWall(env, email, nombre || maskEmail(email), n);
+    await contribBumpWall(env, email, displayName(crec, email), n);
     contributor = { n };
   } else if (nombre) {
     await contribBumpWall(env, 'anon:' + slug(nombre), nombre, ids.length);
   }
   if (env.RESEND_API_KEY && env.NOTIFY_EMAIL) {
-    try { await sendResend(env, { to: env.NOTIFY_EMAIL, subject: '📄 Nuevo aporte de documento (' + banco + ')', html: '<p>' + ids.length + ' documento(s) · <b>' + esc(banco) + '</b> · ' + esc(pais) + ' · ' + esc(tipo) + (email ? (' · por ' + esc(email)) : '') + '</p>' }); } catch (e) {}
+    try { await sendResend(env, { to: env.NOTIFY_EMAIL, subject: '📄 Nuevo aporte de documento (' + banco + ')', html: '<p>' + ids.length + ' documento(s) · <b>' + esc(banco) + '</b> · ' + esc(pais) + ' · ' + esc(tipo) + (email ? (' · por ' + esc(email) + (contribRec ? '' : ' (no inscrito, sin crédito)')) : '') + '</p>' }); } catch (e) {}
   }
   return json({ status: 'ok', n: ids.length, progress: { total, goal: CONTRIB_GOAL }, contributor }, 200, cors);
 }
@@ -1183,25 +1228,25 @@ async function adminContribMigrate(request, env, cors) {
   }, 200, cors);
 }
 
-// GET /admin/doc?id=&t= — sirve la imagen redactada desde R2 (para la galería admin).
-// Token por query (?t=) porque <img> no puede mandar headers.
-async function adminDoc(request, env, url) {
-  const t = url.searchParams.get('t') || '';
-  if (!env.ADMIN_TOKEN || t !== env.ADMIN_TOKEN) return new Response('unauthorized', { status: 401 });
+// GET /admin/doc?id= — sirve la imagen redactada desde R2 (para la galería admin).
+// Token SOLO por cabecera (admin.astro la pide con fetch y la muestra como blob:);
+// CORS con el origen permitido, no '*'.
+async function adminDoc(request, env, url, cors) {
+  const h = { ...cors, 'Cache-Control': 'no-store' };
+  if (!authed(request, env)) return new Response('unauthorized', { status: 401, headers: h });
   const id = (url.searchParams.get('id') || '').replace(/[^a-z0-9-]/gi, '');
   const raw = id && await env.WAITLIST.get('contrib:' + id);
-  if (!raw) return new Response('not found', { status: 404 });
+  if (!raw) return new Response('not found', { status: 404, headers: h });
   let rec = {}; try { rec = JSON.parse(raw); } catch (e) {}
   if ((url.searchParams.get('kind') || '') === 'json') { // tokens (para la capa de texto del PDF buscable)
     const o = rec.jsonKey && await env.DOCS.get(rec.jsonKey);
-    return new Response(o ? o.body : '{}', { status: 200, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'Access-Control-Allow-Origin': '*' } });
+    return new Response(o ? o.body : '{}', { status: 200, headers: { ...h, 'Content-Type': 'application/json; charset=utf-8' } });
   }
   const obj = rec.key && await env.DOCS.get(rec.key);
-  if (!obj) return new Response('not found', { status: 404 });
-  return new Response(obj.body, { status: 200, headers: { 'Content-Type': 'image/jpeg', 'Cache-Control': 'no-store', 'Access-Control-Allow-Origin': '*' } });
+  if (!obj) return new Response('not found', { status: 404, headers: h });
+  const ct = rec.contentType === 'image/png' ? 'image/png' : 'image/jpeg';
+  return new Response(obj.body, { status: 200, headers: { ...h, 'Content-Type': ct, 'X-Content-Type-Options': 'nosniff' } });
 }
-
-// ── Resend ───────────────────────────────────────────────────
 async function sendResend(env, { to, subject, html, reply_to, campaign }) {
   try {
     const body = { from: FROM, to: [to], subject, html };
