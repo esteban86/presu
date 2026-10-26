@@ -738,6 +738,7 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '';
       var nombre=(document.getElementById('fNombre')||{}).value||'';
       var correo=(document.getElementById('fCorreo')||{}).value||'';
       if(!meta.banco){ errEl.textContent='Dinos de qué banco es.'; return; }
+      if(items.length>12){ errEl.textContent='Máximo 12 páginas por envío. Quita algunas y envía el resto en otro aporte.'; return; }
       if(!meta.tipo){ errEl.textContent='Elige el tipo de documento.'; return; }
       if(document.getElementById('rowProducto') && document.getElementById('rowProducto').style.display!=='none' && !meta.producto){
         errEl.textContent='Dinos si es cuenta de ahorros o tarjeta de crédito.'; return;
@@ -766,7 +767,7 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '';
     function failSend(reason){
       phase='form'; render();
       var errEl=document.getElementById('formErr');
-      if(errEl) errEl.textContent = reason==='too_big' ? 'Alguna imagen pesa demasiado. Intenta con menos páginas.' : reason==='rate' ? 'Demasiados intentos seguidos. Espera un momento y reintenta.' : reason==='captcha' ? 'No pudimos verificar que no eres un bot. Reintenta.' : 'No pudimos enviar. Revisa tu conexión e inténtalo de nuevo.';
+      if(errEl) errEl.textContent = reason==='too_big' ? 'Alguna imagen pesa demasiado. Intenta con menos páginas.' : reason==='too_many' ? 'Máximo 12 páginas por envío. Quita algunas y envía el resto en otro aporte.' : reason==='file_type' ? 'Alguna página no se pudo preparar como imagen. Vuelve a cargarla.' : reason==='rate' ? 'Demasiados intentos seguidos. Espera un momento y reintenta.' : reason==='captcha' ? 'No pudimos verificar que no eres un bot. Reintenta.' : 'No pudimos enviar. Revisa tu conexión e inténtalo de nuevo.';
     }
 
     function renderSending(){
