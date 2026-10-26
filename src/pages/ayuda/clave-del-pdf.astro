@@ -1,0 +1,105 @@
+---
+import Base from '../../layouts/Base.astro';
+---
+
+<Base
+  sinVenta
+  title={'La clave del PDF · Presu'}
+  description={'Cuál es la clave del PDF de tu extracto, dónde la guarda Presu y qué hacer si no la sabes.'}
+>
+  <link rel="stylesheet" href="/ayuda/ayuda.css" />
+  <main class="ayuda">
+    <section class="d-title">
+      <div class="inner">
+        <p class="eb"><a href="/ayuda">Ayuda</a> · Empezar</p>
+        <h1>La clave del PDF</h1>
+        <p class="lede">
+          Muchos bancos protegen el extracto con una clave. Presu te la pide una vez y la guarda en
+          el llavero de tu equipo, para no volver a preguntar.
+        </p>
+        <p class="meta">
+          <span>3 min de lectura</span><span>Escritorio y celular</span><span
+            >Actualizado oct 2026</span
+          >
+        </p>
+      </div>
+    </section>
+    <div class="d-body">
+      <nav class="d-toc" aria-label="En esta página">
+        <p class="h">En esta página</p><ol>
+          <li><a href="#cual-es">¿Cuál es la clave?</a></li><li>
+            <a href="#donde-vive">Dónde se guarda</a>
+          </li><li><a href="#sin-clave">PDFs que parecen tener clave y no</a></li>
+        </ol>
+      </nav>
+      <article>
+        <div class="tldr">
+          <p class="h">En corto</p><ul>
+            <li>
+              En la mayoría de bancos la clave es tu <b>número de cédula</b>, sin puntos ni
+              espacios.
+            </li>
+            <li>
+              Presu la guarda cifrada en el llavero del sistema (Llavero en Mac, DPAPI en Windows).
+            </li>
+            <li>No sale de tu equipo, salvo que actives el procesamiento alojado.</li>
+          </ul>
+        </div>
+
+        <h2 id="cual-es">¿Cuál es la clave?</h2>
+        <p>
+          La define el banco, no Presu. En Bancolombia, por ejemplo, suele ser tu cédula. Si no
+          funciona, revisa el correo con el que te llegó el extracto: el banco normalmente explica
+          ahí cómo se forma.
+        </p>
+        <ol class="steps">
+          <li>Prueba con tu cédula, solo números.</li>
+          <li>Si no abre, busca en el correo del banco la frase «clave» o «contraseña».</li>
+          <li>
+            Si sigue sin abrir, ábrelo primero con el visor de PDF de tu equipo para confirmar que
+            la clave es esa.
+          </li>
+        </ol>
+
+        <h2 id="donde-vive">Dónde se guarda</h2>
+        <p>
+          La clave se guarda en el llavero del sistema operativo, el mismo lugar donde tu equipo
+          guarda las claves de Wi-Fi. No queda escrita en texto plano en la base de Presu.
+        </p>
+        <div class="side">
+          La clave del PDF solo sale del equipo si activas el procesamiento alojado, que está
+          apagado hasta que tú lo enciendes. Ver <a href="/ayuda/tus-datos">Qué sale de tu equipo</a
+          >.
+        </div>
+
+        <h2 id="sin-clave">PDFs que parecen tener clave y no</h2>
+        <p>
+          Algunos PDFs vienen marcados como cifrados pero abren sin clave. Presu prueba primero sin
+          clave; si te la pide y la clave no sirve, intenta de nuevo sin ella antes de darse por
+          vencido. Si de todas formas te dice «clave incorrecta» con la clave correcta, escríbenos.
+        </p>
+
+        <nav class="next">
+          <a href="/ayuda/primer-extracto"
+            ><span class="k">← Anterior</span><span class="t">Tu primer extracto en 2 minutos</span
+            ></a
+          ><a class="r" href="/ayuda/descargar-extracto"
+            ><span class="k">Siguiente →</span><span class="t"
+              >Dónde sacar el extracto de tu banco</span
+            ></a
+          >
+        </nav>
+        <div class="help-foot">
+          <p>
+            ¿Esto no resolvió tu caso? Escríbenos a <a href="mailto:soporte@presu.io"
+              >soporte@presu.io</a
+            >. Si es un problema de lectura, adjunta el diagnóstico de <span class="path"
+              >Ajustes › Acerca de › Exportar diagnóstico</span
+            >: oculta tu cédula y tus números de cuenta.
+          </p>
+        </div>
+      </article>
+    </div>
+  </main>
+  <script is:inline src="/ayuda/ayuda.js" defer></script>
+</Base>
