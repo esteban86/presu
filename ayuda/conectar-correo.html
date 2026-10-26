@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Conectar tu correo · Presu</title>
+<meta name="description" content="Cómo conectar Gmail, Outlook u otro correo a Presu para leer alertas y extractos del banco, y qué lee exactamente.">
+<link rel="canonical" href="https://presu.io/ayuda/conectar-correo">
+<link rel="icon" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/ayuda/ayuda.css">
+</head>
+<body>
+<header class="lp-header"><a class="wordmark" href="/"><span class="wm-bar"></span><span class="wm-text">presu</span></a><nav class="lp-nav"><a href="/ayuda">Ayuda</a><a class="hide-sm" href="/">Volver a Presu</a></nav></header>
+<main>
+<section class="d-title"><div class="inner">
+<p class="eb"><a href="/ayuda">Ayuda</a> · Empezar</p>
+<h1>Conectar tu correo</h1>
+<p class="lede">Si tu banco te avisa cada compra por correo, Presu puede leer esas alertas y los extractos que llegan adjuntos. Así tus gastos aparecen sin descargar nada.</p>
+<p class="meta"><span>5 min de lectura</span><span>Escritorio y celular</span><span>Actualizado oct 2026</span></p>
+</div></section>
+<div class="d-body">
+<nav class="d-toc" aria-label="En esta página"><p class="h">En esta página</p><ol><li><a href="#escritorio">En el escritorio</a></li><li><a href="#celular">En el celular</a></li><li><a href="#alertas-y-extractos">Alertas y extractos: cómo conviven</a></li><li><a href="#desconectar">Desconectar</a></li></ol></nav>
+<article>
+
+<div class="tldr"><p class="h">En corto</p><ul>
+<li>Presu lee <b>solo</b> correos de remitentes de bancos (alertas y extractos) y de pagos aprobados de Wompi.</li>
+<li>Solo lee: no marca nada como leído, no borra, no envía.</li>
+<li>Los correos se procesan en tu equipo. Nadie del equipo de Presu los lee.</li>
+</ul></div>
+
+<h2 id="escritorio">En el escritorio</h2>
+<p>Hay dos formas de conectar:</p>
+<ul>
+<li><b>Gmail con tu cuenta de Google.</b> Le das a Presu permiso de solo lectura. El correo se procesa en tu equipo.</li>
+<li><b>Con contraseña de aplicación</b> (IMAP). Sirve para Gmail y otros proveedores.</li>
+</ul>
+<p>Para crear una contraseña de aplicación en Gmail:</p>
+<ol class="steps">
+<li>Activa la verificación en dos pasos en <span class="path">myaccount.google.com › Seguridad</span>.</li>
+<li>Entra a <span class="path">myaccount.google.com/apppasswords</span> y crea una llamada «Presu». Son 16 caracteres.</li>
+<li>Pégala en Presu. Se guarda cifrada, y la puedes revocar cuando quieras desde Google.</li>
+</ol>
+<div class="side"><b>¿Por qué contraseña de aplicación?</b> No es tu contraseña de Google: es una llave aparte, solo para Presu, que puedes borrar sin cambiar nada más.</div>
+<p>Presu revisa el correo al abrir (a los pocos segundos) y cada 30 minutos mientras la app está abierta.</p>
+
+<h2 id="celular">En el celular</h2>
+<ul>
+<li>Gmail y otros: con contraseña de aplicación. Queda en el llavero del celular; no se envía, no se sincroniza y no va en las copias de seguridad.</li>
+<li>Outlook y Hotmail: inicias sesión con Microsoft.</li>
+<li>Los adjuntos se abren en el celular y no se guardan.</li>
+</ul>
+
+<h2 id="alertas-y-extractos">Alertas y extractos: cómo conviven</h2>
+<p>Una alerta llega el mismo día de la compra, pero con poca información. El extracto llega a fin de mes con todo. Cuando llega el extracto, el movimiento de la alerta se <b>reemplaza</b> por el del extracto: cuenta una sola vez.</p>
+<div class="callout"><p>Si una alerta menciona una cuenta que Presu no conoce, la crea como <b>sin confirmar</b> y la deja fuera de tus totales hasta que la revises.</p></div>
+
+<h2 id="desconectar">Desconectar</h2>
+<ul>
+<li>Escritorio: <span class="path">Ajustes › Correo y extractos</span>. Si conectaste con Google, esto revoca el permiso. También puedes hacerlo en <span class="path">myaccount.google.com/permissions</span>.</li>
+<li>Celular: al desconectar se borra la contraseña. Lo que ya se leyó se queda.</li>
+<li>Para borrar lo importado: <span class="path">Ajustes › Tus datos › Borrar</span>.</li>
+</ul>
+
+<nav class="next"><a href="/ayuda/descargar-extracto"><span class="k">← Anterior</span><span class="t">Dónde sacar el extracto de tu banco</span></a><a class="r" href="/ayuda/categorias"><span class="k">Siguiente →</span><span class="t">Cómo Presu decide la categoría</span></a></nav>
+<div class="help-foot"><p>¿Esto no resolvió tu caso? Escríbenos a <a href="mailto:soporte@asimetrica.co">soporte@asimetrica.co</a>. Si es un problema de lectura, adjunta el diagnóstico de <span class="path">Ajustes › Acerca de › Exportar diagnóstico</span>: oculta tu cédula y tus números de cuenta.</p></div>
+</article>
+</div>
+</main>
+<footer class="foot"><a href="/ayuda">Centro de ayuda</a><a href="/privacidad">Privacidad</a><a href="/terminos">Términos</a><a href="mailto:soporte@asimetrica.co">soporte@asimetrica.co</a></footer>
+<script src="/ayuda/ayuda.js" defer></script>
+</body>
+</html>

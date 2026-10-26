@@ -1,0 +1,180 @@
+/* Centro de ayuda de Presu — explicación primero, figuras que se pueden tocar (a la manera de distill.pub). */
+:root{--mint:#34D399;--mint-bright:#5EEAB8;--ink:#08231A;--tx:#F4F4F3;--mut:#A1A1A6;--mut2:#6B6B72;--bg:#08080A;--bg2:#101014;--bg3:#16161A;--line:rgba(255,255,255,.1);--amber:#F5B544;--rose:#F47A8E;--head:"Space Grotesk",sans-serif;--mono:"JetBrains Mono",monospace}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:"Hanken Grotesk",sans-serif;line-height:1.65;font-size:17px}
+a{color:var(--mint-bright);text-decoration:none}a:hover{text-decoration:underline}
+strong,b{color:var(--tx);font-weight:600}
+code,kbd{font-family:var(--mono);font-size:.82em;background:var(--bg3);padding:2px 6px;border-radius:6px;color:var(--tx)}
+kbd{border:1px solid var(--line)}
+
+/* Cabecera */
+.lp-header{display:flex;justify-content:space-between;align-items:center;max-width:1180px;margin:0 auto;padding:26px 24px}
+.wordmark{position:relative;display:inline-flex;align-items:center;line-height:.9;text-decoration:none}
+.wm-text{position:relative;z-index:1;font-family:var(--head);font-weight:700;font-size:1.5rem;letter-spacing:-.05em;color:var(--tx);line-height:.9}
+.wm-bar{position:absolute;left:-4px;right:-6px;top:52%;height:.5em;background:var(--mint);border-radius:999px;transform:translateY(-50%) rotate(-9deg);opacity:.9}
+.wordmark:hover{text-decoration:none}
+.lp-nav{display:flex;gap:20px;font-size:.92rem}.lp-nav a{color:var(--mut)}.lp-nav a:hover{color:var(--tx);text-decoration:none}
+
+/* Título del artículo */
+.d-title{max-width:1180px;margin:0 auto;padding:30px 24px 34px;border-bottom:1px solid var(--line)}
+.d-title .inner{max-width:700px}
+.eb{font-family:var(--mono);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mint);margin-bottom:12px}
+.eb a{color:var(--mint)}
+h1{font-family:var(--head);font-weight:700;font-size:clamp(2rem,4.4vw,2.9rem);line-height:1.08;letter-spacing:-.03em;margin:0 0 16px}
+.lede{color:var(--mut);font-size:1.18rem;line-height:1.55;margin:0}
+.meta{display:flex;gap:22px;flex-wrap:wrap;margin-top:22px;font-family:var(--mono);font-size:.74rem;color:var(--mut2)}
+.meta span b{color:var(--mut);font-weight:500}
+
+/* Cuerpo: columna de lectura + margen para notas, índice pegado a la izquierda */
+.d-body{max-width:1180px;margin:0 auto;padding:40px 24px 20px;display:grid;grid-template-columns:200px minmax(0,700px) 1fr;column-gap:44px}
+.d-toc{grid-column:1;position:sticky;top:24px;align-self:start;font-size:.84rem}
+.d-toc .h{font-family:var(--mono);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mut2);margin-bottom:10px}
+.d-toc ol{list-style:none;margin:0;padding:0;border-left:1px solid var(--line)}
+.d-toc li{margin:0}
+.d-toc a{display:block;padding:5px 0 5px 14px;color:var(--mut2);margin-left:-1px;border-left:2px solid transparent;line-height:1.35}
+.d-toc a:hover{color:var(--tx);text-decoration:none}
+.d-toc a.on{color:var(--tx);border-left-color:var(--mint)}
+article{grid-column:2;min-width:0}
+article>*{position:relative}
+article h2{font-family:var(--head);font-weight:600;font-size:1.5rem;letter-spacing:-.02em;margin:48px 0 14px;scroll-margin-top:20px}
+article h2:first-child{margin-top:0}
+article h3{font-family:var(--head);font-weight:600;font-size:1.12rem;margin:30px 0 8px}
+article p,article li{color:#C9C9CC}
+article p{margin:0 0 16px}
+article ul,article ol{margin:0 0 18px;padding-left:22px}
+article li{margin-bottom:8px}
+
+/* Nota al margen: en pantallas anchas flota en la columna derecha */
+.side{position:absolute;left:calc(100% + 44px);width:230px;margin-top:4px;font-size:.8rem;line-height:1.5;color:var(--mut2);border-top:1px solid var(--line);padding-top:8px}
+.side b{color:var(--mut)}
+
+/* En corto */
+.tldr{background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin:0 0 34px}
+.tldr .h{font-family:var(--mono);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mint);margin-bottom:8px}
+.tldr ul{margin:0;padding-left:18px}.tldr li{color:var(--tx);margin-bottom:6px}
+
+.callout{background:var(--bg2);border:1px solid var(--line);border-left:3px solid var(--mint);border-radius:12px;padding:14px 16px;margin:0 0 18px;color:var(--mut)}
+.callout.warn{border-left-color:var(--amber)}
+.callout b{color:var(--tx)}
+
+/* Pasos numerados */
+.steps{counter-reset:s;list-style:none;padding:0!important}
+.steps>li{counter-increment:s;position:relative;padding-left:44px;margin-bottom:16px}
+.steps>li::before{content:counter(s);position:absolute;left:0;top:0;width:28px;height:28px;border-radius:50%;background:var(--ink);color:var(--mint);font-family:var(--mono);font-size:.8rem;display:grid;place-items:center;border:1px solid rgba(52,211,153,.35)}
+
+/* Ruta de menú: Ajustes » Privacidad */
+.path{font-family:var(--mono);font-size:.82em;color:var(--tx);background:var(--bg3);padding:2px 7px;border-radius:6px;white-space:nowrap}
+
+/* Figuras */
+figure{margin:30px 0 34px;padding:0}
+.fig{background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:22px}
+figcaption{font-size:.84rem;color:var(--mut2);margin-top:10px;line-height:1.5}
+figcaption b{color:var(--mut);font-family:var(--mono);font-weight:500;font-size:.78rem;margin-right:6px}
+figure.wide{margin-right:calc(-1 * min(274px, 26vw))}
+
+/* Tubería (artículo 1) */
+.pipe{display:flex;align-items:stretch;gap:0;flex-wrap:wrap}
+.pipe .st{flex:1 1 110px;background:var(--bg3);border:1px solid var(--line);border-radius:12px;padding:12px;cursor:pointer;transition:.15s;text-align:left;color:var(--tx);font:inherit}
+.pipe .st:hover,.pipe .st.on{border-color:var(--mint);background:rgba(52,211,153,.07)}
+.pipe .st .n{font-family:var(--mono);font-size:.66rem;color:var(--mint)}
+.pipe .st .t{font-family:var(--head);font-weight:600;font-size:.95rem;margin-top:2px}
+.pipe .ar{align-self:center;color:var(--mut2);padding:0 6px;font-family:var(--mono)}
+.pipe-detail{margin-top:14px;min-height:72px;color:var(--mut);font-size:.92rem;border-top:1px dashed var(--line);padding-top:12px}
+.pipe .st.fallback{border-style:dashed}
+
+/* Diagrama de flujo de datos (artículo 9) */
+.flow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.flow .box{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--bg3)}
+.flow .box .h{font-family:var(--mono);font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px}
+.flow .box ul{margin:0;padding-left:16px;font-size:.88rem}
+.flow .box li{margin-bottom:4px;color:var(--mut)}
+.flow .stay .h{color:var(--mint)}.flow .on .h{color:var(--mut)}.flow .opt .h{color:var(--amber)}.flow .never .h{color:var(--rose)}
+.flow .stay{border-color:rgba(52,211,153,.4)}
+
+/* Gráfica del ritmo (artículo 6) */
+.ritmo svg{width:100%;height:auto;display:block}
+.ritmo .ctl{display:flex;align-items:center;gap:14px;margin-top:14px;flex-wrap:wrap;font-size:.88rem;color:var(--mut)}
+.ritmo input[type=range]{flex:1;min-width:180px;accent-color:var(--mint)}
+.ritmo .readout{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+.ritmo .readout div{background:var(--bg3);border-radius:10px;padding:10px 12px}
+.ritmo .readout .k{font-family:var(--mono);font-size:.64rem;letter-spacing:.1em;text-transform:uppercase;color:var(--mut2)}
+.ritmo .readout .v{font-family:var(--head);font-weight:600;font-size:1.08rem;margin-top:2px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:.78rem;color:var(--mut2);margin-top:8px}
+.legend i{display:inline-block;width:18px;height:3px;border-radius:2px;vertical-align:middle;margin-right:6px}
+
+/* Conteo doble (artículo 7) */
+.double{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:center}
+.double .acct{background:var(--bg3);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:.88rem}
+.double .acct .h{font-family:var(--mono);font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;color:var(--mut2);margin-bottom:6px}
+.double .row{display:flex;justify-content:space-between;gap:10px;padding:3px 0;color:var(--mut)}
+.double .row.hl{color:var(--amber)}
+.double .mid{font-family:var(--mono);color:var(--mut2);text-align:center;font-size:.8rem}
+.toggle{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:3px;margin-bottom:16px}
+.toggle button{background:none;border:0;color:var(--mut);font:inherit;font-size:.84rem;padding:6px 14px;border-radius:999px;cursor:pointer}
+.toggle button.on{background:var(--mint);color:var(--ink);font-weight:600}
+.total{margin-top:14px;display:flex;justify-content:space-between;align-items:baseline;border-top:1px dashed var(--line);padding-top:12px}
+.total .v{font-family:var(--head);font-weight:700;font-size:1.4rem}
+
+/* Prioridad de capas (artículo 5) */
+.layers{display:flex;flex-direction:column;gap:6px}
+.layers .ly{display:grid;grid-template-columns:28px 1fr;gap:12px;align-items:start;background:var(--bg3);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.layers .ly .n{font-family:var(--mono);color:var(--mint);font-size:.8rem}
+.layers .ly .t{font-weight:600;font-size:.95rem}
+.layers .ly .d{color:var(--mut);font-size:.85rem}
+
+/* Tarjetas de bancos (artículo 3) */
+.banks{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.banks .bk{background:var(--bg3);border:1px solid var(--line);border-radius:12px;padding:14px}
+.banks .bk .t{font-family:var(--head);font-weight:600}
+.banks .bk .d{color:var(--mut);font-size:.86rem;margin-top:4px}
+
+/* Navegación del final */
+.next{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:50px 0 10px}
+.next a{display:block;background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:16px 18px;color:var(--tx)}
+.next a:hover{border-color:var(--mint);text-decoration:none}
+.next .k{font-family:var(--mono);font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;color:var(--mut2)}
+.next .t{font-family:var(--head);font-weight:600;margin-top:4px}
+.next a.r{text-align:right}
+.help-foot{margin-top:28px;background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:16px 18px;color:var(--mut);font-size:.92rem}
+
+.foot{max-width:1180px;margin:40px auto 0;padding:22px 24px 40px;border-top:1px solid var(--line);color:var(--mut2);font-size:.86rem;display:flex;gap:18px;flex-wrap:wrap}
+.foot a{color:var(--mut)}
+
+/* Portada del centro de ayuda */
+.hub{max-width:1000px;margin:0 auto;padding:30px 24px 10px}
+.hub h1{max-width:760px}
+.search{margin:28px 0 8px;position:relative}
+.search input{width:100%;background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:16px 18px 16px 46px;color:var(--tx);font:inherit;font-size:1.02rem}
+.search input:focus{outline:none;border-color:var(--mint)}
+.search svg{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--mut2)}
+.group{margin-top:40px}
+.group>.h{font-family:var(--mono);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mint);margin-bottom:12px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.card{display:block;background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:18px;color:var(--tx);transition:.15s}
+.card:hover{border-color:var(--mint);text-decoration:none;transform:translateY(-1px)}
+.card .t{font-family:var(--head);font-weight:600;font-size:1.06rem;line-height:1.3}
+.card .d{color:var(--mut);font-size:.88rem;margin-top:6px}
+.card .m{font-family:var(--mono);font-size:.68rem;color:var(--mut2);margin-top:10px}
+.empty{display:none;color:var(--mut);margin-top:30px}
+
+/* Pantallas medianas: notas al margen pasan a línea */
+@media (max-width:1180px){
+  .d-body{grid-template-columns:180px minmax(0,1fr);column-gap:36px}
+  .side{position:static;width:auto;margin:-6px 0 16px;border-top:0;border-left:2px solid var(--line);padding:2px 0 2px 12px}
+  figure.wide{margin-right:0}
+}
+@media (max-width:860px){
+  body{font-size:16px}
+  .d-body{display:block;padding-top:26px}
+  .d-toc{position:static;margin-bottom:26px;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:14px}
+  .lp-nav .hide-sm{display:none}
+  .next{grid-template-columns:1fr}
+  .next a.r{text-align:left}
+  .flow{grid-template-columns:1fr}
+  .double{grid-template-columns:1fr}
+  .double .mid{transform:rotate(90deg)}
+  .ritmo .readout{grid-template-columns:1fr 1fr}
+  .pipe .ar{display:none}
+  .pipe{gap:8px}
+}

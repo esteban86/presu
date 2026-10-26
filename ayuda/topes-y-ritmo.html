@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Topes y ritmo de gasto · Presu</title>
+<meta name="description" content="Qué es un tope, cómo Presu calcula si vas a tiempo en el mes y por qué no usa una línea recta.">
+<link rel="canonical" href="https://presu.io/ayuda/topes-y-ritmo">
+<link rel="icon" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/ayuda/ayuda.css">
+</head>
+<body>
+<header class="lp-header"><a class="wordmark" href="/"><span class="wm-bar"></span><span class="wm-text">presu</span></a><nav class="lp-nav"><a href="/ayuda">Ayuda</a><a class="hide-sm" href="/">Volver a Presu</a></nav></header>
+<main>
+<section class="d-title"><div class="inner">
+<p class="eb"><a href="/ayuda">Ayuda</a> · Uso diario</p>
+<h1>Topes y ritmo de gasto</h1>
+<p class="lede">Un tope es cuánto quieres gastar en una categoría al mes. El ritmo responde otra pregunta: a esta altura del mes, ¿vas bien para cerrar en tu tope?</p>
+<p class="meta"><span>6 min de lectura</span><span>Escritorio y celular</span><span>Actualizado oct 2026</span></p>
+</div></section>
+<div class="d-body">
+<nav class="d-toc" aria-label="En esta página"><p class="h">En esta página</p><ol><li><a href="#por-que">Por qué no una línea recta</a></li><li><a href="#explora">Explóralo</a></li><li><a href="#lecturas">Las cuatro lecturas</a></li><li><a href="#sin-tope">Sin tope</a></li></ol></nav>
+<article>
+
+<div class="tldr"><p class="h">En corto</p><ul>
+<li>El ritmo no reparte el tope en partes iguales por día. Usa la <b>forma</b> en que sueles gastar en el mes.</li>
+<li>Con menos de dos meses de historia, usa la línea recta mientras aprende.</li>
+<li>Solo se pinta en rojo cuando te pasaste del tope.</li>
+</ul></div>
+
+<h2 id="por-que">Por qué no una línea recta</h2>
+<p>Si tu tope de mercado es $1.200.000, la cuenta fácil dice que el día 10 deberías llevar un tercio. Pero casi nadie gasta parejo: el arriendo, el mercado grande o la quincena cargan ciertos días. Con la línea recta, Presu te diría «vas rápido» cada principio de mes aunque vayas exactamente como siempre.</p>
+<p>Por eso el «esperado a hoy» sale de tus meses anteriores: cuánto de su gasto llevaban a esta altura, todos con el mismo peso, llevado a tu tope.</p>
+
+<h2 id="explora">Explóralo</h2>
+<figure class="wide"><div class="fig"><div class="ritmo" id="ritmo">
+<svg role="img" aria-label="Gráfica de ritmo de gasto de ejemplo"></svg>
+<div class="legend"><span><i style="background:#F4F4F3"></i>Lo que llevas</span><span><i style="background:#34D399"></i>Esperado para cerrar en tu tope</span><span><i style="background:#6B6B72"></i>Línea recta</span></div>
+<div class="ctl"><label for="dia">Mueve el día del mes</label><input id="dia" type="range" min="0" max="30" value="12"></div>
+<div class="readout">
+<div><div class="k">Día</div><div class="v" data-o="day"></div></div>
+<div><div class="k">Llevas</div><div class="v" data-o="spent"></div></div>
+<div><div class="k">Esperado a hoy</div><div class="v" data-o="exp"></div></div>
+<div><div class="k">Línea recta</div><div class="v" data-o="lin"></div></div>
+<div style="grid-column:span 2"><div class="k">Lectura</div><div class="v" data-o="verdict"></div></div>
+</div></div></div>
+<figcaption><b>Figura 1.</b> Datos de ejemplo: un tope de $1.200.000 y un mes que gasta fuerte al inicio y a la quincena. Compara la curva verde con la recta: los primeros días, la recta te acusaría de ir rápido.</figcaption></figure>
+
+<h2 id="lecturas">Las cuatro lecturas</h2>
+<ul>
+<li><b>Vas por debajo</b>: gastaste menos de lo esperado a hoy. Se muestra neutro.</li>
+<li><b>Vas a tiempo</b>: vas como para cerrar en tu tope.</li>
+<li><b>Vas más rápido</b>: en ámbar. En la dona, el ámbar va desde la muesca (el esperado) hasta lo que llevas.</li>
+<li><b>Te pasaste</b>: superaste el tope. Es el único caso en rojo.</li>
+</ul>
+<div class="side"><b>¿Y la proyección?</b> Presu estima el cierre sumando a lo que llevas lo que normalmente falta por gastar desde este día (la mediana de tus meses anteriores).</div>
+
+<h2 id="sin-tope">Sin tope</h2>
+<p>Puedes solo seguir una categoría, sin tope. Ahí no hay «esperado para cerrar»: ves lo que llevas comparado con tus meses anteriores.</p>
+
+<nav class="next"><a href="/ayuda/categorias"><span class="k">← Anterior</span><span class="t">Cómo Presu decide la categoría</span></a><a class="r" href="/ayuda/no-cuadra"><span class="k">Siguiente →</span><span class="t">Cuando un total no cuadra</span></a></nav>
+<div class="help-foot"><p>¿Esto no resolvió tu caso? Escríbenos a <a href="mailto:soporte@asimetrica.co">soporte@asimetrica.co</a>. Si es un problema de lectura, adjunta el diagnóstico de <span class="path">Ajustes › Acerca de › Exportar diagnóstico</span>: oculta tu cédula y tus números de cuenta.</p></div>
+</article>
+</div>
+</main>
+<footer class="foot"><a href="/ayuda">Centro de ayuda</a><a href="/privacidad">Privacidad</a><a href="/terminos">Términos</a><a href="mailto:soporte@asimetrica.co">soporte@asimetrica.co</a></footer>
+<script src="/ayuda/ayuda.js" defer></script>
+</body>
+</html>

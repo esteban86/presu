@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tu primer extracto en 2 minutos · Presu</title>
+<meta name="description" content="Cómo importar tu primer extracto PDF en Presu: qué pasa por dentro, cuánto tarda y qué revisar después.">
+<link rel="canonical" href="https://presu.io/ayuda/primer-extracto">
+<link rel="icon" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/ayuda/ayuda.css">
+</head>
+<body>
+<header class="lp-header"><a class="wordmark" href="/"><span class="wm-bar"></span><span class="wm-text">presu</span></a><nav class="lp-nav"><a href="/ayuda">Ayuda</a><a class="hide-sm" href="/">Volver a Presu</a></nav></header>
+<main>
+<section class="d-title"><div class="inner">
+<p class="eb"><a href="/ayuda">Ayuda</a> · Empezar</p>
+<h1>Tu primer extracto en 2 minutos</h1>
+<p class="lede">Arrastras un PDF del banco y Presu lo convierte en movimientos ordenados. Acá ves, paso a paso, qué hace con él y qué te conviene mirar al terminar.</p>
+<p class="meta"><span>4 min de lectura</span><span>Escritorio y celular</span><span>Actualizado oct 2026</span></p>
+</div></section>
+<div class="d-body">
+<nav class="d-toc" aria-label="En esta página"><p class="h">En esta página</p><ol><li><a href="#pasos">Los pasos</a></li><li><a href="#por-dentro">Qué pasa por dentro</a></li><li><a href="#despues">Qué revisar al terminar</a></li><li><a href="#si-falla">Si algo falla</a></li></ol></nav>
+<article>
+
+<div class="tldr"><p class="h">En corto</p><ul>
+<li>Abre Presu, arrastra el PDF del extracto (o búscalo con el botón de importar).</li>
+<li>Si el PDF tiene clave, Presu te la pide una vez. Casi siempre es tu cédula.</li>
+<li>El extracto se lee <b>en tu equipo</b>. Al final ves cuántos movimientos entraron y cuáles quedaron por revisar.</li>
+</ul></div>
+
+<h2 id="pasos">Los pasos</h2>
+<ol class="steps">
+<li>Descarga el extracto en PDF desde la app o la web de tu banco. Si no sabes dónde está, mira <a href="/ayuda/descargar-extracto">Dónde sacar el extracto</a>.</li>
+<li>En Presu, arrastra el archivo a la ventana o usa el botón de importar. En el celular, elige el PDF desde Archivos.</li>
+<li>Si te pide clave, escríbela. Mira <a href="/ayuda/clave-del-pdf">La clave del PDF</a> si no la sabes.</li>
+<li>Revisa el resumen: movimientos nuevos, posibles duplicados y lo que quedó sin categoría.</li>
+</ol>
+
+<h2 id="por-dentro">Qué pasa por dentro</h2>
+<p>Un extracto es un documento hecho para imprimirse, no para que un programa lo lea. Presu lo pasa por cuatro capas, y si ninguna funciona, por una quinta. Toca cada paso para ver qué hace.</p>
+<figure class="wide">
+<div class="fig">
+<div class="pipe">
+<button class="st" data-d="&lt;b&gt;Extraer el texto.&lt;/b&gt; Presu saca el texto del PDF con su posición en la página, igual que si lo seleccionaras con el mouse. Esto pasa en tu equipo."><span class="n">1</span><span class="t">Extraer texto</span></button>
+<span class="ar">→</span>
+<button class="st" data-d="&lt;b&gt;Reconocer el banco.&lt;/b&gt; Cada banco deja marcas en sus extractos (nombres, rótulos, formatos). Presu las puntúa y elige el banco con más evidencia."><span class="n">2</span><span class="t">Detectar el banco</span></button>
+<span class="ar">→</span>
+<button class="st" data-d="&lt;b&gt;Leer con el lector de ese banco.&lt;/b&gt; Cada banco tiene su propio lector, que sabe dónde van la fecha, la descripción y el valor. Por ejemplo, Davivienda escribe $8,000 con coma de miles."><span class="n">3</span><span class="t">Leer las filas</span></button>
+<span class="ar">→</span>
+<button class="st" data-d="&lt;b&gt;Validar.&lt;/b&gt; Presu revisa que lo leído tenga sentido: fechas reales, montos legibles, y que no repita algo que ya tienes."><span class="n">4</span><span class="t">Validar</span></button>
+<span class="ar">→</span>
+<button class="st fallback" data-d="&lt;b&gt;Respaldo: Presu IA.&lt;/b&gt; Solo si el PDF es escaneado o no se leyó ningún movimiento, y solo si encendiste la IA en la nube. Si no, te avisa y no inventa nada."><span class="n">+</span><span class="t">Presu IA (respaldo)</span></button>
+</div>
+<div class="pipe-detail"></div>
+</div>
+<figcaption><b>Figura 1.</b> Las capas de lectura de un extracto. Las cuatro primeras corren siempre en tu equipo; la última es opcional.</figcaption>
+</figure>
+
+<h2 id="despues">Qué revisar al terminar</h2>
+<p>El primer extracto es el que más enseña. Tres cosas valen la pena:</p>
+<ul>
+<li><b>Lo que quedó sin categoría.</b> Corrige un par de movimientos: Presu aprende de tus correcciones para los siguientes. Más en <a href="/ayuda/categorias">Cómo Presu decide la categoría</a>.</li>
+<li><b>Los posibles duplicados.</b> Si algo ya estaba (porque lo anotaste a mano o llegó por correo), queda en la bandeja para que decidas.</li>
+<li><b>El pago de la tarjeta.</b> Si importas la cuenta de ahorros y la tarjeta, el pago debe quedar como transferencia interna. Ver <a href="/ayuda/no-cuadra">Cuando un total no cuadra</a>.</li>
+</ul>
+<div class="side"><b>¿Por qué importar varios meses?</b> El ritmo de gasto compara tu mes con la forma de los anteriores. Con dos meses o más empieza a ser útil.</div>
+
+<h2 id="si-falla">Si algo falla</h2>
+<div class="callout"><p>Si Presu no reconoce el banco o no leyó movimientos, no es tu culpa ni la del archivo. Mira <a href="/ayuda/banco-no-aparece">Mi banco no aparece o no se leyó</a>.</p></div>
+
+<nav class="next"><a href="/ayuda"><span class="k">← Volver</span><span class="t">Centro de ayuda</span></a><a class="r" href="/ayuda/clave-del-pdf"><span class="k">Siguiente →</span><span class="t">La clave del PDF</span></a></nav>
+<div class="help-foot"><p>¿Esto no resolvió tu caso? Escríbenos a <a href="mailto:soporte@asimetrica.co">soporte@asimetrica.co</a>. Si es un problema de lectura, adjunta el diagnóstico de <span class="path">Ajustes › Acerca de › Exportar diagnóstico</span>: oculta tu cédula y tus números de cuenta.</p></div>
+</article>
+</div>
+</main>
+<footer class="foot"><a href="/ayuda">Centro de ayuda</a><a href="/privacidad">Privacidad</a><a href="/terminos">Términos</a><a href="mailto:soporte@asimetrica.co">soporte@asimetrica.co</a></footer>
+<script src="/ayuda/ayuda.js" defer></script>
+</body>
+</html>
