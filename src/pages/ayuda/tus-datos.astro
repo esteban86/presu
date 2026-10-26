@@ -1,0 +1,142 @@
+---
+import Base from '../../layouts/Base.astro';
+---
+
+<Base
+  sinVenta
+  title={'Qué sale de tu equipo y qué no · Presu'}
+  description={'Qué se queda en tu equipo, qué sale y cuándo, y dónde se apaga cada cosa en Presu.'}
+>
+  <link rel="stylesheet" href="/ayuda/ayuda.css" />
+  <main class="ayuda">
+    <section class="d-title">
+      <div class="inner">
+        <p class="eb"><a href="/ayuda">Ayuda</a> · Confianza</p>
+        <h1>Qué sale de tu equipo y qué no</h1>
+        <p class="lede">
+          Tus movimientos, montos y cuentas viven en tu equipo. Lo poco que sale está a la vista, y
+          casi todo se puede apagar. Esta página lo pone en un solo mapa.
+        </p>
+        <p class="meta">
+          <span>5 min de lectura</span><span>Escritorio y celular</span><span
+            >Actualizado oct 2026</span
+          >
+        </p>
+      </div>
+    </section>
+    <div class="d-body">
+      <nav class="d-toc" aria-label="En esta página">
+        <p class="h">En esta página</p><ol>
+          <li><a href="#mapa">El mapa</a></li><li><a href="#ia">Presu IA</a></li><li>
+            <a href="#base">Tu base en el equipo</a>
+          </li><li><a href="#trm">El dólar</a></li>
+        </ol>
+      </nav>
+      <article>
+        <div class="tldr">
+          <p class="h">En corto</p><ul>
+            <li>Tus datos financieros no salen sin cifrar.</li>
+            <li>
+              Salen señales <b>anónimas</b> de uso, encendidas por defecto, que puedes apagar.
+            </li>
+            <li>Lo que lleva contenido de tus extractos está apagado hasta que lo actives.</li>
+          </ul>
+        </div>
+
+        <h2 id="mapa">El mapa</h2>
+        <figure class="wide">
+          <div class="fig">
+            <div class="flow">
+              <div class="box stay">
+                <div class="h">Se queda en tu equipo</div><ul>
+                  <li>Tus movimientos, cuentas y saldos</li><li>
+                    Los PDF: el escritorio los guarda cifrados entre 1 y 365 días; el celular los
+                    lee y no guarda copia
+                  </li><li>Las claves de tu correo, en el llavero del sistema</li>
+                </ul>
+              </div>
+              <div class="box on">
+                <div class="h">Sale anónimo · encendido, se apaga</div><ul>
+                  <li>Salud de los lectores de extractos</li><li>
+                    Hitos de uso (importaste, volviste)
+                  </li><li>Qué bancos elegiste</li>
+                </ul>
+              </div>
+              <div class="box opt">
+                <div class="h">Sale solo si lo activas</div><ul>
+                  <li>Presu IA en la nube (categorizar, leer extractos difíciles)</li><li>
+                    Muestras de formatos de extractos
+                  </li><li>Procesamiento alojado de documentos</li>
+                </ul>
+              </div>
+              <div class="box never">
+                <div class="h">No sale</div><ul>
+                  <li>Tus montos y cuentas sin cifrar</li><li>
+                    El cuerpo de tus correos por sincronización
+                  </li><li>Tus PDF por sincronización</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <figcaption>
+            <b>Figura 1.</b> Cuatro cajones. Los interruptores están en <span class="path"
+              >Ajustes › Privacidad</span
+            > (escritorio) y <span class="path">Más › Qué sale de este celular</span> (celular).
+          </figcaption>
+        </figure>
+
+        <h2 id="ia">Presu IA</h2>
+        <p>
+          En el escritorio está apagada hasta que actives <span class="path"
+            >Usar IA en la nube</span
+          >. El texto se envía enmascarado; las imágenes van como están. El proveedor es Anthropic,
+          o puedes usar tu propia llave de OpenAI u OpenRouter.
+        </p>
+        <p>
+          En el celular, <b>Leer fotos con Presu IA</b> viene encendido y <b
+            >Leer correos con Presu IA</b
+          > viene apagado.
+        </p>
+
+        <h2 id="base">Tu base en el equipo</h2>
+        <p>
+          La base de datos local no va cifrada: lo cifrado son las credenciales (llavero de macOS,
+          DPAPI en Windows). Protege tu equipo con contraseña. En iPhone, la copia de iCloud incluye
+          Presu; en Android, la copia de seguridad no.
+        </p>
+
+        <h2 id="trm">El dólar</h2>
+        <p>
+          Para convertir compras en dólares, Presu consulta la TRM en datos.gov.co enviando solo la
+          fecha.
+        </p>
+
+        <div class="callout">
+          El documento completo es la <a href="/privacidad">política de privacidad</a>.
+        </div>
+
+        <nav class="next">
+          <a href="/ayuda/vincular-celular"
+            ><span class="k">← Anterior</span><span class="t"
+              >Vincular el celular con el escritorio</span
+            ></a
+          ><a class="r" href="/ayuda/banco-no-aparece"
+            ><span class="k">Siguiente →</span><span class="t"
+              >Mi banco no aparece o no se leyó</span
+            ></a
+          >
+        </nav>
+        <div class="help-foot">
+          <p>
+            ¿Esto no resolvió tu caso? Escríbenos a <a href="mailto:soporte@presu.io"
+              >soporte@presu.io</a
+            >. Si es un problema de lectura, adjunta el diagnóstico de <span class="path"
+              >Ajustes › Acerca de › Exportar diagnóstico</span
+            >: oculta tu cédula y tus números de cuenta.
+          </p>
+        </div>
+      </article>
+    </div>
+  </main>
+  <script is:inline src="/ayuda/ayuda.js" defer></script>
+</Base>
