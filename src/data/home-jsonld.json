@@ -26,7 +26,7 @@
       "inLanguage": "es-CO",
       "url": "https://presu.io/",
       "image": "https://presu.io/presu-og.png",
-      "description": "Presu reúne los gastos de tus bancos colombianos, los organiza solos y te muestra a dónde se va tu plata. Local-first y con cifrado de extremo a extremo: la llave se queda en tus dispositivos.",
+      "description": "Presu reúne los gastos de tus bancos colombianos, los organiza solos y te muestra a dónde se va tu plata. Local-first, y la sincronización va cifrada de extremo a extremo: la llave se queda en tus dispositivos.",
       "publisher": { "@id": "https://asimetrica.co/#organization" },
       "offers": {
         "@type": "Offer",
@@ -42,22 +42,22 @@
         {
           "@type": "Question",
           "name": "¿Es seguro? ¿Dónde quedan mis datos?",
-          "acceptedAnswer": { "@type": "Answer", "text": "En tu computador. Presu es local-first: tu base de datos vive en tu equipo, no en un servidor nuestro. Si activas la sincronización para usar Presu también en el celular —que es gratis—, tus movimientos viajan cifrados de extremo a extremo —como en WhatsApp—: la llave se queda en tus dispositivos y en el servidor no hay nada legible, ni para nosotros." }
+          "acceptedAnswer": { "@type": "Answer", "text": "En tu computador. Presu es local-first: tu base de datos vive en tu equipo, no en un servidor nuestro. Si activas la sincronización para usar Presu también en el celular —que es gratis—, tus movimientos viajan cifrados de extremo a extremo —como en WhatsApp—: la llave viaja protegida con tu frase de acceso y en el servidor no hay nada legible, ni para nosotros. Si enciendes la IA opcional, el texto viaja enmascarado y las imágenes que eliges, como un pantallazo, van tal cual." }
         },
         {
           "@type": "Question",
           "name": "¿Necesito dar la clave de mi banco?",
-          "acceptedAnswer": { "@type": "Answer", "text": "No. Presu no se conecta a tu banca en línea ni te pide usuario o clave. Solo importas el PDF de tu extracto (o un pantallazo) y Presu lo lee." }
+          "acceptedAnswer": { "@type": "Answer", "text": "No. Presu no se conecta a tu banca en línea ni te pide usuario o clave. Importas el PDF de tu extracto (o un pantallazo) y Presu lo lee." }
         },
         {
           "@type": "Question",
           "name": "¿Qué bancos sirven?",
-          "acceptedAnswer": { "@type": "Answer", "text": "Hoy: Bancolombia, Nu, Davivienda y RappiCard. Seguimos sumando más." }
+          "acceptedAnswer": { "@type": "Answer", "text": "Presu detecta el banco solo cuando importas el PDF de tu extracto. Si no reconoce el formato, la IA opcional lo lee con el texto enmascarado." }
         },
         {
           "@type": "Question",
           "name": "¿Tiene costo?",
-          "acceptedAnswer": { "@type": "Answer", "text": "Al instalar Presu en tu computador tienes un mes con todo encendido, sin tarjeta. Después sigues gratis para siempre, con tu historial, tus presupuestos, la categorización con inteligencia artificial y Presu en el celular sincronizado con tu computador. Lo único que se apaga es que tu correo traiga los movimientos solo." }
+          "acceptedAnswer": { "@type": "Answer", "text": "Presu a mano es gratis para siempre: tu historial, tus presupuestos y tu panel se quedan, y usar Presu en el celular sincronizado con tu computador también es gratis. Lo que tiene precio es Presu Pro: que tu correo traiga los movimientos solo. Si entras temprano, conservas además un precio especial de pionero." }
         },
         {
           "@type": "Question",

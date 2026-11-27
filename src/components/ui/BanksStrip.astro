@@ -24,7 +24,7 @@ const BANKS = [
 ---
 
 <div class="banks-strip">
-  <span class="banks-strip__label">{label}</span>
+  <span class="banks-strip__label" data-afirma="bancos-funciona">{label}</span>
   {BANKS.map((bank) => (
     <span class="banks-strip__logo">
       <img src={bank.src} alt={bank.name} loading="lazy" width={bank.w} height="28" />

@@ -8,9 +8,11 @@ export interface Props {
   question: string;
   answer?: string;
   open?: boolean;
+  /** Id del inventario de afirmaciones (src/data/afirmaciones.json) si la respuesta afirma algo de la app. */
+  afirma?: string;
 }
 
-const { question, answer, open = false } = Astro.props;
+const { question, answer, open = false, afirma } = Astro.props;
 const hasSlot = Astro.slots.has('default');
 ---
 
@@ -20,7 +22,7 @@ const hasSlot = Astro.slots.has('default');
     <span class="faq-item__plus" aria-hidden="true">+</span>
   </summary>
   <div class="faq-item__answer">
-    {hasSlot ? <slot /> : <p>{answer}</p>}
+    {hasSlot ? <slot /> : <p data-afirma={afirma}>{answer}</p>}
   </div>
 </details>
 
