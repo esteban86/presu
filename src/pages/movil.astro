@@ -83,6 +83,17 @@ import StaticPage from '../layouts/StaticPage.astro';
   </main>
 </StaticPage>
 
+<style is:global>
+  body {
+    margin: 0;
+    background: var(--bg-base, #08080a);
+    color: var(--text-primary, #f4f4f3);
+    font-family: var(--font-body, "Hanken Grotesk"), sans-serif;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+</style>
+
 <style>
   .mv-head {
     padding: var(--space-6) var(--space-5) 0;

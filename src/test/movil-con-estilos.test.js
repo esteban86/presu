@@ -10,4 +10,9 @@ describe('/movil con estilos', () => {
     expect(existsSync(RUTA), 'falta dist/movil.html: corre npm run build').toBe(true);
     expect(readFileSync(RUTA, 'utf8')).toContain('--space-6:');
   });
+  it('el cuerpo usa la letra de la marca', () => {
+    const html = readFileSync(RUTA, 'utf8');
+    const reglas = [...html.matchAll(/(?:^|[\s}>])body\s*\{([^}]*)\}/g)].map((m) => m[1]).join(';');
+    expect(reglas).toMatch(/font-family:\s*var\(--font-body/);
+  });
 });
