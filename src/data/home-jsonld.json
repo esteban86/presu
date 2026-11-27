@@ -62,7 +62,7 @@
         {
           "@type": "Question",
           "name": "¿Funciona en Mac, Windows o celular?",
-          "acceptedAnswer": { "@type": "Answer", "text": "Hoy funciona en computador, Mac y Windows. La versión para celular está en camino —te avisamos cuando esté lista." }
+          "acceptedAnswer": { "@type": "Answer", "text": "Sí. Presu ya está en iPhone y es gratis. Tus movimientos se sincronizan cifrados de extremo a extremo con tu Mac o tu PC." }
         }
       ]
     }
