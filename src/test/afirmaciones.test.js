@@ -2,9 +2,11 @@
  * Inventario de afirmaciones de la portada (spec «presu.io que vende», CA4, CA6, CA7).
  *
  * Cada frase de la portada que afirma algo de la app lleva `data-afirma="<id>"`, y
- * `src/data/afirmaciones.json` dice, para ese id, el texto exacto, la línea del
- * código de la app (repo Gastos_Personales, `origin/main`) que lo prueba y en qué
- * aparatos vale. Una frase sin prueba no se publica.
+ * `src/data/afirmaciones.json` dice, para ese id, el texto exacto, la línea (o las
+ * líneas) del código de la app (repo Gastos_Personales) que lo prueba y en qué
+ * aparatos vale. Todas las líneas son del commit `sha` del inventario: `origin/main`
+ * se mueve, y un número de línea sin su commit no prueba nada. Una frase sin prueba
+ * no se publica.
  *
  * Se revisa el HTML CONSTRUIDO: lo que lee la gente es la página servida, no el
  * fuente. Corre `npm run build` antes.
@@ -57,13 +59,17 @@ function cargar() {
   expect(existsSync(RUTA), 'falta dist/index.html: corre npm run build').toBe(true);
   expect(existsSync(INVENTARIO), 'falta src/data/afirmaciones.json').toBe(true);
   const doc = parse(readFileSync(RUTA, 'utf8'));
-  const lista = JSON.parse(readFileSync(INVENTARIO, 'utf8'));
-  return { doc, lista, porId: new Map(lista.map((a) => [a.id, a])) };
+  const inventario = JSON.parse(readFileSync(INVENTARIO, 'utf8'));
+  const lista = inventario.afirmaciones;
+  return { doc, inventario, lista, porId: new Map((lista ?? []).map((a) => [a.id, a])) };
 }
 
 describe('inventario de afirmaciones de la portada', () => {
   it('cada entrada tiene id único, texto, prueba «ruta:línea» y al menos un aparato', () => {
-    const { lista } = cargar();
+    const { inventario, lista } = cargar();
+    expect(inventario.sha, 'falta el commit de la app al que apuntan las pruebas').toMatch(
+      /^[0-9a-f]{40}$/,
+    );
     expect(Array.isArray(lista) && lista.length > 0, 'el inventario está vacío').toBe(true);
     const ids = new Set();
     for (const a of lista) {
@@ -74,7 +80,9 @@ describe('inventario de afirmaciones de la portada', () => {
         typeof a.texto === 'string' && a.texto === colapsar(a.texto) && a.texto.length > 0,
         a.id,
       ).toBe(true);
-      expect(a.prueba, a.id).toMatch(/^[\w.@[\]/-]+\.[\w]+:[1-9]\d*$/);
+      const pruebas = Array.isArray(a.prueba) ? a.prueba : [a.prueba];
+      expect(pruebas.length, `${a.id} sin prueba`).toBeGreaterThan(0);
+      for (const p of pruebas) expect(p, a.id).toMatch(/^[\w.@[\]/-]+\.[\w]+:[1-9]\d*$/);
       expect(Array.isArray(a.aparatos) && a.aparatos.length > 0, `${a.id} sin aparatos`).toBe(true);
       for (const ap of a.aparatos) expect(APARATOS, `${a.id}: aparato ${ap}`).toContain(ap);
     }
@@ -105,12 +113,11 @@ describe('inventario de afirmaciones de la portada', () => {
     });
   });
 
-  it('la IA se nombra como opcional y con el texto enmascarado (CA7)', () => {
+  it('la IA se nombra como opcional, siempre dentro de una afirmación marcada (CA7)', () => {
     const { doc, lista } = cargar();
     for (const a of lista) {
       if (!NOMBRA_IA.test(a.texto)) continue;
       expect(a.texto, a.id).toMatch(/opcional/i);
-      expect(a.texto, a.id).toMatch(/enmascarad/i);
     }
     recorrer(doc, undefined, (texto, afirma) => {
       if (NOMBRA_IA.test(texto))

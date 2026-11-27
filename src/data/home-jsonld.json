@@ -42,7 +42,7 @@
         {
           "@type": "Question",
           "name": "¿Es seguro? ¿Dónde quedan mis datos?",
-          "acceptedAnswer": { "@type": "Answer", "text": "En tu computador. Presu es local-first: tu base de datos vive en tu equipo, no en un servidor nuestro. Si activas la sincronización para usar Presu también en el celular —que es gratis—, tus movimientos viajan cifrados de extremo a extremo —como en WhatsApp—: la llave se queda en tus dispositivos y en el servidor no hay nada legible, ni para nosotros. Si enciendes la IA opcional, solo viaja el texto enmascarado de tus movimientos." }
+          "acceptedAnswer": { "@type": "Answer", "text": "En tu computador. Presu es local-first: tu base de datos vive en tu equipo, no en un servidor nuestro. Si activas la sincronización para usar Presu también en el celular —que es gratis—, tus movimientos viajan cifrados de extremo a extremo —como en WhatsApp—: la llave viaja protegida con tu frase de acceso y en el servidor no hay nada legible, ni para nosotros. Si enciendes la IA opcional, el texto viaja enmascarado y las imágenes que eliges, como un pantallazo, van tal cual." }
         },
         {
           "@type": "Question",
