@@ -1,0 +1,338 @@
+[
+  {
+    "id": "hero-reune",
+    "texto": "Presu reúne los movimientos de tus bancos en un solo lugar y te muestra a dónde se va tu plata —sin planillas, sin claves del banco.",
+    "prueba": "src/components/dashboard/PeriodHeader.tsx:30",
+    "aparatos": ["mac", "windows"]
+  },
+  {
+    "id": "hero-gratis",
+    "texto": "Gratis para empezar",
+    "prueba": "src/shared/license.ts:104",
+    "aparatos": ["mac", "windows"]
+  },
+  {
+    "id": "hero-local",
+    "texto": "Tus datos viven en tu equipo",
+    "prueba": "electron/database/core.ts:717",
+    "aparatos": ["mac", "windows"]
+  },
+  {
+    "id": "problema-cifrado",
+    "texto": "Presu los guarda en tu equipo y, si sincronizas, viajan cifrados: sin tu llave, en el servidor no hay nada legible.",
+    "prueba": "packages/core/src/crypto.ts:6",
+    "aparatos": ["mac", "windows", "iphone"]
+  },
+  {
+    "id": "pasos-titulo",
+    "texto": "De un PDF a saber si vas bien, en tres pasos.",
+    "prueba": "src/components/Dashboard.tsx:710",
+    "aparatos": ["mac", "windows"]
+  },
+  {
+    "id": "pasos-sin-claves",
+    "texto": "Sin claves del banco. Sin hojas de cálculo.",
+    "prueba": "src/components/import/ImportsModule.tsx:46",
+    "aparatos": ["mac", "windows"]
+  },
+  {
+    "id": "paso-1",
+    "texto": "Arrastras el PDF del banco —o hasta un pantallazo. Sin claves ni conexión a tu banca en línea.",
+    "prueba": "src/components/import/ImportsModule.tsx:49",
+    "aparatos": ["mac", "windows"]
+  },
+  {
+    "id": "paso-2",
+    "texto": "Detecta el banco y categoriza cada movimiento solo.",
+    "prueba": "electron/import/bank-detector.ts:19",
+    "aparatos": ["mac", "windows"]
+  },
+  {
+    "id": "paso-3",
+    "texto": "Cuánto entró, cuánto salió y cómo vas contra tus topes. La respuesta primero; los números, si los quieres.",
+    "prueba": "src/components/Dashboard.tsx:710",
+    "aparatos": ["mac", "windows"]
+  },
+  {
+    "id": "bancos-titulo",
+    "texto": "Lee los extractos de tus bancos.",
+    "prueba": "packages/core/src/lectores-de-banco.ts:4300",
+    "aparatos": ["mac", "windows"]
+  },
+  {
+    "id": "bancos-detecta",
+    "texto": "Arrastra el PDF y Presu detecta el banco solo. Si no reconoce el formato, la IA opcional lo lee con el texto enmascarado.",
+    "prueba": "electron/import/pipeline.ts:378",
+    "aparatos": ["mac", "windows"]
+  },
+  {
+    "id": "bancos-funciona",
+    "texto": "Funciona con tus bancos",
+    "prueba": "electron/import/parser-registry.ts:64",
+    "aparatos": ["mac", "windows"]
+  },
+  {
+    "id": "inicio-titulo",
+    "texto": "Ingresos y gastos del mes, al instante",
+    "prueba": "src/components/Dashboard.tsx:523",
+    "aparatos": ["mac", "windows"]
+  },
+  {
+    "id": "inicio-texto",
+    "texto": "Abres Presu y ya sabes cómo vas: cuánto entró y cuánto salió, con la variación contra el mes pasado y tus presupuestos por categoría. La respuesta primero; los números, si los quieres.",
+    "prueba": "src/components/dashboard/StatCard.tsx:188",
+    "aparatos": ["mac", "windows"]
+  },
+  {
+    "id": "inicio-bancos",
+    "texto": "Todos tus bancos sumados en una sola vista",
+    "prueba": "src/components/dashboard/PeriodHeader.tsx:30",
+    "aparatos": ["mac", "windows"]
+  },
+  {
+    "id": "inicio-vs-mes",
+    "texto": "Comparación automática contra el mes anterior",
+    "prueba": "src/components/dashboard/StatCard.tsx:188",
+    "aparatos": ["mac", "windows"]
+  },
+  {
+    "id": "inicio-anillos",
+    "texto": "Presupuestos por categoría en anillos",
+    "prueba": "packages/core/src/forma-de-la-dona.ts:96",
+    "aparatos": ["mac", "windows", "iphone"]
+  },
+  {
+    "id": "ritmo-titulo",
+    "texto": "Tu ritmo de gasto, contra tu tope",
+    "prueba": "src/components/BudgetPaceChart.tsx:310",
+    "aparatos": ["mac", "windows"]
+  },
+  {
+    "id": "ritmo-texto",
+    "texto": "Presu dibuja lo que llevas gastado sobre lo que irías gastando para cerrar en tu tope, y el tope mismo. Si vas muy rápido, lo ves días antes —no cuando ya es tarde.",
+    "prueba": "src/components/BudgetPaceChart.tsx:310",
+    "aparatos": ["mac", "windows"]
+  },
+  {
+    "id": "ritmo-dia-a-dia",
+    "texto": "Gasto real contra tu tope, día a día",
+    "prueba": "packages/core/src/budget-pace.ts:504",
+    "aparatos": ["mac", "windows", "iphone"]
+  },
+  {
+    "id": "ritmo-techo",
+    "texto": "Tu tope a la vista en la gráfica",
+    "prueba": "src/components/BudgetPaceChart.tsx:113",
+    "aparatos": ["mac", "windows"]
+  },
+  {
+    "id": "ritmo-proyeccion",
+    "texto": "Proyección de cómo cerrarás el mes",
+    "prueba": "src/components/budgets/BudgetCard.tsx:271",
+    "aparatos": ["mac", "windows"]
+  },
+  {
+    "id": "correo-titulo",
+    "texto": "Importa solo, desde tu correo",
+    "prueba": "electron/services/gmail-email-sync.ts:22",
+    "aparatos": ["mac", "windows"]
+  },
+  {
+    "id": "correo-texto",
+    "texto": "Conecta tu correo y Presu encuentra las notificaciones del banco y los extractos PDF que ya te llegaron, los lee y los importa —saltándose los duplicados. Si enciendes la IA opcional, solo viaja el texto enmascarado del correo.",
+    "prueba": "src/components/import/GmailSync.tsx:247",
+    "aparatos": ["mac", "windows"]
+  },
+  {
+    "id": "correo-proveedores",
+    "texto": "Gmail, Outlook, Yahoo e iCloud",
+    "prueba": "src/components/import/GmailSync.tsx:247",
+    "aparatos": ["mac", "windows"]
+  },
+  {
+    "id": "correo-extractos",
+    "texto": "Encuentra y procesa extractos PDF automáticamente",
+    "prueba": "electron/services/gmail-statement-sync.ts:380",
+    "aparatos": ["mac", "windows"]
+  },
+  {
+    "id": "correo-duplicados",
+    "texto": "Detecta duplicados para no repetir movimientos",
+    "prueba": "electron/services/statement-importer.ts:157",
+    "aparatos": ["mac", "windows"]
+  },
+  {
+    "id": "extra-ia",
+    "texto": "IA opcional, con texto enmascarado",
+    "prueba": "electron/services/ai-provider.ts:54",
+    "aparatos": ["mac", "windows"]
+  },
+  {
+    "id": "extra-flujo",
+    "texto": "Flujo de caja y patrimonio",
+    "prueba": "electron/database/flow.ts:48",
+    "aparatos": ["mac", "windows"]
+  },
+  {
+    "id": "extra-exportar",
+    "texto": "Exporta a Excel o CSV",
+    "prueba": "electron/database/transactions.ts:733",
+    "aparatos": ["mac", "windows"]
+  },
+  {
+    "id": "extra-multi",
+    "texto": "Multi-dispositivo",
+    "prueba": "src/shared/license.ts:127",
+    "aparatos": ["mac", "windows", "iphone"]
+  },
+  {
+    "id": "privacidad-titulo",
+    "texto": "Solo tú tienes la llave.",
+    "prueba": "packages/core/src/crypto.ts:6",
+    "aparatos": ["mac", "windows", "iphone"]
+  },
+  {
+    "id": "privacidad-texto",
+    "texto": "Presu funciona local-first: tu información financiera vive en tu computador y ahí manda. Si activas la sincronización para verla también en el celular, viaja cifrada de extremo a extremo —la llave queda protegida con tu frase de acceso y nuestro servidor nunca la ve. En nuestro servidor solo quedan bloques cifrados: ni Asimétrica puede leerlos.",
+    "prueba": "packages/core/src/crypto.ts:6",
+    "aparatos": ["mac", "windows", "iphone"]
+  },
+  {
+    "id": "pill-llave",
+    "texto": "La llave es tuya",
+    "prueba": "packages/core/src/crypto.ts:6",
+    "aparatos": ["mac", "windows", "iphone"]
+  },
+  {
+    "id": "pill-e2e",
+    "texto": "Sincronización cifrada de extremo a extremo",
+    "prueba": "packages/core/src/crypto.ts:6",
+    "aparatos": ["mac", "windows", "iphone"]
+  },
+  {
+    "id": "pill-cuenta",
+    "texto": "Tu cuenta es solo tu correo",
+    "prueba": "src/shared/license.ts:126",
+    "aparatos": ["mac", "windows", "iphone"]
+  },
+  {
+    "id": "empresas-llave",
+    "texto": "y nadie en la empresa ve sus datos: cada quien tiene su propia llave.",
+    "prueba": "packages/core/src/crypto.ts:155",
+    "aparatos": ["mac", "windows", "iphone"]
+  },
+  {
+    "id": "planes-titulo",
+    "texto": "Empiezas gratis. Y sigues gratis.",
+    "prueba": "src/shared/license.ts:104",
+    "aparatos": ["mac", "windows"]
+  },
+  {
+    "id": "planes-texto",
+    "texto": "Presu a mano es gratis para siempre: tu historial, tus presupuestos y tu panel son tuyos, y usar Presu en el celular tampoco cuesta. Presu Pro suma que tu correo traiga los movimientos solo.",
+    "prueba": "src/shared/license.ts:131",
+    "aparatos": ["mac", "windows", "iphone"]
+  },
+  {
+    "id": "gratis-importar",
+    "texto": "Importas tus extractos y Presu los lee",
+    "prueba": "packages/core/src/lectores-de-banco.ts:4300",
+    "aparatos": ["mac", "windows"]
+  },
+  {
+    "id": "gratis-ia",
+    "texto": "Categorización con IA opcional, con el texto enmascarado",
+    "prueba": "electron/services/ai-provider.ts:54",
+    "aparatos": ["mac", "windows"]
+  },
+  {
+    "id": "gratis-cuentas",
+    "texto": "Cuentas y bancos ilimitados",
+    "prueba": "src/shared/license.ts:110",
+    "aparatos": ["mac", "windows"]
+  },
+  {
+    "id": "gratis-analitica",
+    "texto": "Presupuestos, analítica y patrimonio",
+    "prueba": "src/shared/license.ts:113",
+    "aparatos": ["mac", "windows"]
+  },
+  {
+    "id": "gratis-celular",
+    "texto": "Tu celular, siempre al día",
+    "prueba": "src/shared/license.ts:127",
+    "aparatos": ["mac", "windows", "iphone"]
+  },
+  {
+    "id": "gratis-exportar",
+    "texto": "Exportar a Excel cuando quieras",
+    "prueba": "src/shared/license.ts:114",
+    "aparatos": ["mac", "windows"]
+  },
+  {
+    "id": "pro-tag",
+    "texto": "Lo mismo, con el correo trabajando por ti",
+    "prueba": "src/shared/license.ts:131",
+    "aparatos": ["mac", "windows"]
+  },
+  {
+    "id": "pro-precio",
+    "texto": "$19.990 al mes",
+    "prueba": "proxy/wrangler.toml:133",
+    "aparatos": ["mac", "windows"]
+  },
+  {
+    "id": "pro-precio-otros",
+    "texto": "O $199.990 al año. Para la casa, el plan Familiar por $34.990 al mes.",
+    "prueba": "proxy/wrangler.toml:134",
+    "aparatos": ["mac", "windows"]
+  },
+  {
+    "id": "pro-correo",
+    "texto": "Tu correo trae los movimientos solo",
+    "prueba": "src/shared/license.ts:131",
+    "aparatos": ["mac", "windows"]
+  },
+  {
+    "id": "pro-ia",
+    "texto": "Diez veces más uso de la IA opcional, con el texto enmascarado",
+    "prueba": "proxy/wrangler.toml:80",
+    "aparatos": ["mac", "windows"]
+  },
+  {
+    "id": "faq-seguro",
+    "texto": "En tu computador. Presu es local-first: tu base de datos vive en tu equipo, no en un servidor nuestro. Si activas la sincronización para usar Presu también en el celular —que es gratis—, tus movimientos viajan cifrados de extremo a extremo —como en WhatsApp—: la llave se queda en tus dispositivos y en el servidor no hay nada legible, ni para nosotros. Si enciendes la IA opcional, solo viaja el texto enmascarado de tus movimientos.",
+    "prueba": "electron/database/core.ts:717",
+    "aparatos": ["mac", "windows", "iphone"]
+  },
+  {
+    "id": "faq-clave",
+    "texto": "No. Presu no se conecta a tu banca en línea ni te pide usuario o clave. Importas el PDF de tu extracto (o un pantallazo) y Presu lo lee.",
+    "prueba": "src/components/import/ImportsModule.tsx:46",
+    "aparatos": ["mac", "windows"]
+  },
+  {
+    "id": "faq-bancos",
+    "texto": "Presu detecta el banco solo cuando importas el PDF de tu extracto. Si no reconoce el formato, la IA opcional lo lee con el texto enmascarado.",
+    "prueba": "electron/import/pipeline.ts:378",
+    "aparatos": ["mac", "windows"]
+  },
+  {
+    "id": "faq-costo",
+    "texto": "Presu a mano es gratis para siempre: tu historial, tus presupuestos y tu panel se quedan, y usar Presu en el celular sincronizado con tu computador también es gratis. Lo que tiene precio es Presu Pro: que tu correo traiga los movimientos solo. Si entras temprano, conservas además un precio especial de pionero.",
+    "prueba": "src/shared/license.ts:131",
+    "aparatos": ["mac", "windows", "iphone"]
+  },
+  {
+    "id": "faq-aparatos",
+    "texto": "Sí. Presu ya está en iPhone y es gratis. Tus movimientos se sincronizan cifrados de extremo a extremo con tu Mac o tu PC.",
+    "prueba": "packages/core/src/crypto.ts:6",
+    "aparatos": ["mac", "windows", "iphone"]
+  },
+  {
+    "id": "form-aparatos",
+    "texto": "Mac, Windows e iPhone",
+    "prueba": "package.json:109",
+    "aparatos": ["mac", "windows", "iphone"]
+  }
+]

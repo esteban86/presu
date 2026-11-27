@@ -16,12 +16,12 @@ import Logo from '../Logo.astro';
       <div class="show-row reveal">
         <div class="show-copy">
           <span class="eyebrow">¿Voy bien este mes?</span>
-          <h3>Ingresos, gastos y balance, al instante</h3>
-          <p>Abres Presu y ya sabes cómo vas: cuánto entró, cuánto salió y qué te queda —con la variación contra el mes pasado y tus presupuestos por categoría. La respuesta primero; los números, si los quieres.</p>
+          <h3 data-afirma="inicio-titulo">Ingresos y gastos del mes, al instante</h3>
+          <p data-afirma="inicio-texto">Abres Presu y ya sabes cómo vas: cuánto entró y cuánto salió, con la variación contra el mes pasado y tus presupuestos por categoría. La respuesta primero; los números, si los quieres.</p>
           <ul class="show-list">
-            <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Todos tus bancos sumados en una sola vista</li>
-            <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Comparación automática contra el mes anterior</li>
-            <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Presupuestos por categoría en anillos, en tiempo real</li>
+            <li data-afirma="inicio-bancos"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Todos tus bancos sumados en una sola vista</li>
+            <li data-afirma="inicio-vs-mes"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Comparación automática contra el mes anterior</li>
+            <li data-afirma="inicio-anillos"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Presupuestos por categoría en anillos</li>
           </ul>
         </div>
         <div class="show-art">
@@ -74,12 +74,12 @@ import Logo from '../Logo.astro';
       <div class="show-row rev reveal">
         <div class="show-copy">
           <span class="eyebrow">¿Vas a llegar a fin de mes?</span>
-          <h3>Tu ritmo de gasto, contra lo esperado</h3>
-          <p>Presu dibuja lo que llevas gastado (línea verde) sobre lo que deberías ir gastando (punteada) y tu techo de presupuesto. Si vas muy rápido, lo ves días antes —no cuando ya es tarde.</p>
+          <h3 data-afirma="ritmo-titulo">Tu ritmo de gasto, contra tu tope</h3>
+          <p data-afirma="ritmo-texto">Presu dibuja lo que llevas gastado sobre lo que irías gastando para cerrar en tu tope, y el tope mismo. Si vas muy rápido, lo ves días antes —no cuando ya es tarde.</p>
           <ul class="show-list">
-            <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Gasto real vs. ritmo esperado, día a día</li>
-            <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Techo de presupuesto siempre a la vista</li>
-            <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Proyección de cómo cerrarás el mes</li>
+            <li data-afirma="ritmo-dia-a-dia"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Gasto real contra tu tope, día a día</li>
+            <li data-afirma="ritmo-techo"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Tu tope a la vista en la gráfica</li>
+            <li data-afirma="ritmo-proyeccion"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Proyección de cómo cerrarás el mes</li>
           </ul>
         </div>
         <div class="show-art">
@@ -127,12 +127,12 @@ import Logo from '../Logo.astro';
       <div class="show-row reveal">
         <div class="show-copy">
           <span class="eyebrow">Sin trabajo manual</span>
-          <h3>Importa solo, desde tu correo</h3>
-          <p>Conecta tu correo y Presu encuentra las notificaciones del banco y los extractos PDF que ya te llegaron, los lee y los importa —saltándose los duplicados. Y todo el procesamiento ocurre en tu equipo.</p>
+          <h3 data-afirma="correo-titulo">Importa solo, desde tu correo</h3>
+          <p data-afirma="correo-texto">Conecta tu correo y Presu encuentra las notificaciones del banco y los extractos PDF que ya te llegaron, los lee y los importa —saltándose los duplicados. Si enciendes la IA opcional, solo viaja el texto enmascarado del correo.</p>
           <ul class="show-list">
-            <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Gmail, Outlook, Yahoo e iCloud</li>
-            <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Encuentra y procesa extractos PDF automáticamente</li>
-            <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Detecta duplicados para no repetir movimientos</li>
+            <li data-afirma="correo-proveedores"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Gmail, Outlook, Yahoo e iCloud</li>
+            <li data-afirma="correo-extractos"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Encuentra y procesa extractos PDF automáticamente</li>
+            <li data-afirma="correo-duplicados"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Detecta duplicados para no repetir movimientos</li>
           </ul>
         </div>
         <div class="show-art">
@@ -142,7 +142,7 @@ import Logo from '../Logo.astro';
             <div class="sync-hd"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg> Sincronización con tu correo</div>
             <div class="sync-stat">270 transacciones importadas desde el correo</div>
             <div class="sync-period"><span class="p">⚡ 24 horas</span><span class="p on">7 días</span><span class="p">30 días</span><span class="p">90 días</span></div>
-            <div class="sync-status"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg> Gmail conectado (OAuth)</div>
+            <div class="sync-status"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg> Gmail conectado</div>
             <div class="sync-banks">Extractos PDF: <span class="bk">Bancolombia</span><span class="bk">Davivienda</span><span class="bk">Nu</span><span class="bk">RappiCard</span></div>
             <div class="prog-row"><span>10/20 correos · <span style="color:var(--mint-bright)">6 importadas</span> · 4 omitidas</span><span>50%</span></div>
             <div class="prog"><i></i></div>
@@ -161,10 +161,10 @@ import Logo from '../Logo.astro';
     </div>
 
     <div class="feat-extra reveal">
-      <span class="x"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3 1.9 4.6L19 8.3l-3.7 3.3 1 5L12 14.5 7.7 16.6l1-5L5 8.3l5.1-.7z"/></svg>Categorización con IA</span>
-      <span class="x"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Flujo de caja y patrimonio</span>
-      <span class="x"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>Exporta a Excel o CSV</span>
-      <span class="x"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Multi-dispositivo</span>
+      <span class="x"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3 1.9 4.6L19 8.3l-3.7 3.3 1 5L12 14.5 7.7 16.6l1-5L5 8.3l5.1-.7z"/></svg><span data-afirma="extra-ia">IA opcional, con texto enmascarado</span></span>
+      <span class="x"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span data-afirma="extra-flujo">Flujo de caja y patrimonio</span></span>
+      <span class="x"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg><span data-afirma="extra-exportar">Exporta a Excel o CSV</span></span>
+      <span class="x"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span data-afirma="extra-multi">Multi-dispositivo</span></span>
     </div>
   </div>
 </section>

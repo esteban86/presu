@@ -55,7 +55,8 @@ const problems = [
     tone: 'positive',
     icon: 'cloud',
     title: 'Las demás apps pueden leer tus movimientos',
-    body: 'Para organizarte te piden entregar tus datos a un servidor que los ve en claro. Presu los guarda y los sincroniza cifrados: sin tu llave, ahí no hay nada legible.',
+    body: 'Para organizarte te piden entregar tus datos a un servidor que los ve en claro.',
+    afirma: { id: 'problema-cifrado', texto: 'Presu los guarda en tu equipo y, si sincronizas, viajan cifrados: sin tu llave, en el servidor no hay nada legible.' },
   },
 ];
 
@@ -65,16 +66,19 @@ const steps = [
     n: '1',
     title: 'Importas tu extracto',
     body: 'Arrastras el PDF del banco —o hasta un pantallazo. Sin claves ni conexión a tu banca en línea.',
+    afirma: 'paso-1',
   },
   {
     n: '2',
     title: 'Presu lo organiza solo',
-    body: 'Detecta el banco y categoriza cada movimiento en segundo plano. Cuando abres, ya está hecho.',
+    body: 'Detecta el banco y categoriza cada movimiento solo.',
+    afirma: 'paso-2',
   },
   {
     n: '3',
     title: 'Lo ves en una frase',
-    body: 'Cuánto entró, cuánto salió y qué te queda. La respuesta primero; los números, si los quieres.',
+    body: 'Cuánto entró, cuánto salió y cómo vas contra tus topes. La respuesta primero; los números, si los quieres.',
+    afirma: 'paso-3',
   },
 ];
 
@@ -91,16 +95,19 @@ const txns = [
 const faqs = [
   {
     q: '¿Es seguro? ¿Dónde quedan mis datos?',
-    a: 'En tu computador. Presu es local-first: tu base de datos vive en tu equipo, no en un servidor nuestro. Si activas la sincronización para usar Presu también en el celular —que es gratis—, tus movimientos viajan cifrados de extremo a extremo —como en WhatsApp—: la llave se queda en tus dispositivos y en el servidor no hay nada legible, ni para nosotros.',
+    a: 'En tu computador. Presu es local-first: tu base de datos vive en tu equipo, no en un servidor nuestro. Si activas la sincronización para usar Presu también en el celular —que es gratis—, tus movimientos viajan cifrados de extremo a extremo —como en WhatsApp—: la llave se queda en tus dispositivos y en el servidor no hay nada legible, ni para nosotros. Si enciendes la IA opcional, solo viaja el texto enmascarado de tus movimientos.',
+    afirma: 'faq-seguro',
     open: true,
   },
   {
     q: '¿Necesito dar la clave de mi banco?',
-    a: 'No. Presu no se conecta a tu banca en línea ni te pide usuario o clave. Solo importas el PDF de tu extracto (o un pantallazo) y Presu lo lee.',
+    a: 'No. Presu no se conecta a tu banca en línea ni te pide usuario o clave. Importas el PDF de tu extracto (o un pantallazo) y Presu lo lee.',
+    afirma: 'faq-clave',
   },
   {
     q: '¿Qué bancos sirven?',
-    a: 'Hoy: Bancolombia, Nu, Davivienda y RappiCard. Seguimos sumando más cada mes.',
+    a: 'Presu detecta el banco solo cuando importas el PDF de tu extracto. Si no reconoce el formato, la IA opcional lo lee con el texto enmascarado.',
+    afirma: 'faq-bancos',
   },
   {
     q: '¿Qué gano por entrar antes del lanzamiento?',
@@ -108,18 +115,20 @@ const faqs = [
   },
   {
     q: '¿Tiene costo?',
-    a: 'Al instalar Presu en tu computador tienes un mes con todo encendido, sin tarjeta. Después sigues gratis para siempre: tu historial, tus presupuestos y tu panel se quedan, la categorización con inteligencia artificial también, y usar Presu en el celular sincronizado con tu computador también es gratis. Lo único que se apaga es que tu correo traiga los movimientos solo, y eso es lo que tiene precio. Si entras temprano, conservas además un precio especial de pionero.',
+    a: 'Presu a mano es gratis para siempre: tu historial, tus presupuestos y tu panel se quedan, y usar Presu en el celular sincronizado con tu computador también es gratis. Lo que tiene precio es Presu Pro: que tu correo traiga los movimientos solo. Si entras temprano, conservas además un precio especial de pionero.',
+    afirma: 'faq-costo',
   },
   {
     q: '¿Funciona en Mac, Windows o celular?',
     a: 'Sí. Presu ya está en iPhone y es gratis. Tus movimientos se sincronizan cifrados de extremo a extremo con tu Mac o tu PC.',
+    afirma: 'faq-aparatos',
   },
 ];
 ---
 
 <Base
   title="Presu — App de finanzas personales para Colombia | Tus gastos, claros"
-  description="App de finanzas personales para Colombia. Presu reúne tu plata de todos los bancos, la organiza sola y te dice —en una frase— si vas bien este mes. Local-first, con cifrado de extremo a extremo: la llave es tuya."
+  description="App de finanzas personales para Colombia. Presu reúne tu plata de todos los bancos, la organiza sola y te dice —en una frase— si vas bien este mes. Local-first, con sincronización cifrada de extremo a extremo: la llave es tuya."
 >
   <script type="application/ld+json" is:inline set:html={JSON.stringify(homeJsonLd)}></script>
 
@@ -133,7 +142,7 @@ const faqs = [
       <div class="hero-copy">
         <span class="pill-badge"><span class="ping"></span> 🌊 Nueva Ola · lista de espera abierta</span>
         <h1>La <span class="mintword">Nueva Ola</span> de Presu está por abrir.</h1>
-        <p class="pitch">Presu reúne tus gastos de todos tus bancos y en un minuto ves a dónde se va tu plata —sin planillas, sin claves del banco.</p>
+        <p class="pitch" data-afirma="hero-reune">Presu reúne los movimientos de tus bancos en un solo lugar y te muestra a dónde se va tu plata —sin planillas, sin claves del banco.</p>
         <p class="sub">Déjanos tu correo y entras en la <b>Nueva Ola</b>. ¿Quieres adelantarte? Tienes dos formas 👇</p>
 
         <form id="hero-form" class="capture" novalidate>
@@ -146,7 +155,7 @@ const faqs = [
           <p class="capture-err" id="hero-err">Revisa el correo —parece que le falta algo.</p>
           <p class="capture-note">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-            Gratis para empezar · Solo tú puedes leer tus datos · Sin spam
+            <span data-afirma="hero-gratis">Gratis para empezar</span> · <span data-afirma="hero-local">Tus datos viven en tu equipo</span> · Sin spam
           </p>
         </form>
 
@@ -204,7 +213,7 @@ const faqs = [
             )}
           </span>
           <h3>{p.title}</h3>
-          <p>{p.body}</p>
+          <p>{p.body}{p.afirma && <> <span data-afirma={p.afirma.id}>{p.afirma.texto}</span></>}</p>
         </div>
       ))}
     </div>
@@ -213,15 +222,15 @@ const faqs = [
   <!-- ══════════════════ 3 · EL GIRO — CÓMO FUNCIONA ══════════════════ -->
   <Section id="como" eyebrow="El giro">
     <div class="sec-head reveal">
-      <h2>De un PDF a saber si vas bien, en <span class="mark">tres pasos</span>.</h2>
-      <p class="sec-lead">Sin claves del banco. Sin hojas de cálculo. Sin que nadie más lea tu plata.</p>
+      <h2 data-afirma="pasos-titulo">De un PDF a saber si vas bien, en <span class="mark">tres pasos</span>.</h2>
+      <p class="sec-lead" data-afirma="pasos-sin-claves">Sin claves del banco. Sin hojas de cálculo.</p>
     </div>
     <div class="steps">
       {steps.map((s) => (
         <div class="step reveal">
           <span class="step-n">{s.n}</span>
           <h3>{s.title}</h3>
-          <p>{s.body}</p>
+          <p data-afirma={s.afirma}>{s.body}</p>
         </div>
       ))}
     </div>
@@ -231,8 +240,8 @@ const faqs = [
   <!-- ══════════════════ 5 · BANCOS QUE LEE ══════════════════ -->
   <Section eyebrow="Bancos que lee">
     <div class="sec-head reveal">
-      <h2>Lee los extractos de <span class="mark">tus bancos</span>.</h2>
-      <p class="sec-lead">Arrastra el PDF y Presu detecta el banco solo. Sumamos más cada mes.</p>
+      <h2 data-afirma="bancos-titulo">Lee los extractos de <span class="mark">tus bancos</span>.</h2>
+      <p class="sec-lead" data-afirma="bancos-detecta">Arrastra el PDF y Presu detecta el banco solo. Si no reconoce el formato, la IA opcional lo lee con el texto enmascarado.</p>
     </div>
     <div class="reveal">
       <BanksStrip />
@@ -246,20 +255,20 @@ const faqs = [
   <Section id="privacidad" eyebrow="Privacidad que se siente">
     <div class="privacy reveal">
       <div class="privacy-glow" aria-hidden="true"></div>
-      <h2>Solo tú tienes <span class="mark">la llave</span>.</h2>
-      <p class="privacy-lead">Presu funciona <strong>local-first</strong>: tu información financiera vive en tu computador y ahí manda. Si activas la sincronización para verla también en el celular, viaja <strong>cifrada de extremo a extremo</strong> —la llave se deriva de tu frase de acceso y no sale de tus dispositivos. En nuestro servidor solo quedan bloques cifrados: <strong>ni Asimétrica puede leer tus movimientos.</strong></p>
+      <h2 data-afirma="privacidad-titulo">Solo tú tienes <span class="mark">la llave</span>.</h2>
+      <p class="privacy-lead" data-afirma="privacidad-texto">Presu funciona <strong>local-first</strong>: tu información financiera vive en tu computador y ahí manda. Si activas la sincronización para verla también en el celular, viaja <strong>cifrada de extremo a extremo</strong> —la llave queda protegida con tu frase de acceso y nuestro servidor nunca la ve. En nuestro servidor solo quedan bloques cifrados: <strong>ni Asimétrica puede leerlos.</strong></p>
       <div class="privacy-pills">
         <span class="ppill">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-          La llave es tuya
+          <span data-afirma="pill-llave">La llave es tuya</span>
         </span>
         <span class="ppill">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-          Cifrado de extremo a extremo
+          <span data-afirma="pill-e2e">Sincronización cifrada de extremo a extremo</span>
         </span>
         <span class="ppill">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18.36 6.64A9 9 0 1 1 5.64 6.64"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
-          Tu cuenta es solo tu correo
+          <span data-afirma="pill-cuenta">Tu cuenta es solo tu correo</span>
         </span>
       </div>
     </div>
@@ -271,7 +280,7 @@ const faqs = [
       <div class="b2b-glow" aria-hidden="true"></div>
       <p class="b2b-eyebrow">Para empresas</p>
       <h2>Bienestar financiero para tu equipo, <span class="mark">sin tocar su privacidad</span>.</h2>
-      <p class="b2b-lead">Ofrece Presu como beneficio. Tu gente ordena su plata y tú impulsas su tranquilidad —y nadie en la empresa ve sus datos —ni la empresa, ni nosotros: cada quien tiene su propia llave.</p>
+      <p class="b2b-lead">Ofrece Presu como beneficio. Tu gente ordena su plata y tú impulsas su tranquilidad, <span data-afirma="empresas-llave">y nadie en la empresa ve sus datos: cada quien tiene su propia llave.</span></p>
       <a href="#waitlist" class="capture-btn b2b-cta" data-perfil="empresa">Quiero ofrecerlo en mi empresa
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
       </a>
@@ -281,12 +290,10 @@ const faqs = [
   <!-- ══════════════════ 7 · PLANES (teaser) ══════════════════ -->
   <Section id="planes" eyebrow="Planes">
     <div class="sec-head reveal">
-      <h2>Empiezas con todo. Después sigues <span class="mark">gratis</span>.</h2>
-      <p class="sec-lead">
-        El primer mes tienes cada función encendida, sin tarjeta y sin darnos tu correo. El mes empieza cuando importas
-        tu primer extracto en tu computador, no cuando instalas. Del día 31 en adelante no se bloquea ni se borra nada:
-        tu historial, tus presupuestos y tu panel son tuyos —y usar Presu en el celular tampoco cuesta—. Lo único
-        que se apaga es que tu correo traiga los movimientos solo.
+      <h2 data-afirma="planes-titulo">Empiezas gratis. Y sigues <span class="mark">gratis</span>.</h2>
+      <p class="sec-lead" data-afirma="planes-texto">
+        Presu a mano es gratis para siempre: tu historial, tus presupuestos y tu panel son tuyos, y usar Presu en el
+        celular tampoco cuesta. Presu Pro suma que tu correo traiga los movimientos solo.
       </p>
     </div>
     <div class="plans">
@@ -294,27 +301,25 @@ const faqs = [
         <h3>Presu a mano</h3>
         <p class="plan-tag">Gratis, siempre</p>
         <ul class="plan-list">
-          <li>Importas tus extractos y Presu los lee</li>
-          <li>Categorización con inteligencia artificial</li>
-          <li>Cuentas y bancos ilimitados</li>
-          <li>Presupuestos, analítica y patrimonio</li>
-          <li>Tu celular, siempre al día</li>
-          <li>Exportar a Excel cuando quieras</li>
+          <li data-afirma="gratis-importar">Importas tus extractos y Presu los lee</li>
+          <li data-afirma="gratis-ia">Categorización con IA opcional, con el texto enmascarado</li>
+          <li data-afirma="gratis-cuentas">Cuentas y bancos ilimitados</li>
+          <li data-afirma="gratis-analitica">Presupuestos, analítica y patrimonio</li>
+          <li data-afirma="gratis-celular">Tu celular, siempre al día</li>
+          <li data-afirma="gratis-exportar">Exportar a Excel cuando quieras</li>
         </ul>
       </div>
       <div class="plan plan--pro reveal">
         <span class="plan-badge">Recomendado</span>
         <h3>Presu Pro</h3>
-        <p class="plan-tag">Lo mismo, sin que tengas que hacer nada</p>
-        <p class="plan-price"><strong>$19.990</strong> al mes</p>
-        <p class="plan-price-alt">
-          O <strong>$199.990</strong> al año —te ahorras dos meses—. Para la casa, hasta 4 personas por
-          <strong>$34.990</strong> al mes.
+        <p class="plan-tag" data-afirma="pro-tag">Lo mismo, con el correo trabajando por ti</p>
+        <p class="plan-price" data-afirma="pro-precio"><strong>$19.990</strong> al mes</p>
+        <p class="plan-price-alt" data-afirma="pro-precio-otros">
+          O <strong>$199.990</strong> al año. Para la casa, el plan Familiar por <strong>$34.990</strong> al mes.
         </p>
-        <p class="plan-pay">Pagas con PSE o Nequi. No necesitas tarjeta de crédito.</p>
         <ul class="plan-list">
-          <li>Tu correo trae los movimientos solo</li>
-          <li>Diez veces más categorización con IA</li>
+          <li data-afirma="pro-correo">Tu correo trae los movimientos solo</li>
+          <li data-afirma="pro-ia">Diez veces más uso de la IA opcional, con el texto enmascarado</li>
         </ul>
       </div>
     </div>
@@ -353,7 +358,7 @@ const faqs = [
     </div>
     <div class="faq reveal">
       {faqs.map((f) => (
-        <FaqItem question={f.q} answer={f.a} open={f.open} />
+        <FaqItem question={f.q} answer={f.a} open={f.open} afirma={f.afirma} />
       ))}
     </div>
   </Section>
@@ -404,7 +409,7 @@ const faqs = [
         {TURNSTILE_SITE_KEY && <div id="ts-wl" class="cf-turnstile ts-widget" data-sitekey={TURNSTILE_SITE_KEY} data-size="flexible" data-appearance="interaction-only"></div>}
         <button type="submit" class="capture-btn capture-btn--block">Únete a la lista de espera</button>
         <p class="err err--center" id="wl-err">Algo falló de nuestro lado. Reintenta en un momento.</p>
-        <p class="form-foot">Mac, Windows e iPhone · Presu, de Asimétrica</p>
+        <p class="form-foot"><span data-afirma="form-aparatos">Mac, Windows e iPhone</span> · Presu, de Asimétrica</p>
       </form>
 
       <div id="waitlist-success" class="success hidden" role="status">
