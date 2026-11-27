@@ -14,11 +14,13 @@
  *   POST /admin/welcome       → reenvía bienvenida idempotente  (token)
  *   POST /admin/code {email}  → asegura código para un correo   (token, backfill)
  *   GET  /admin/stats         → total + ranking completo        (token)
+ *   GET  /admin/semanas?n=12  → altas por semana (Bogotá)       (token)
  *
  * Bindings: KV "WAITLIST" · Secrets RESEND_API_KEY, ADMIN_TOKEN · Var NOTIFY_EMAIL
  */
 
 import { slug, resolveBankId, buildCoverage, normalizeBanks } from './coverage.js';
+import { altasPorSemana } from './altas-por-semana.js';
 
 const SITE = 'https://presu.io';
 const ALLOWED_ORIGINS = [SITE, 'https://www.presu.io', 'https://presu.asimetrica.co', 'https://presu.com.co', 'http://localhost:4821', 'http://localhost:4796'];
@@ -142,6 +144,7 @@ export default {
     if (path === '/admin/campaign-one') return adminCampaignOne(request, env, cors);
     if (request.method === 'GET' && path === '/admin/stats') return adminStats(request, env, cors);
     if (request.method === 'POST' && path === '/admin/backup') return adminBackup(request, env, cors);
+    if (request.method === 'GET' && path === '/admin/semanas') return adminSemanas(request, env, cors, url);
     if (request.method === 'GET' && path === '/admin/waitlist') return adminWaitlist(request, env, cors, url);
     if (request.method === 'GET' && path === '/admin/clicks') return adminClicks(request, env, cors);
     if (request.method === 'GET' && path === '/admin/users') return adminUsers(request, env, cors);
@@ -421,6 +424,28 @@ async function adminStats(request, env, cors) {
   const total = parseInt((await env.WAITLIST.get('meta:count')) || '0', 10);
   let lb = []; try { lb = JSON.parse((await env.WAITLIST.get('leaderboard')) || '[]'); } catch (e) {}
   return json({ total, leaderboard: lb }, 200, cors);
+}
+
+// GET /admin/semanas?n=12 — altas por semana (lunes a domingo, hora de Bogotá). Token.
+async function adminSemanas(request, env, cors, url) {
+  if (!authed(request, env)) return json({ error: 'unauthorized' }, 401, cors);
+  const n = Math.min(52, Math.max(1, parseInt(url.searchParams.get('n') || '12', 10) || 12));
+  const names = [];
+  let cursor = undefined, done = false;
+  while (!done) {
+    const list = await env.WAITLIST.list({ prefix: 'email:', limit: 1000, cursor });
+    for (const k of list.keys) names.push(k.name);
+    if (list.list_complete) { done = true; } else { cursor = list.cursor; }
+  }
+  const regs = [];
+  const BATCH = 50;
+  for (let i = 0; i < names.length; i += BATCH) {
+    const recs = await Promise.all(names.slice(i, i + BATCH).map(function (name) {
+      return env.WAITLIST.get(name).then(function (v) { let r = {}; try { r = JSON.parse(v || '{}'); } catch (e) {} return r; });
+    }));
+    for (const r of recs) regs.push(r);
+  }
+  return json({ total: regs.length, ...altasPorSemana(regs, Date.now(), n) }, 200, cors);
 }
 
 // GET /admin/waitlist — exporta TODA la waitlist (JSON, o ?format=csv). Token.
