@@ -74,36 +74,51 @@ const verbos = [
     titulo: 'Te dice cómo vas',
     afirma: ['vas-tope', 'vas-viene', 'vas-mes-pasado'],
     mac: { captura: 'escritorio-ritmo', rotulo: 'Mac · Tu mes contra tu tope' },
-    iphone: { captura: 'iphone-inicio', rotulo: 'iPhone · Inicio' },
-    extra: { captura: 'escritorio-lo-que-viene', rotulo: 'Mac · Lo que viene' },
+    // «Lo que viene» solo está probado en el iPhone: se muestra con su pantallazo.
+    iphone: { captura: 'iphone-inicio', rotulo: 'iPhone · Inicio y lo que viene' },
   },
 ];
 
-// 6 · Lo que te llevas por entrar ahora. Sin cifras (CA8); no afirma nada de la app.
+// 6 · Lo que te llevas por entrar ahora. Sin cifras ni nada de plata (CA8, CA15); no afirma nada de la app.
 const loQueTeLlevas = [
   { titulo: 'Entras primero', texto: 'Te escribimos apenas abra, antes que al resto.' },
-  { titulo: 'Guía para ordenar tu plata', texto: 'Un PDF corto de Asimétrica, apenas entras.' },
-  { titulo: 'Sesión en vivo con Asimétrica', texto: 'Resuelves tus dudas de plata con el equipo, en directo.' },
-  { titulo: 'Tu precio de pionero, para siempre', texto: 'Si después pagas por lo automático, mantienes una tarifa especial.' },
   { titulo: 'Decides qué sigue', texto: 'Nos dices qué función construimos después.' },
 ];
 
-// 7 · Preguntas frecuentes. Las respuestas son afirmaciones del inventario.
-const faqs = [
+// 7 · Preguntas frecuentes. Las que afirman algo de la app salen del inventario; la de la
+// lista no afirma nada de la app. El JSON-LD de preguntas se arma de ESTA lista, así que no
+// puede decir otra cosa que la página.
+const faqs: { q: string; afirma?: string; a?: string; open?: boolean }[] = [
   { q: '¿Tengo que anotar cada gasto?', afirma: 'faq-anotar', open: true },
   { q: '¿Es seguro? ¿Dónde quedan mis datos?', afirma: 'faq-seguro' },
   { q: '¿Necesito dar la clave de mi banco?', afirma: 'faq-clave' },
   { q: '¿Qué bancos sirven?', afirma: 'faq-bancos' },
   { q: '¿En qué aparatos funciona?', afirma: 'faq-aparatos' },
-  { q: '¿Tiene costo?', afirma: 'faq-costo' },
+  { q: '¿Unirme a la lista cuesta algo?', a: 'No. Solo te pedimos tu correo para avisarte cuando abramos.' },
 ];
+const respuesta = (f: (typeof faqs)[number]): string => (f.afirma ? t(f.afirma) : (f.a ?? ''));
+const jsonLd = {
+  ...homeJsonLd,
+  '@graph': [
+    ...homeJsonLd['@graph'],
+    {
+      '@type': 'FAQPage',
+      '@id': 'https://presu.io/#faq',
+      mainEntity: faqs.map((f) => ({
+        '@type': 'Question',
+        name: f.q,
+        acceptedAnswer: { '@type': 'Answer', text: respuesta(f) },
+      })),
+    },
+  ],
+};
 ---
 
 <Base
   title="Presu — App de finanzas personales para Colombia | Sabes cómo vas este mes"
-  description="¿Llega fin de mes y no sabes en qué se te fue la plata? Presu lee los movimientos de tu correo y tus extractos, los ordena solo y te dice cómo vas este mes y qué viene. Llega a Mac, Windows e iPhone al mismo tiempo. Únete a la lista de espera."
+  description="¿Llega fin de mes y no sabes en qué se te fue la plata? Presu lee los movimientos de tu correo y tus extractos, los ordena solo y te dice cómo vas este mes. Llega a Mac, Windows e iPhone al mismo tiempo. Únete a la lista de espera."
 >
-  <script type="application/ld+json" is:inline set:html={JSON.stringify(homeJsonLd)}></script>
+  <script type="application/ld+json" is:inline set:html={JSON.stringify(jsonLd)}></script>
 
   <!-- ══════════════════ 1 · HERO: el dolor, la promesa, el video y la lista ══════════════════ -->
   <section class="hero">
@@ -115,7 +130,6 @@ const faqs = [
         <span class="pill-badge"><span class="ping"></span> Lista de espera abierta</span>
         <h1>¿Llega fin de mes y no sabes en qué se te <span class="mark">fue la plata</span>?</h1>
         <p class="pitch" data-afirma="promesa">{t('promesa')}</p>
-        <p class="sub" data-afirma="llega-aparatos">{t('llega-aparatos')}</p>
 
         <form id="hero-form" class="capture" novalidate>
           <div class="capture-row">
@@ -201,13 +215,6 @@ const faqs = [
               <span class="hueco-rotulo">{v.iphone.rotulo}</span>
             </div>
             </div>
-            {v.extra && (
-              <div class="hueco-captura hueco-captura--mac hueco-captura--extra" data-captura={v.extra.captura} data-aparato="mac" role="img" aria-label={`Pantallazo pendiente: ${v.extra.rotulo}`}>
-                <span class="hueco-barra" aria-hidden="true"><i></i><i></i><i></i></span>
-                <span class="hueco-rotulo">{v.extra.rotulo}</span>
-                <span class="hueco-nota">Pantallazo de la app</span>
-              </div>
-            )}
           </div>
         </article>
       ))}
@@ -254,7 +261,7 @@ const faqs = [
   <!-- ══════════════════ 6 · LO QUE TE LLEVAS (sin cifras) ══════════════════ -->
   <Section eyebrow="Por entrar ahora">
     <div class="offer reveal">
-      <p class="offer-lead"><strong>Entrar a la lista no cuesta nada</strong>, y te llevas esto:</p>
+      <p class="offer-lead"><strong>Por entrar a la lista</strong>, te llevas esto:</p>
       <ul class="offer-stack">
         {loQueTeLlevas.map((b) => (
           <li>
@@ -273,7 +280,7 @@ const faqs = [
     </div>
     <div class="faq reveal">
       {faqs.map((f) => (
-        <FaqItem question={f.q} answer={t(f.afirma)} open={f.open} afirma={f.afirma} />
+        <FaqItem question={f.q} answer={respuesta(f)} open={f.open} afirma={f.afirma} />
       ))}
     </div>
   </Section>
@@ -283,7 +290,7 @@ const faqs = [
     <div class="cta-glow" aria-hidden="true"></div>
     <div class="sec-head reveal">
       <h2>Que el próximo fin de mes <span class="mark">no te tome</span> por sorpresa.</h2>
-      <p class="sec-lead" id="waitlist-lede">Déjanos tu correo y te avisamos apenas abramos. Sin spam.</p>
+      <p class="sec-lead" id="waitlist-lede"><span data-afirma="llega-aparatos">{t('llega-aparatos')}</span> Déjanos tu correo y te avisamos apenas abramos. Sin spam.</p>
       <div class="proof hidden" id="proof-wait">
         <span class="proof-dot" aria-hidden="true"></span><span class="avatars" aria-hidden="true"><i class="av"></i><i class="av"></i><i class="av"></i><i class="av"></i></span>
         <b class="count">—</b><span class="proof-txt">&nbsp;personas ya en la lista</span>
@@ -865,10 +872,6 @@ const faqs = [
     bottom: 0;
     z-index: 2;
   }
-  .verbo__media .hueco-captura--extra {
-    width: 78%;
-    margin-top: var(--space-4);
-  }
 
   /* ───────────────── 5 · Familia ───────────────── */
   .familia {
@@ -1418,9 +1421,6 @@ const faqs = [
     }
     .verbos {
       gap: var(--space-16);
-    }
-    .verbo__media .hueco-captura--extra {
-      width: 100%;
     }
     .hueco-captura--iphone {
       border-radius: 24px;

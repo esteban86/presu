@@ -54,13 +54,6 @@ function vinetaDePlan(plan) {
   return li.find((t) => new RegExp(`plan ${plan}\\b`, 'i').test(t)) ?? null;
 }
 
-/** La respuesta de «¿Tiene costo?» de la portada, en texto plano. */
-function respuestaDeCosto() {
-  if (!index) return null;
-  const m = index.match(/<p[^>]*data-afirma="faq-costo"[^>]*>([\s\S]*?)<\/p>/);
-  return m ? plano(m[1]) : null;
-}
-
 describe('las páginas legales no contradicen a la tabla de precios', () => {
   it('el build existe (si esto falla, corre `npm run build` primero)', () => {
     expect(Boolean(index && terminos && privacidad), 'faltan páginas en dist/').toBe(true);
@@ -72,33 +65,18 @@ describe('las páginas legales no contradicen a la tabla de precios', () => {
   });
 
   /**
-   * El corazón del test: la portada y los términos tienen que poner el celular en el MISMO
-   * plan. Si alguien lo mueve en un lado y olvida el otro, esto se cae — que es exactamente
-   * lo que NO pasó en julio, y por eso la web quedó un mes diciendo lo contrario del código.
-   *
-   * OJO CON EL ALCANCE: esto vigila que CONCUERDEN, no en qué plan está. Si alguien mueve el
-   * celular a pago en los dos lados a la vez, este test pasa. Lo específico —que el celular
-   * esté en la columna gratis— lo fija `celular-gratis.test.js`. Los dos juntos cierran; este
-   * solo, no. Si algún día se borra aquel, esto deja de proteger lo que parece proteger.
+   * Antes esto comparaba las tarjetas de plan de la portada con los términos. Desde la
+   * portada que vende (#39, CA8 y CA15) la portada no habla de planes ni de pagos, así que
+   * no puede contradecirlos. Lo que queda por cuidar está en los términos mismos: el
+   * celular va en el plan gratis, como dice el código (`src/shared/license.ts`, «multi_device»
+   * en FREE_FEATURES), y no en el de pago.
    */
-  it('la portada y los términos ponen el celular en el mismo plan', () => {
-    // Desde la portada que vende (#39) no hay tarjetas de plan: lo que la portada dice del
-    // pago vive en la respuesta de «¿Tiene costo?» (`data-afirma="faq-costo"`).
-    const costo = respuestaDeCosto();
-    expect(costo, 'no encontré data-afirma="faq-costo" en la portada').toBeTruthy();
-    const frases = costo.split(/(?<=\.)\s/);
-    const enGratisPortada = frases.some((f) => CELULAR.test(f) && /gratis|también/i.test(f) && !/pago/i.test(f));
-    const enPagoPortada = frases.some((f) => CELULAR.test(f) && /pago/i.test(f));
-
-    expect(
-      CELULAR.test(vinetaDePlan('gratis')),
-      `la portada ${enGratisPortada ? 'SÍ' : 'NO'} pone el celular en el plan gratis, y los términos dicen lo contrario`,
-    ).toBe(enGratisPortada);
-
-    expect(
-      CELULAR.test(vinetaDePlan('Pro')),
-      `la portada ${enPagoPortada ? 'SÍ' : 'NO'} pone el celular en el plan de pago, y los términos dicen lo contrario`,
-    ).toBe(enPagoPortada);
+  it('la portada no habla de planes, y los términos ponen el celular en el plan gratis', () => {
+    const portada = plano(index.replace(/<style[\s\S]*?<\/style>/g, ' ').replace(/<script[\s\S]*?<\/script>/g, ' '));
+    expect(portada).not.toMatch(/\bplan(es)?\b/i);
+    expect(portada).not.toMatch(/\b(pago|pagar|precio|tarifa|pionero|suscripci)/i);
+    expect(CELULAR.test(vinetaDePlan('gratis')), 'los términos sacaron el celular del plan gratis').toBe(true);
+    expect(CELULAR.test(vinetaDePlan('Pro')), 'los términos pusieron el celular en el plan de pago').toBe(false);
   });
 
   /**

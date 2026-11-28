@@ -37,18 +37,21 @@ const html = hayBuild ? readFileSync(INDEX, 'utf8') : '';
 const CELULAR = /celular|móvil|movil|sincroniz/i;
 
 /**
- * Desde la portada que vende (#39, CA8) no hay tarjetas de plan ni precios. Lo que
- * este guardia sigue cuidando es lo mismo de antes, con otra forma: la única frase
- * que habla de pago (la respuesta de «¿Tiene costo?», `data-afirma="faq-costo"`)
- * dice que el celular es gratis y ata el pago al correo del computador, nunca al
- * celular ni a la sincronización.
+ * Desde la portada que vende (#39, CA8 y CA15) la portada no habla de pagos ni de planes:
+ * está a un clic de /movil, la Marketing URL. Así no puede atar el celular a un pago. Lo
+ * que este guardia cuida ahora es eso: ni tarjetas de plan, ni una palabra de cobro.
  */
-function respuestaDeCosto() {
-  const m = html.match(/<p[^>]*data-afirma="faq-costo"[^>]*>([\s\S]*?)<\/p>/);
-  return m ? m[1].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() : null;
+const PLATA = /\b(pago|pagar|precio|tarifa|pionero|suscripci)/i;
+
+function textoVisible() {
+  return html
+    .replace(/<style[\s\S]*?<\/style>/g, ' ')
+    .replace(/<script[\s\S]*?<\/script>/g, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ');
 }
 
-describe('el celular es gratis, y la portada tiene que decirlo (App Store 3.1.1)', () => {
+describe('la portada no ata el celular a un pago (App Store 3.1.1)', () => {
   it('el build existe (si esto falla, corre `npm run build` primero)', () => {
     expect(hayBuild, `falta ${INDEX} — este test revisa el HTML construido`).toBe(true);
   });
@@ -58,22 +61,12 @@ describe('el celular es gratis, y la portada tiene que decirlo (App Store 3.1.1)
     expect(html).not.toMatch(/class="plan plan--pro/);
   });
 
-  it('encuentra la respuesta de «¿Tiene costo?» (si falla, cambió el marcado)', () => {
-    expect(respuestaDeCosto(), 'no encontré data-afirma="faq-costo"').toBeTruthy();
+  it('ninguna frase de la portada habla de cobrar (CA15)', () => {
+    expect(textoVisible().match(PLATA)?.[0] ?? null).toBeNull();
   });
 
-  it('dice que el celular es gratis', () => {
-    const r = respuestaDeCosto() ?? '';
-    const frase = r.split(/(?<=\.)\s/).find((f) => CELULAR.test(f)) ?? '';
-    expect(frase, 'la respuesta de costo ya no nombra el celular').not.toBe('');
-    expect(frase).toMatch(/gratis|también/i);
-  });
-
-  it('la frase del pago no nombra el celular ni la sincronización', () => {
-    const r = respuestaDeCosto() ?? '';
-    const delPago = r.split(/(?<=\.)\s/).filter((f) => /pago|pagas/i.test(f));
-    expect(delPago.length, 'la respuesta de costo ya no dice qué es de pago').toBeGreaterThan(0);
-    for (const f of delPago) expect(f, 'el pago volvió a atarse al celular').not.toMatch(CELULAR);
+  it('la portada sí nombra el celular (si no, este guardia no mide nada)', () => {
+    expect(textoVisible()).toMatch(CELULAR);
   });
 
   /**

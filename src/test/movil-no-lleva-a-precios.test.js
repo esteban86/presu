@@ -10,7 +10,8 @@
  * describen el régimen de la cuenta y la licencia, así que nombran «plan» como hecho legal
  * (PRIVACY.md y TERMS.md son promesas publicadas que este trabajo no toca). Para ellas se
  * exige lo que la guía objeta: ninguna cifra de precio y ningún camino a comprar. Todas las
- * demás páginas enlazadas —la portada entre ellas— cumplen la regla completa.
+ * demás páginas enlazadas —la portada entre ellas— cumplen la regla completa: sin planes y
+ * sin hablar de pagos, precios, tarifas, pioneros ni suscripciones (`PLATA`).
  *
  * Se revisa el HTML CONSTRUIDO. Corre `npm run build` antes.
  */
@@ -21,6 +22,8 @@ import { describe, expect, it } from 'vitest';
 const DIST = join(process.cwd(), 'dist');
 const ORIGENES = ['movil', 'soporte'];
 const PRECIO = /\$\s?\d{1,3}(\.\d{3})+/;
+/** Hablar de plata que se cobra: pago, precio, tarifa, pionero, suscripción (ruling del controlador, #39). */
+const PLATA = /\b(pago|pagar|precio|tarifa|pionero|suscripci)/i;
 const LEGALES = new Set([
   'privacidad',
   'terminos',
@@ -85,6 +88,7 @@ describe('/movil y /soporte no llevan a precios ni planes (CA15)', () => {
         if (LEGALES.has(destino.slice(1))) return;
         expect(texto, `${destino} nombra el plan de pago`).not.toMatch(/Presu\s+Pro\b/i);
         expect(texto, `${destino} nombra planes`).not.toMatch(/\bplan(es)?\b/i);
+        expect(texto.match(PLATA)?.[0] ?? null, `${destino} habla de pagos o precios`).toBeNull();
       });
     }
   }

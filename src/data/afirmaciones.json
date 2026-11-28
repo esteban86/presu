@@ -5,14 +5,12 @@
       "id": "promesa",
       "texto": "Lo configuras una vez y tus movimientos entran solos. Sabes cómo vas este mes y qué viene.",
       "prueba": [
-        "electron/services/gmail-email-sync.ts:22",
         "mobile/src/notificaciones/entran-solos-encendido.ts:6",
+        "mobile/src/correo/lectura-automatica.ts:219",
         "packages/core/src/budget-pace.ts:504",
         "mobile/app/lo-que-viene.tsx:2"
       ],
       "aparatos": [
-        "mac",
-        "windows",
         "iphone"
       ]
     },
@@ -69,7 +67,7 @@
     },
     {
       "id": "ordena-categorias",
-      "texto": "Categoriza cada movimiento solo.",
+      "texto": "Categoriza tus movimientos solo.",
       "prueba": "electron/ml/categorizer.ts:156",
       "aparatos": [
         "mac",
@@ -78,7 +76,7 @@
     },
     {
       "id": "ordena-fijos",
-      "texto": "Separa tus pagos fijos y tus suscripciones.",
+      "texto": "Reconoce lo que se repite cada mes, como el arriendo y los servicios.",
       "prueba": [
         "electron/database/stats.ts:284",
         "src/components/analytics/SubscriptionsSection.tsx:210"
@@ -116,7 +114,7 @@
     },
     {
       "id": "vas-viene",
-      "texto": "En el iPhone ves lo que viene: los pagos de tus tarjetas y tus pagos fijos.",
+      "texto": "En el iPhone ves lo que viene: lo que vence de tus tarjetas y lo que se repite cada mes.",
       "prueba": [
         "mobile/app/lo-que-viene.tsx:2",
         "mobile/src/lib/caja-encendida.ts:12"
@@ -146,7 +144,7 @@
     },
     {
       "id": "privacidad-texto",
-      "texto": "Tus movimientos viven en tu equipo. Si sincronizas el computador y el celular, viajan cifrados de extremo a extremo y en nuestro servidor no hay nada legible. Si enciendes la IA opcional, el texto viaja enmascarado.",
+      "texto": "Tus movimientos viven en tu equipo, salvo lo que tú decidas activar. Si sincronizas el computador y el celular, viajan cifrados de extremo a extremo y en nuestro servidor no hay nada legible. Si enciendes la IA opcional, el texto viaja enmascarado.",
       "prueba": [
         "electron/database/core.ts:717",
         "mobile/src/db/open.ts:122",
@@ -222,7 +220,7 @@
     },
     {
       "id": "faq-seguro",
-      "texto": "En tu equipo. Presu guarda tu base de datos en tu computador o en tu celular, no en un servidor nuestro. Si sincronizas los dos, tus movimientos viajan cifrados de extremo a extremo: la llave queda protegida con tu frase de acceso y en el servidor no hay nada legible, ni para nosotros. Si enciendes la IA opcional, el texto viaja enmascarado y las imágenes que eliges, como un pantallazo, van tal cual.",
+      "texto": "En tu equipo. Presu guarda tu base de datos en tu computador o en tu celular, no en un servidor nuestro, salvo lo que tú decidas activar. Si sincronizas los dos, tus movimientos viajan cifrados de extremo a extremo: la llave queda protegida con tu frase de acceso y en el servidor no hay nada legible, ni para nosotros. Si enciendes la IA opcional, el texto viaja enmascarado y las imágenes que eliges, como un pantallazo, van tal cual.",
       "prueba": [
         "electron/database/core.ts:717",
         "mobile/src/db/open.ts:122",
@@ -265,20 +263,6 @@
         "package.json:109",
         "mobile/app.json:20",
         "packages/core/src/crypto.ts:6"
-      ],
-      "aparatos": [
-        "mac",
-        "windows",
-        "iphone"
-      ]
-    },
-    {
-      "id": "faq-costo",
-      "texto": "Empezar es gratis, y usar Presu en el celular también. En el computador, que tu correo traiga los movimientos solo es la parte de pago. Si entras temprano, conservas un precio especial de pionero.",
-      "prueba": [
-        "src/shared/license.ts:104",
-        "src/shared/license.ts:127",
-        "src/shared/license.ts:131"
       ],
       "aparatos": [
         "mac",

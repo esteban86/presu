@@ -21,6 +21,8 @@ import { describe, expect, it } from 'vitest';
 
 const RUTA = join(process.cwd(), 'dist', 'index.html');
 const PRECIO = /\$\s?\d{1,3}(\.\d{3})+/;
+/** La portada está a un clic de /movil (CA15): no habla de plata que se cobra. */
+const PLATA = /\b(pago|pagar|precio|tarifa|pionero|suscripci)/i;
 const NO_VISIBLE = new Set(['script', 'style', 'template', 'noscript']);
 
 const atributo = (n, nombre) => n.attrs?.find((a) => a.name === nombre)?.value;
@@ -64,6 +66,30 @@ describe('la portada vende sin precios (CA8)', () => {
     const visible = colapsar(texto(doc));
     expect(visible).not.toMatch(/\bplan(es)?\b/i);
     expect(visible).not.toMatch(/Presu\s+Pro\b/i);
+  });
+
+  it('no habla de pagos, precios, tarifas, pioneros ni suscripciones (CA15)', () => {
+    const { doc, html } = cargar();
+    const visible = colapsar(texto(doc));
+    expect(visible.match(PLATA)?.[0] ?? null, 'la portada habla de plata que se cobra').toBeNull();
+    const jsonld = [...html.matchAll(/<script[^>]*application\/ld\+json[^>]*>([\s\S]*?)<\/script>/g)]
+      .map((m) => m[1])
+      .join(' ');
+    expect(jsonld.match(PLATA)?.[0] ?? null, 'el JSON-LD habla de plata que se cobra').toBeNull();
+  });
+
+  it('cada respuesta del JSON-LD es la misma que se ve en la página', () => {
+    const { html, todos } = cargar();
+    const bloque = [...html.matchAll(/<script[^>]*application\/ld\+json[^>]*>([\s\S]*?)<\/script>/g)]
+      .map((m) => JSON.parse(m[1]))
+      .flatMap((j) => j['@graph'] ?? [j])
+      .find((n) => n['@type'] === 'FAQPage');
+    expect(bloque, 'falta el FAQPage del JSON-LD').toBeDefined();
+    const visibles = todos
+      .filter(({ n }) => clases(n).includes('faq-item__answer'))
+      .map(({ n }) => colapsar(texto(n)));
+    expect(bloque.mainEntity.length).toBe(visibles.length);
+    for (const q of bloque.mainEntity) expect(visibles, q.name).toContain(q.acceptedAnswer.text);
   });
 
   it('el JSON-LD no trae una oferta con precio', () => {
