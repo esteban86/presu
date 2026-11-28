@@ -4,8 +4,8 @@ import Logo from './Logo.astro';
 
 export interface Props {
   /**
-   * Ocultar TODO lo que lleva a comprar: los enlaces de navegación (entre ellos
-   * «Planes») y el botón de la lista de espera. Queda solo la marca.
+   * Ocultar TODO lo que lleva a la portada: los enlaces de navegación y el botón
+   * de la lista de espera. Queda solo la marca.
    *
    * Es una restricción de la App Store, no una preferencia de diseño. El
    * 2026-07-31 Apple rechazó la app de iOS por la guía 3.1.1 citando el nombre de
@@ -36,10 +36,9 @@ const { sinVenta = false } = Astro.props;
 
       {!sinVenta && (
         <nav class="nav-links" id="nav-links" aria-label="Navegación principal">
-          <a class="nav-link" href="/#como">Cómo</a>
+          <a class="nav-link" href="/#como">Cómo funciona</a>
           <a class="nav-link" href="/#privacidad">Privacidad</a>
-          <a class="nav-link" href="/#planes">Planes</a>
-          <a class="nav-link" href="/aporta">Aporta 🌱</a>
+          <a class="nav-link" href="/#preguntas">Preguntas</a>
         </nav>
       )}
 

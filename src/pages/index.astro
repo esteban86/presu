@@ -1,377 +1,292 @@
 ---
-// index.astro — la landing rediseñada de Presu (DS v2 "Esmeralda").
-// Narrativa "problema primero"; hero "split". Reúne los componentes de
-// ui/ (Section, VerdictCard, StatCard, BudgetBar, BanksStrip, FaqItem) y
-// la lógica portada de src/scripts/ (countdown, waitlist, api). El markup
-// del hero PROVEE el contrato de DOM que consumen countdown.js y
-// waitlist.js sin cambios: .hero-grid {.pill-badge, h1, .pitch, .sub},
-// #hero-form + #hero-email, #countdown {.cd-top/.cd-live/.cd-note,
-// #cd-d/#cd-h/#cd-m/#cd-s}, #late-ramps, #os-eb-date, #waitlist-lede.
+// index.astro — la portada que vende (spec «presu.io que vende», #39, §6.1).
+// Orden: hero (el dolor, la promesa, el video y la lista) → el dolor → tres verbos
+// con pantallazos del Mac y del iPhone → tus datos son tuyos → Familia → lo que te
+// llevas por entrar ahora → preguntas → la lista otra vez.
+//
+// Sin precios (CA8) y con UNA sola acción: el formulario de la lista (CA14).
+// Toda frase que afirma algo de la app lleva `data-afirma` y vive primero en
+// `src/data/afirmaciones.json`, con la línea de la app que la prueba (CA4).
+//
+// Los pantallazos (Tarea 8) y el video (Tarea 9) todavía no existen: en su lugar van
+// huecos marcados (`.hueco-captura[data-captura]`, `.hueco-vsl`), que esas tareas
+// reemplazan por `Captura` y `Vsl`.
+//
+// El markup del hero conserva el contrato de DOM de los scripts de la lista:
+// #hero-form + #hero-email + #hero-err + #hero-ok, #waitlist-form, .proof .count.
 import Base from '../layouts/Base.astro';
 import Section from '../components/ui/Section.astro';
-import VerdictCard from '../components/ui/VerdictCard.astro';
-import StatCard from '../components/ui/StatCard.astro';
-import BudgetBar from '../components/ui/BudgetBar.astro';
-import CategoryDonut from '../components/ui/CategoryDonut.astro';
-import BanksStrip from '../components/ui/BanksStrip.astro';
-import Showcase from '../components/ui/Showcase.astro';
 import FaqItem from '../components/ui/FaqItem.astro';
-import { formatCOPCompact, CATEGORIES } from '../lib/format.js';
 import homeJsonLd from '../data/home-jsonld.json';
+import afirmaciones from '../data/afirmaciones.json';
 
 // Turnstile: solo se renderiza si hay site key (build-time). Sin ella, el widget
 // no aparece y el worker no exige token (rollout inerte hasta provisionar).
 const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '';
 
-const ingresos = formatCOPCompact(6420000); // "$6,42M"
-const gastos = formatCOPCompact(4740000); // "$4,74M"
-const balance = formatCOPCompact(1680000); // "$1,68M" (= ingresos − gastos)
+// El texto de cada afirmación sale del inventario: así la página no puede decir
+// una cosa y el inventario otra.
+const porId = new Map(afirmaciones.afirmaciones.map((a) => [a.id, a.texto]));
+const t = (id: string): string => {
+  const texto = porId.get(id);
+  if (!texto) throw new Error(`falta la afirmación «${id}» en afirmaciones.json`);
+  return texto;
+};
 
-// Gastos por categoría (dona del panel) — suman exactamente 4.740.000 = `gastos`.
-const spendByCategory = [
-  { ...CATEGORIES.vivienda, amount: '$1.500.000', value: 1500000 },
-  { ...CATEGORIES.mercado, amount: '$900.000', value: 900000 },
-  { ...CATEGORIES.restaurantes, amount: '$620.000', value: 620000 },
-  { ...CATEGORIES.salud, amount: '$420.000', value: 420000 },
-  { ...CATEGORIES.transporte, amount: '$480.000', value: 480000 },
-  { ...CATEGORIES.otros, amount: '$820.000', value: 820000 },
-];
-
-// El problema — la tensión, con la frase humana primero.
-const problems = [
+// 2 · El dolor, en palabras de la persona. No afirma nada de la app.
+const dolores = [
   {
-    tone: 'negative',
-    icon: 'coins',
-    title: 'La plata se va sin saber en qué',
-    body: 'Ganas bien, pero a fin de mes no cuadra. Sin un panorama claro, decidir es adivinar.',
+    titulo: 'Llega fin de mes y no cuadra',
+    texto: 'Te pagan, pagas, y a los pocos días ya no sabes en qué se te fue la plata.',
   },
   {
-    tone: 'info',
-    icon: 'phone',
-    title: 'Cuatro apps de bancos distintas',
-    body: 'Bancolombia por aquí, Nu por allá, la tarjeta en otra. Nunca ves todo junto.',
+    titulo: 'Pagas las tarjetas y no te sobra',
+    texto: 'El extracto llega, lo pagas, y vuelves a empezar el mes corto.',
   },
   {
-    tone: 'positive',
-    icon: 'cloud',
-    title: 'Las demás apps pueden leer tus movimientos',
-    body: 'Para organizarte te piden entregar tus datos a un servidor que los ve en claro.',
-    afirma: { id: 'problema-cifrado', texto: 'Presu los guarda en tu equipo y, si sincronizas, viajan cifrados: sin tu llave, en el servidor no hay nada legible.' },
+    titulo: '¿Me alcanza para este gusto?',
+    texto: 'No sabes si te lo puedes dar. O te lo das y después te das cuenta de que no debías.',
+  },
+  {
+    titulo: 'Anotar todo a mano no dura',
+    texto: 'La planilla aguanta dos semanas. Y la cuenta, la tarjeta y la otra tarjeta viven en apps distintas.',
   },
 ];
 
-// El giro — cómo funciona en 3 pasos.
-const steps = [
+// 3 · Tres verbos como prueba, cada uno con su pantallazo del Mac y del iPhone.
+const verbos = [
   {
     n: '1',
-    title: 'Importas tu extracto',
-    body: 'Arrastras el PDF del banco —o hasta un pantallazo. Sin claves ni conexión a tu banca en línea.',
-    afirma: 'paso-1',
+    titulo: 'Entra solo',
+    afirma: ['entra-correo', 'entra-sms', 'entra-extracto'],
+    mac: { captura: 'escritorio-correo', rotulo: 'Mac · Tu correo trae los movimientos' },
+    iphone: { captura: 'iphone-revisar', rotulo: 'iPhone · Por revisar' },
   },
   {
     n: '2',
-    title: 'Presu lo organiza solo',
-    body: 'Detecta el banco y categoriza cada movimiento solo.',
-    afirma: 'paso-2',
+    titulo: 'Se ordena solo',
+    afirma: ['ordena-categorias', 'ordena-fijos', 'ordena-topes'],
+    mac: { captura: 'escritorio-inicio', rotulo: 'Mac · Inicio del mes' },
+    iphone: { captura: 'iphone-categoria', rotulo: 'iPhone · Una categoría' },
   },
   {
     n: '3',
-    title: 'Lo ves en una frase',
-    body: 'Cuánto entró, cuánto salió y cómo vas contra tus topes. La respuesta primero; los números, si los quieres.',
-    afirma: 'paso-3',
+    titulo: 'Te dice cómo vas',
+    afirma: ['vas-tope', 'vas-viene', 'vas-mes-pasado'],
+    mac: { captura: 'escritorio-ritmo', rotulo: 'Mac · Tu mes contra tu tope' },
+    iphone: { captura: 'iphone-inicio', rotulo: 'iPhone · Inicio' },
+    extra: { captura: 'escritorio-lo-que-viene', rotulo: 'Mac · Lo que viene' },
   },
 ];
 
-// Mira por dentro — movimientos reales (Colombia).
-const txns = [
-  { emoji: '💰', name: 'Nómina', bank: 'Bancolombia', amount: '+$5.200.000', income: true },
-  { emoji: '🏠', name: 'Arriendo', bank: 'Davivienda', amount: '−$1.500.000' },
-  { emoji: '🛒', name: 'Éxito Poblado', bank: 'Bancolombia', amount: '−$124.300' },
-  { emoji: '🍔', name: 'Rappi', bank: 'Nu', amount: '−$32.500' },
-  { emoji: '🎬', name: 'Netflix', bank: 'RappiCard', amount: '−$44.900' },
+// 6 · Lo que te llevas por entrar ahora. Sin cifras (CA8); no afirma nada de la app.
+const loQueTeLlevas = [
+  { titulo: 'Entras primero', texto: 'Te escribimos apenas abra, antes que al resto.' },
+  { titulo: 'Guía para ordenar tu plata', texto: 'Un PDF corto de Asimétrica, apenas entras.' },
+  { titulo: 'Sesión en vivo con Asimétrica', texto: 'Resuelves tus dudas de plata con el equipo, en directo.' },
+  { titulo: 'Tu precio de pionero, para siempre', texto: 'Si después pagas por lo automático, mantienes una tarifa especial.' },
+  { titulo: 'Decides qué sigue', texto: 'Nos dices qué función construimos después.' },
 ];
 
-// FAQ — preguntas reales de la landing en vivo.
+// 7 · Preguntas frecuentes. Las respuestas son afirmaciones del inventario.
 const faqs = [
-  {
-    q: '¿Es seguro? ¿Dónde quedan mis datos?',
-    a: 'En tu computador. Presu es local-first: tu base de datos vive en tu equipo, no en un servidor nuestro. Si activas la sincronización para usar Presu también en el celular —que es gratis—, tus movimientos viajan cifrados de extremo a extremo —como en WhatsApp—: la llave viaja protegida con tu frase de acceso y en el servidor no hay nada legible, ni para nosotros. Si enciendes la IA opcional, el texto viaja enmascarado y las imágenes que eliges, como un pantallazo, van tal cual.',
-    afirma: 'faq-seguro',
-    open: true,
-  },
-  {
-    q: '¿Necesito dar la clave de mi banco?',
-    a: 'No. Presu no se conecta a tu banca en línea ni te pide usuario o clave. Importas el PDF de tu extracto (o un pantallazo) y Presu lo lee.',
-    afirma: 'faq-clave',
-  },
-  {
-    q: '¿Qué bancos sirven?',
-    a: 'Presu detecta el banco solo cuando importas el PDF de tu extracto. Si no reconoce el formato, la IA opcional lo lee con el texto enmascarado.',
-    afirma: 'faq-bancos',
-  },
-  {
-    q: '¿Qué gano por entrar antes del lanzamiento?',
-    a: 'Eres pionero: usas Presu completo gratis durante la beta, recibes la guía «De ruido a claridad» de Asimétrica, entras a una sesión de finanzas en vivo solo para pioneros, conservas un precio especial cuando salga el plan de pago y ayudas a decidir qué banco o función construimos después. A cambio, solo te pedimos tu feedback.',
-  },
-  {
-    q: '¿Tiene costo?',
-    a: 'Presu a mano es gratis para siempre: tu historial, tus presupuestos y tu panel se quedan, y usar Presu en el celular sincronizado con tu computador también es gratis. Lo que tiene precio es Presu Pro: que tu correo traiga los movimientos solo. Si entras temprano, conservas además un precio especial de pionero.',
-    afirma: 'faq-costo',
-  },
-  {
-    q: '¿Funciona en Mac, Windows o celular?',
-    a: 'Sí. Presu ya está en iPhone y es gratis. Tus movimientos se sincronizan cifrados de extremo a extremo con tu Mac o tu PC.',
-    afirma: 'faq-aparatos',
-  },
+  { q: '¿Tengo que anotar cada gasto?', afirma: 'faq-anotar', open: true },
+  { q: '¿Es seguro? ¿Dónde quedan mis datos?', afirma: 'faq-seguro' },
+  { q: '¿Necesito dar la clave de mi banco?', afirma: 'faq-clave' },
+  { q: '¿Qué bancos sirven?', afirma: 'faq-bancos' },
+  { q: '¿En qué aparatos funciona?', afirma: 'faq-aparatos' },
+  { q: '¿Tiene costo?', afirma: 'faq-costo' },
 ];
 ---
 
 <Base
-  title="Presu — App de finanzas personales para Colombia | Tus gastos, claros"
-  description="App de finanzas personales para Colombia. Presu reúne tu plata de todos los bancos, la organiza sola y te dice —en una frase— si vas bien este mes. Local-first, con sincronización cifrada de extremo a extremo: la llave es tuya."
+  title="Presu — App de finanzas personales para Colombia | Sabes cómo vas este mes"
+  description="¿Llega fin de mes y no sabes en qué se te fue la plata? Presu lee los movimientos de tu correo y tus extractos, los ordena solo y te dice cómo vas este mes y qué viene. Llega a Mac, Windows e iPhone al mismo tiempo. Únete a la lista de espera."
 >
   <script type="application/ld+json" is:inline set:html={JSON.stringify(homeJsonLd)}></script>
 
-  <!-- ══════════════════ 1 · HERO (split) ══════════════════ -->
+  <!-- ══════════════════ 1 · HERO: el dolor, la promesa, el video y la lista ══════════════════ -->
   <section class="hero">
     <div class="hero-glow hero-glow--emerald" aria-hidden="true"></div>
     <div class="hero-glow hero-glow--indigo" aria-hidden="true"></div>
 
     <div class="hero-grid">
-      <!-- Izquierda: el argumento + captura -->
       <div class="hero-copy">
-        <span class="pill-badge"><span class="ping"></span> 🌊 Nueva Ola · lista de espera abierta</span>
-        <h1>La <span class="mintword">Nueva Ola</span> de Presu está por abrir.</h1>
-        <p class="pitch" data-afirma="hero-reune">Presu reúne los movimientos de tus bancos en un solo lugar y te muestra a dónde se va tu plata —sin planillas, sin claves del banco.</p>
-        <p class="sub">Déjanos tu correo y entras en la <b>Nueva Ola</b>. ¿Quieres adelantarte? Tienes dos formas 👇</p>
+        <span class="pill-badge"><span class="ping"></span> Lista de espera abierta</span>
+        <h1>¿Llega fin de mes y no sabes en qué se te <span class="mark">fue la plata</span>?</h1>
+        <p class="pitch" data-afirma="promesa">{t('promesa')}</p>
+        <p class="sub" data-afirma="llega-aparatos">{t('llega-aparatos')}</p>
 
         <form id="hero-form" class="capture" novalidate>
           <div class="capture-row">
             <input type="email" id="hero-email" name="email" autocomplete="email" placeholder="tu@correo.com" aria-label="Tu correo" required />
-            <button type="submit" class="capture-btn">Únete a la Nueva Ola
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+            <button type="submit" class="capture-btn">Únete a la lista
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
             </button>
           </div>
           <p class="capture-err" id="hero-err">Revisa el correo —parece que le falta algo.</p>
           <p class="capture-note">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-            <span data-afirma="hero-gratis">Gratis para empezar</span> · <span data-afirma="hero-local">Tus datos viven en tu equipo</span> · Sin spam
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            Te escribimos cuando abra · Sin spam
           </p>
         </form>
 
         <div class="capture-ok hidden" id="hero-ok" role="status">
           <span class="ok-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M20 6 9 17l-5-5"></path></svg></span>
-          <span><strong>¡Listo, ya estás dentro!</strong><span>Te escribimos primero cuando abramos cupos —sin afán, sin spam.</span></span>
+          <span><strong>¡Listo, ya estás en la lista!</strong><span>Te escribimos primero cuando abramos —sin afán, sin spam.</span></span>
         </div>
 
         <div class="proof hidden" id="proof-hero">
           <span class="proof-dot" aria-hidden="true"></span><span class="avatars" aria-hidden="true"><i class="av"></i><i class="av"></i><i class="av"></i><i class="av"></i></span>
-          <b class="count">—</b><span class="proof-txt">&nbsp;personas ya en la Nueva Ola</span>
-        </div>
-
-        <div id="late-ramps" class="late-ramps">
-          <div class="ramp">🚀 <b>Salta la fila</b> — al unirte recibes tu link; cada amigo que invites te sube en la cola de la próxima tanda.</div>
-          <a href="/aporta" class="ramp ramp-link">🌱 <b>Gánate tu cupo</b> — aporta un documento (anónimo, en tu equipo) y te invitamos antes que al resto <span class="arw">→</span></a>
+          <b class="count">—</b><span class="proof-txt">&nbsp;personas ya en la lista</span>
         </div>
         {TURNSTILE_SITE_KEY && <div id="ts-hero" class="cf-turnstile ts-widget" data-sitekey={TURNSTILE_SITE_KEY} data-size="flexible" data-appearance="interaction-only"></div>}
       </div>
 
-      <!-- Derecha: la pieza firma — VerdictCard + categorías -->
+      <!-- Derecha: el video (Tarea 9 lo reemplaza por `Vsl`). -->
       <div class="hero-viz">
         <div class="hero-shot-glow" aria-hidden="true"></div>
-        <img
-          class="hero-shot"
-          src="/hero-presu.webp"
-          width="1536"
-          height="1024"
-          alt="Presu en macOS: la pantalla de Inicio con ingresos, gastos, balance y los presupuestos del mes por categoría"
-          fetchpriority="high"
-          decoding="async"
-        />
+        <div class="hueco-vsl" role="img" aria-label="Aquí va el video: Presu de verdad, en el Mac y en el iPhone">
+          <span class="hueco-vsl__play" aria-hidden="true">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5z"></path></svg>
+          </span>
+          <span class="hueco-rotulo">Video · 60 a 90 segundos</span>
+          <span class="hueco-nota">Presu de verdad, en el Mac y en el iPhone</span>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- ══════════════════ 2 · EL PROBLEMA ══════════════════ -->
-  <Section eyebrow="El problema">
+  <!-- ══════════════════ 2 · EL DOLOR ══════════════════ -->
+  <Section eyebrow="Te suena">
     <div class="sec-head reveal">
-      <h2>Llegas a fin de mes preguntándote <span class="mark">en qué</span> se fue la plata.</h2>
-      <p class="sec-lead">Te suena, ¿cierto? No es que gastes de más. Es que nunca ves todo junto.</p>
+      <h2>No es que gastes de más. Es que <span class="mark">nunca lo ves</span> todo junto.</h2>
+      <p class="sec-lead">Y anotar cada cosa a mano no es vida.</p>
     </div>
-    <div class="cards">
-      {problems.map((p) => (
+    <div class="dolores">
+      {dolores.map((d) => (
         <div class="card reveal">
-          <span class={`card-ic card-ic--${p.tone}`}>
-            {p.icon === 'coins' && (
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"></path><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-            )}
-            {p.icon === 'phone' && (
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"></rect><path d="M12 18h.01"></path></svg>
-            )}
-            {p.icon === 'cloud' && (
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path></svg>
-            )}
-          </span>
-          <h3>{p.title}</h3>
-          <p>{p.body}{p.afirma && <> <span data-afirma={p.afirma.id}>{p.afirma.texto}</span></>}</p>
+          <h3>{d.titulo}</h3>
+          <p>{d.texto}</p>
         </div>
       ))}
     </div>
   </Section>
 
-  <!-- ══════════════════ 3 · EL GIRO — CÓMO FUNCIONA ══════════════════ -->
-  <Section id="como" eyebrow="El giro">
+  <!-- ══════════════════ 3 · TRES VERBOS ══════════════════ -->
+  <Section id="como" eyebrow="Cómo funciona">
     <div class="sec-head reveal">
-      <h2 data-afirma="pasos-titulo">De un PDF a saber si vas bien, en <span class="mark">tres pasos</span>.</h2>
-      <p class="sec-lead" data-afirma="pasos-sin-claves">Sin claves del banco. Sin hojas de cálculo.</p>
+      <h2>Tú no anotas. Presu <span class="mark">hace el trabajo</span>.</h2>
+      <p class="sec-lead">Tres cosas, en el Mac y en el iPhone.</p>
     </div>
-    <div class="steps">
-      {steps.map((s) => (
-        <div class="step reveal">
-          <span class="step-n">{s.n}</span>
-          <h3>{s.title}</h3>
-          <p data-afirma={s.afirma}>{s.body}</p>
-        </div>
+    <div class="verbos">
+      {verbos.map((v) => (
+        <article class="verbo reveal">
+          <div class="verbo__texto">
+            <span class="step-n">{v.n}</span>
+            <h3>{v.titulo}</h3>
+            <ul class="verbo__lista">
+              {v.afirma.map((id) => <li data-afirma={id}>{t(id)}</li>)}
+            </ul>
+          </div>
+          <div class="verbo__media">
+            <div class="verbo__par">
+            <div class="hueco-captura hueco-captura--mac" data-captura={v.mac.captura} data-aparato="mac" role="img" aria-label={`Pantallazo pendiente: ${v.mac.rotulo}`}>
+              <span class="hueco-barra" aria-hidden="true"><i></i><i></i><i></i></span>
+              <span class="hueco-rotulo">{v.mac.rotulo}</span>
+              <span class="hueco-nota">Pantallazo de la app</span>
+            </div>
+            <div class="hueco-captura hueco-captura--iphone" data-captura={v.iphone.captura} data-aparato="iphone" role="img" aria-label={`Pantallazo pendiente: ${v.iphone.rotulo}`}>
+              <span class="hueco-isla" aria-hidden="true"></span>
+              <span class="hueco-rotulo">{v.iphone.rotulo}</span>
+            </div>
+            </div>
+            {v.extra && (
+              <div class="hueco-captura hueco-captura--mac hueco-captura--extra" data-captura={v.extra.captura} data-aparato="mac" role="img" aria-label={`Pantallazo pendiente: ${v.extra.rotulo}`}>
+                <span class="hueco-barra" aria-hidden="true"><i></i><i></i><i></i></span>
+                <span class="hueco-rotulo">{v.extra.rotulo}</span>
+                <span class="hueco-nota">Pantallazo de la app</span>
+              </div>
+            )}
+          </div>
+        </article>
       ))}
     </div>
   </Section>
 
-
-  <!-- ══════════════════ 5 · BANCOS QUE LEE ══════════════════ -->
-  <Section eyebrow="Bancos que lee">
-    <div class="sec-head reveal">
-      <h2 data-afirma="bancos-titulo">Lee los extractos de <span class="mark">tus bancos</span>.</h2>
-      <p class="sec-lead" data-afirma="bancos-detecta">Arrastra el PDF y Presu detecta el banco solo. Si no reconoce el formato, la IA opcional lo lee con el texto enmascarado.</p>
-    </div>
-    <div class="reveal">
-      <BanksStrip />
-    </div>
-  </Section>
-
-  <!-- ══════════════════ Mira lo que verás por dentro (showcase) ══════════════════ -->
-  <Showcase />
-
-  <!-- ══════════════════ 6 · PRIVACIDAD (firma) ══════════════════ -->
-  <Section id="privacidad" eyebrow="Privacidad que se siente">
+  <!-- ══════════════════ 4 · TUS DATOS SON TUYOS ══════════════════ -->
+  <Section id="privacidad" eyebrow="Tus datos son tuyos">
     <div class="privacy reveal">
       <div class="privacy-glow" aria-hidden="true"></div>
-      <h2 data-afirma="privacidad-titulo">Solo tú tienes <span class="mark">la llave</span>.</h2>
-      <p class="privacy-lead" data-afirma="privacidad-texto">Presu funciona <strong>local-first</strong>: tu información financiera vive en tu computador y ahí manda. Si activas la sincronización para verla también en el celular, viaja <strong>cifrada de extremo a extremo</strong> —la llave queda protegida con tu frase de acceso y nuestro servidor nunca la ve. En nuestro servidor solo quedan bloques cifrados: <strong>ni Asimétrica puede leerlos.</strong></p>
+      <h2 data-afirma="privacidad-titulo">Solo tú tienes la llave.</h2>
+      <p class="privacy-lead" data-afirma="privacidad-texto">{t('privacidad-texto')}</p>
       <div class="privacy-pills">
         <span class="ppill">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-          <span data-afirma="pill-llave">La llave es tuya</span>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          <span data-afirma="pill-sin-clave">{t('pill-sin-clave')}</span>
         </span>
         <span class="ppill">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-          <span data-afirma="pill-e2e">Sincronización cifrada de extremo a extremo</span>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          <span data-afirma="pill-e2e">{t('pill-e2e')}</span>
         </span>
         <span class="ppill">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18.36 6.64A9 9 0 1 1 5.64 6.64"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
-          <span data-afirma="pill-cuenta">Tu cuenta es solo tu correo</span>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18.36 6.64A9 9 0 1 1 5.64 6.64"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
+          <span data-afirma="pill-cuenta">{t('pill-cuenta')}</span>
         </span>
       </div>
     </div>
   </Section>
 
-  <!-- ══════════════════ 6.5 · PARA EMPRESAS (B2B) ══════════════════ -->
-  <Section id="equipos">
-    <div class="b2b reveal">
-      <div class="b2b-glow" aria-hidden="true"></div>
-      <p class="b2b-eyebrow">Para empresas</p>
-      <h2>Bienestar financiero para tu equipo, <span class="mark">sin tocar su privacidad</span>.</h2>
-      <p class="b2b-lead">Ofrece Presu como beneficio. Tu gente ordena su plata y tú impulsas su tranquilidad, <span data-afirma="empresas-llave">y nadie en la empresa ve sus datos: cada quien tiene su propia llave.</span></p>
-      <a href="#waitlist" class="capture-btn b2b-cta" data-perfil="empresa">Quiero ofrecerlo en mi empresa
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
-      </a>
+  <!-- ══════════════════ 5 · FAMILIA (sin precio) ══════════════════ -->
+  <Section id="familia" eyebrow="Familia">
+    <div class="familia reveal">
+      <div class="familia__texto">
+        <h2>Si la plata es <span class="mark">de la casa</span>, también.</h2>
+        <p class="sec-lead" data-afirma="familia-texto">{t('familia-texto')}</p>
+      </div>
+      <div class="hueco-captura hueco-captura--iphone hueco-captura--sola" data-captura="iphone-familia" data-aparato="iphone" role="img" aria-label="Pantallazo pendiente: iPhone · Familia">
+        <span class="hueco-isla" aria-hidden="true"></span>
+        <span class="hueco-rotulo">iPhone · Familia</span>
+      </div>
     </div>
   </Section>
 
-  <!-- ══════════════════ 7 · PLANES (teaser) ══════════════════ -->
-  <Section id="planes" eyebrow="Planes">
-    <div class="sec-head reveal">
-      <h2 data-afirma="planes-titulo">Empiezas gratis. Y sigues <span class="mark">gratis</span>.</h2>
-      <p class="sec-lead" data-afirma="planes-texto">
-        Presu a mano es gratis para siempre: tu historial, tus presupuestos y tu panel son tuyos, y usar Presu en el
-        celular tampoco cuesta. Presu Pro suma que tu correo traiga los movimientos solo.
-      </p>
-    </div>
-    <div class="plans">
-      <div class="plan reveal">
-        <h3>Presu a mano</h3>
-        <p class="plan-tag">Gratis, siempre</p>
-        <ul class="plan-list">
-          <li data-afirma="gratis-importar">Importas tus extractos y Presu los lee</li>
-          <li data-afirma="gratis-ia">Categorización con IA opcional, con el texto enmascarado</li>
-          <li data-afirma="gratis-cuentas">Cuentas y bancos ilimitados</li>
-          <li data-afirma="gratis-analitica">Presupuestos, analítica y patrimonio</li>
-          <li data-afirma="gratis-celular">Tu celular, siempre al día</li>
-          <li data-afirma="gratis-exportar">Exportar a Excel cuando quieras</li>
-        </ul>
-      </div>
-      <div class="plan plan--pro reveal">
-        <span class="plan-badge">Recomendado</span>
-        <h3>Presu Pro</h3>
-        <p class="plan-tag" data-afirma="pro-tag">Lo mismo, con el correo trabajando por ti</p>
-        <p class="plan-price" data-afirma="pro-precio"><strong>$19.990</strong> al mes</p>
-        <p class="plan-price-alt" data-afirma="pro-precio-otros">
-          O <strong>$199.990</strong> al año. Para la casa, el plan Familiar por <strong>$34.990</strong> al mes.
-        </p>
-        <ul class="plan-list">
-          <li data-afirma="pro-correo">Tu correo trae los movimientos solo</li>
-          <li data-afirma="pro-ia">Diez veces más categorización con IA opcional, con el texto enmascarado</li>
-        </ul>
-      </div>
-    </div>
+  <!-- ══════════════════ 6 · LO QUE TE LLEVAS (sin cifras) ══════════════════ -->
+  <Section eyebrow="Por entrar ahora">
     <div class="offer reveal">
-      <span class="os-eb" id="os-eb-date">Nueva Ola · lista de espera abierta</span>
-      <p class="offer-lead"><strong>No pagas nada</strong> por la beta —y además te llevas esto:</p>
+      <p class="offer-lead"><strong>Entrar a la lista no cuesta nada</strong>, y te llevas esto:</p>
       <ul class="offer-stack">
-        <li>
-          <span class="os-ic" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg></span>
-          <span><strong>Presu completo, gratis</strong> — todas las funciones de la beta, sin pagar nada.</span>
-        </li>
-        <li>
-          <span class="os-tag">Bono</span>
-          <span><strong>Guía para ordenar tu plata</strong> — un PDF corto de Asimétrica para dejar tus finanzas en orden, apenas entras.</span>
-        </li>
-        <li>
-          <span class="os-tag">Bono</span>
-          <span><strong>Sesión en vivo con Asimétrica</strong> — resuelves tus dudas de plata con el equipo, en directo.</span>
-        </li>
-        <li>
-          <span class="os-tag">Bono</span>
-          <span><strong>Tu precio de pionero, para siempre</strong> — cuando lo automático sea de pago, mantienes una tarifa especial.</span>
-        </li>
-        <li>
-          <span class="os-tag">Bono</span>
-          <span><strong>Decides qué sigue</strong> — pides qué banco o función construimos después.</span>
-        </li>
+        {loQueTeLlevas.map((b) => (
+          <li>
+            <span class="os-ic" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg></span>
+            <span><strong>{b.titulo}</strong> — {b.texto}</span>
+          </li>
+        ))}
       </ul>
     </div>
   </Section>
 
-  <!-- ══════════════════ 8 · FAQ ══════════════════ -->
-  <Section eyebrow="Preguntas frecuentes">
+  <!-- ══════════════════ 7 · PREGUNTAS ══════════════════ -->
+  <Section id="preguntas" eyebrow="Preguntas frecuentes">
     <div class="sec-head reveal">
       <h2>Lo que la gente nos pregunta.</h2>
     </div>
     <div class="faq reveal">
       {faqs.map((f) => (
-        <FaqItem question={f.q} answer={f.a} open={f.open} afirma={f.afirma} />
+        <FaqItem question={f.q} answer={t(f.afirma)} open={f.open} afirma={f.afirma} />
       ))}
     </div>
   </Section>
 
-  <!-- ══════════════════ 9 · CTA FINAL / NUEVA OLA ══════════════════ -->
-  <Section id="waitlist" eyebrow="La Nueva Ola">
+  <!-- ══════════════════ 8 · LA LISTA OTRA VEZ ══════════════════ -->
+  <Section id="waitlist" eyebrow="Lista de espera">
     <div class="cta-glow" aria-hidden="true"></div>
     <div class="sec-head reveal">
-      <h2>Sé de los primeros en usar <span class="mark">Presu</span>.</h2>
-      <p class="sec-lead" id="waitlist-lede">Déjanos tu correo y entras en la <b>Nueva Ola</b>. Te avisamos apenas abramos cupos. Sin spam.</p>
+      <h2>Que el próximo fin de mes <span class="mark">no te tome</span> por sorpresa.</h2>
+      <p class="sec-lead" id="waitlist-lede">Déjanos tu correo y te avisamos apenas abramos. Sin spam.</p>
       <div class="proof hidden" id="proof-wait">
         <span class="proof-dot" aria-hidden="true"></span><span class="avatars" aria-hidden="true"><i class="av"></i><i class="av"></i><i class="av"></i><i class="av"></i></span>
-        <b class="count">—</b><span class="proof-txt">&nbsp;personas ya en la Nueva Ola</span>
+        <b class="count">—</b><span class="proof-txt">&nbsp;personas ya en la lista</span>
       </div>
     </div>
 
@@ -409,13 +324,13 @@ const faqs = [
         {TURNSTILE_SITE_KEY && <div id="ts-wl" class="cf-turnstile ts-widget" data-sitekey={TURNSTILE_SITE_KEY} data-size="flexible" data-appearance="interaction-only"></div>}
         <button type="submit" class="capture-btn capture-btn--block">Únete a la lista de espera</button>
         <p class="err err--center" id="wl-err">Algo falló de nuestro lado. Reintenta en un momento.</p>
-        <p class="form-foot"><span data-afirma="form-aparatos">Mac, Windows e iPhone</span> · Presu, de Asimétrica</p>
+        <p class="form-foot"><span data-afirma="form-aparatos">{t('form-aparatos')}</span> · Presu, de Asimétrica</p>
       </form>
 
       <div id="waitlist-success" class="success hidden" role="status">
         <span class="success-ic" aria-hidden="true"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"></path></svg></span>
-        <h3>¡Listo, ya estás dentro!</h3>
-        <p>Te escribimos primero cuando abramos cupos. Tu plata, clara —muy pronto.</p>
+        <h3>¡Listo, ya estás en la lista!</h3>
+        <p>Te escribimos primero cuando abramos. Tu plata, clara —muy pronto.</p>
       </div>
     </div>
   </Section>
@@ -545,111 +460,6 @@ const faqs = [
     line-height: var(--leading-normal);
     color: var(--text-tertiary);
     max-width: 34em;
-  }
-
-  /* Countdown */
-  .countdown {
-    margin: 0 0 var(--space-6);
-    padding: var(--space-4) var(--space-5);
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    max-width: 440px;
-  }
-  .cd-top {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    font-family: var(--font-mono);
-    font-size: var(--text-micro);
-    font-weight: var(--weight-medium);
-    letter-spacing: var(--tracking-mono);
-    text-transform: uppercase;
-    color: var(--presu-emerald);
-  }
-  .cd-top::before {
-    content: '';
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--presu-emerald);
-    box-shadow: 0 0 9px var(--presu-emerald);
-  }
-  .cd-units {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: var(--space-2);
-    margin-top: var(--space-4);
-  }
-  .cd-u {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 7px;
-    padding: var(--space-3) var(--space-2) var(--space-2);
-    background: var(--bg-raised);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-  }
-  .cd-u b {
-    display: block;
-    font-family: var(--font-display);
-    font-weight: var(--weight-bold);
-    font-size: clamp(1.9rem, 5.5vw, 2.5rem);
-    line-height: 1;
-    letter-spacing: -0.02em;
-    font-variant-numeric: tabular-nums;
-    color: var(--text-primary);
-  }
-  .cd-u span {
-    font-family: var(--font-mono);
-    font-size: var(--text-micro);
-    letter-spacing: var(--tracking-mono);
-    text-transform: uppercase;
-    color: var(--text-tertiary);
-  }
-  .cd-sep {
-    display: none;
-  }
-  /* Pulso sutil cada segundo (señal de "vivo") — respeta reduced-motion vía JS */
-  .cd-u b.cd-flip {
-    animation: cd-flip 0.4s var(--ease-out);
-  }
-  @keyframes cd-flip {
-    0% {
-      transform: scale(1.14);
-      color: var(--presu-emerald);
-    }
-    100% {
-      transform: scale(1);
-      color: var(--text-primary);
-    }
-  }
-  .cd-note {
-    margin: var(--space-3) 0 0;
-    font-size: var(--text-caption);
-    line-height: var(--leading-normal);
-    color: var(--text-secondary);
-  }
-  .cd-note b {
-    color: var(--presu-emerald);
-    font-weight: var(--weight-semibold);
-  }
-  .cd-live {
-    display: none;
-    align-items: center;
-    gap: var(--space-2);
-    margin-top: var(--space-2);
-    font-family: var(--font-mono);
-    font-size: var(--text-caption);
-    color: var(--presu-emerald);
-  }
-  .countdown.is-live .cd-units,
-  .countdown.is-live .cd-top {
-    display: none;
-  }
-  .countdown.is-live .cd-live {
-    display: flex;
   }
 
   /* Captura */
@@ -849,49 +659,12 @@ const faqs = [
     40%, 60% { transform: translateX(5px); }
   }
 
-  .late-ramps {
-    display: none;
-    flex-direction: column;
-    gap: var(--space-3);
-    margin-top: var(--space-5);
-    max-width: 470px;
-  }
-  .ramp {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    padding: var(--space-3) var(--space-4);
-    font-size: var(--text-caption);
-    line-height: var(--leading-normal);
-    color: var(--text-secondary);
-    text-decoration: none;
-  }
-  .ramp b {
-    color: var(--text-primary);
-  }
-  .ramp-link {
-    border-color: var(--fill-emerald-border);
-  }
-  .ramp-link .arw {
-    color: var(--presu-emerald);
-    font-weight: var(--weight-bold);
-  }
-
   /* Hero viz (derecha) */
   .hero-viz {
     position: relative;
     display: flex;
     flex-direction: column;
     gap: var(--space-4);
-  }
-  .hero-shot {
-    position: relative;
-    z-index: 1;
-    width: 100%;
-    height: auto;
-    display: block;
-    border-radius: var(--radius-xl);
-    box-shadow: 0 40px 90px -40px rgba(0, 0, 0, 0.9);
   }
   .hero-shot-glow {
     position: absolute;
@@ -907,26 +680,96 @@ const faqs = [
     opacity: 0.55;
     pointer-events: none;
   }
-  .hero-viz-glow {
-    position: absolute;
-    inset: -12% -8%;
-    background: var(--glow-emerald);
-    filter: blur(30px);
-    z-index: -1;
-    pointer-events: none;
-  }
-  .hero-stats {
-    display: flex;
-    gap: var(--space-3);
-  }
-  .hero-bars {
+  /* ───────── Huecos: pantallazos (Tarea 8) y video (Tarea 9) ─────────
+     Un panel oscuro enmarcado con su rótulo, para que la página se vea terminada
+     mientras llegan las piezas reales. Lo reemplazan `Captura` y `Vsl`. */
+  .hueco-vsl,
+  .hueco-captura {
+    position: relative;
+    z-index: 1;
     display: flex;
     flex-direction: column;
-    gap: var(--space-4);
-    padding: var(--space-5);
-    background: var(--surface-alt);
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    padding: var(--space-6);
+    text-align: center;
+    background:
+      radial-gradient(120% 80% at 50% 0%, rgba(52, 211, 153, 0.08), transparent 60%),
+      var(--surface-alt);
     border: 1px solid var(--border);
+    box-shadow: 0 40px 90px -40px rgba(0, 0, 0, 0.9);
+  }
+  .hueco-vsl {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: var(--radius-xl);
+  }
+  .hueco-vsl__play {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 72px;
+    height: 72px;
+    margin-bottom: var(--space-2);
+    border-radius: 50%;
+    background: var(--presu-emerald);
+    color: var(--text-on-accent);
+    box-shadow: var(--shadow-accent);
+  }
+  .hueco-rotulo {
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    font-weight: var(--weight-medium);
+    letter-spacing: var(--tracking-mono);
+    text-transform: uppercase;
+    color: var(--text-secondary);
+  }
+  .hueco-nota {
+    font-size: var(--text-caption);
+    color: var(--text-tertiary);
+  }
+  .hueco-captura--mac {
+    width: 100%;
+    aspect-ratio: 16 / 10;
     border-radius: var(--radius-lg);
+    padding-top: var(--space-10);
+  }
+  .hueco-barra {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    gap: 6px;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .hueco-barra i {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--border);
+  }
+  .hueco-captura--iphone {
+    width: 34%;
+    max-width: 210px;
+    aspect-ratio: 9 / 19.5;
+    border-radius: 34px;
+    border-width: 6px;
+    border-color: var(--bg-raised);
+    outline: 1px solid var(--border);
+    padding: var(--space-4) var(--space-3);
+  }
+  .hueco-isla {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    width: 34%;
+    height: 14px;
+    transform: translateX(-50%);
+    border-radius: var(--radius-full);
+    background: var(--bg-base, #08080a);
   }
 
   /* ───────────────── Cabeceras de sección ───────────────── */
@@ -950,12 +793,106 @@ const faqs = [
     color: var(--text-secondary);
   }
 
-  /* ───────────────── 2 · Problema (cards) ───────────────── */
-  .cards {
+  /* ───────────────── 2 · El dolor ───────────────── */
+  .dolores {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: var(--space-5);
   }
+
+  /* ───────────────── 3 · Tres verbos ───────────────── */
+  .verbos {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-20);
+  }
+  .verbo {
+    display: grid;
+    grid-template-columns: 0.8fr 1.2fr;
+    gap: var(--space-10);
+    align-items: center;
+  }
+  .verbo > * {
+    min-width: 0;
+  }
+  .verbo:nth-child(even) .verbo__texto {
+    order: 2;
+  }
+  .verbo h3 {
+    margin: 0 0 var(--space-4);
+    font-family: var(--font-display);
+    font-weight: var(--weight-bold);
+    font-size: var(--text-h2);
+    letter-spacing: var(--tracking-tight);
+    color: var(--text-primary);
+  }
+  .verbo__lista {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+  .verbo__lista li {
+    position: relative;
+    padding-left: var(--space-6);
+    font-size: var(--text-body-lg);
+    line-height: var(--leading-normal);
+    color: var(--text-secondary);
+  }
+  .verbo__lista li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.62em;
+    width: 10px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--presu-emerald);
+  }
+  .verbo__par {
+    position: relative;
+    padding-bottom: var(--space-8);
+  }
+  /* El rótulo del Mac no queda debajo del iPhone que se le monta encima. */
+  .verbo__par .hueco-captura--mac {
+    padding-right: 36%;
+  }
+  .verbo__par .hueco-captura--iphone {
+    position: absolute;
+    right: -2%;
+    bottom: 0;
+    z-index: 2;
+  }
+  .verbo__media .hueco-captura--extra {
+    width: 78%;
+    margin-top: var(--space-4);
+  }
+
+  /* ───────────────── 5 · Familia ───────────────── */
+  .familia {
+    display: grid;
+    grid-template-columns: 1.3fr 0.7fr;
+    gap: var(--space-10);
+    align-items: center;
+  }
+  .familia h2 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: var(--weight-bold);
+    font-size: var(--text-h1);
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-tight);
+    color: var(--text-primary);
+    text-wrap: balance;
+  }
+  .hueco-captura--sola {
+    width: 100%;
+    max-width: 240px;
+    justify-self: center;
+  }
+
   .card {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -997,15 +934,6 @@ const faqs = [
     color: var(--text-secondary);
   }
 
-  /* ───────────────── 3 · Cómo funciona (steps) ───────────────── */
-  .steps {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--space-6);
-  }
-  .step {
-    position: relative;
-  }
   .step-n {
     display: inline-flex;
     align-items: center;
@@ -1019,134 +947,6 @@ const faqs = [
     font-family: var(--font-display);
     font-weight: var(--weight-bold);
     font-size: var(--text-h3);
-    color: var(--presu-emerald);
-  }
-  .step h3 {
-    margin: 0 0 var(--space-2);
-    font-family: var(--font-display);
-    font-weight: var(--weight-semibold);
-    font-size: var(--text-h3);
-    color: var(--text-primary);
-  }
-  .step p {
-    margin: 0;
-    font-size: var(--text-body);
-    line-height: var(--leading-normal);
-    color: var(--text-secondary);
-  }
-
-  /* ───────────────── 4 · Panel (showcase) ───────────────── */
-  .panel {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-xl);
-    padding: var(--space-6);
-    box-shadow: var(--shadow-md);
-  }
-  .panel-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-3);
-    flex-wrap: wrap;
-    margin-bottom: var(--space-5);
-  }
-  .panel-cap {
-    font-family: var(--font-display);
-    font-weight: var(--weight-semibold);
-    font-size: var(--text-h3);
-    color: var(--text-primary);
-  }
-  .panel-date {
-    font-family: var(--font-mono);
-    font-size: var(--text-micro);
-    letter-spacing: var(--tracking-mono);
-    color: var(--text-tertiary);
-  }
-  .panel-stats {
-    display: flex;
-    gap: var(--space-3);
-    flex-wrap: wrap;
-    margin-bottom: var(--space-6);
-  }
-  .panel-donut {
-    display: flex;
-    flex-direction: column;
-  }
-  .panel-cols {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-8);
-  }
-  .panel-sub {
-    display: block;
-    margin-bottom: var(--space-4);
-    font-family: var(--font-mono);
-    font-size: var(--text-micro);
-    letter-spacing: var(--tracking-mono);
-    text-transform: uppercase;
-    color: var(--text-tertiary);
-  }
-  .panel-bars {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-4);
-  }
-
-  .txns {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-  }
-  .txn {
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
-    padding: var(--space-3) 0;
-    border-bottom: 1px solid var(--border);
-  }
-  .txn:last-child {
-    border-bottom: 0;
-  }
-  .txn-ic {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    flex-shrink: 0;
-    border-radius: var(--radius-md);
-    background: var(--bg-raised);
-    font-size: 17px;
-  }
-  .txn-main {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-    flex: 1;
-  }
-  .txn-name {
-    font-family: var(--font-body);
-    font-weight: var(--weight-semibold);
-    font-size: var(--text-body);
-    color: var(--text-primary);
-  }
-  .txn-bank {
-    font-family: var(--font-mono);
-    font-size: var(--text-micro);
-    letter-spacing: 0.04em;
-    color: var(--text-tertiary);
-  }
-  .txn-amt {
-    font-family: var(--font-mono);
-    font-size: var(--text-body);
-    font-variant-numeric: tabular-nums;
-    color: var(--text-secondary);
-    white-space: nowrap;
-  }
-  .txn-amt--in {
     color: var(--presu-emerald);
   }
 
@@ -1218,156 +1018,6 @@ const faqs = [
     color: var(--presu-emerald);
   }
 
-  /* ───────────────── 6.5 · Para empresas (B2B) ───────────────── */
-  .b2b {
-    position: relative;
-    overflow: hidden;
-    text-align: center;
-    max-width: 760px;
-    margin: 0 auto;
-    padding: var(--space-12) var(--space-8);
-    background: var(--surface-alt);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-xl);
-  }
-  .b2b-glow {
-    position: absolute;
-    width: 380px;
-    height: 380px;
-    left: -120px;
-    bottom: -150px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(129, 140, 248, 0.22), transparent 65%);
-    filter: blur(30px);
-    pointer-events: none;
-  }
-  .b2b-eyebrow {
-    position: relative;
-    margin: 0 0 var(--space-3);
-    font-family: var(--font-mono);
-    font-size: var(--text-micro);
-    font-weight: var(--weight-medium);
-    letter-spacing: var(--tracking-mono);
-    text-transform: uppercase;
-    color: var(--presu-indigo-bright);
-  }
-  .b2b h2 {
-    position: relative;
-    margin: 0 0 var(--space-4);
-    max-width: 24ch;
-    margin-left: auto;
-    margin-right: auto;
-    font-family: var(--font-display);
-    font-weight: var(--weight-bold);
-    font-size: var(--text-h1);
-    line-height: var(--leading-tight);
-    letter-spacing: var(--tracking-tight);
-    color: var(--text-primary);
-    text-wrap: balance;
-  }
-  .b2b-lead {
-    position: relative;
-    margin: 0 auto var(--space-6);
-    max-width: 52ch;
-    font-size: var(--text-body-lg);
-    line-height: var(--leading-normal);
-    color: var(--text-secondary);
-  }
-  .b2b-cta {
-    position: relative;
-    text-decoration: none;
-  }
-
-  /* ───────────────── 7 · Planes ───────────────── */
-  .plans {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--space-5);
-  }
-  .plan {
-    position: relative;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-xl);
-    padding: var(--space-6);
-  }
-  .plan--pro {
-    border-color: var(--fill-emerald-border);
-    background: var(--surface-alt);
-  }
-  .plan-badge {
-    position: absolute;
-    top: var(--space-5);
-    right: var(--space-5);
-    padding: 4px var(--space-3);
-    border-radius: var(--radius-full);
-    background: var(--fill-emerald);
-    color: var(--presu-emerald);
-    font-family: var(--font-mono);
-    font-size: var(--text-micro);
-    letter-spacing: var(--tracking-mono);
-    text-transform: uppercase;
-  }
-  .plan h3 {
-    margin: 0 0 var(--space-1);
-    font-family: var(--font-display);
-    font-weight: var(--weight-bold);
-    font-size: var(--text-h2);
-    color: var(--text-primary);
-  }
-  .plan-tag {
-    margin: 0 0 var(--space-5);
-    font-size: var(--text-body);
-    color: var(--text-secondary);
-  }
-  /* El precio. Grande pero no gritado: acá no es un muro —nada se bloquea— sino la
-     prueba de que lo gratis es real. Solo se ve qué es gratis cuando se ve qué se paga. */
-  .plan-price {
-    margin: 0 0 var(--space-2);
-    font-size: var(--text-body);
-    color: var(--text-secondary);
-  }
-  .plan-price strong {
-    font-size: var(--text-h3);
-    color: var(--text-primary);
-  }
-  .plan-price-alt,
-  .plan-pay {
-    margin: 0 0 var(--space-2);
-    font-size: var(--text-label);
-    color: var(--text-secondary);
-  }
-  /* Los medios de pago van pegados al precio a propósito: en Colombia la mayoría no
-     tiene tarjeta de crédito, y no decirlo hace que el precio se lea como inalcanzable. */
-  .plan-pay {
-    margin-bottom: var(--space-5);
-    color: var(--text-primary);
-  }
-  .plan-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-3);
-  }
-  .plan-list li {
-    position: relative;
-    padding-left: var(--space-6);
-    font-size: var(--text-body);
-    color: var(--text-secondary);
-  }
-  .plan-list li::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0.35em;
-    width: 14px;
-    height: 8px;
-    border-left: 2px solid var(--presu-emerald);
-    border-bottom: 2px solid var(--presu-emerald);
-    transform: rotate(-45deg);
-  }
   .offer {
     text-align: center;
     max-width: 620px;
@@ -1736,24 +1386,20 @@ const faqs = [
 
   /* ───────────────── Responsive ───────────────── */
   @media (max-width: 960px) {
-    .hero-grid {
+    .hero-grid,
+    .verbo,
+    .familia {
       grid-template-columns: 1fr;
       gap: var(--space-10);
     }
     .hero-viz {
       order: 2;
     }
-  }
-
-  @media (max-width: 720px) {
-    .cards,
-    .steps,
-    .plans,
-    .panel-cols {
-      grid-template-columns: 1fr;
+    .verbo:nth-child(even) .verbo__texto {
+      order: 0;
     }
-    .panel-cols {
-      gap: var(--space-6);
+    .dolores {
+      grid-template-columns: repeat(2, 1fr);
     }
   }
 
@@ -1767,28 +1413,39 @@ const faqs = [
     .capture-btn {
       width: 100%;
     }
-    .cd-u {
-      min-width: 0;
-      flex: 1;
+    .dolores {
+      grid-template-columns: 1fr;
     }
-    .cd-u b {
-      font-size: 1.7rem;
+    .verbos {
+      gap: var(--space-16);
     }
-    .cd-sep {
+    .verbo__media .hueco-captura--extra {
+      width: 100%;
+    }
+    .hueco-captura--iphone {
+      border-radius: 24px;
+      border-width: 4px;
+    }
+    .hueco-rotulo {
+      font-size: 0.62rem;
+    }
+    .hueco-nota {
       display: none;
     }
     .sec-head h2,
     .privacy h2,
-    .b2b h2 {
+    .familia h2 {
       font-size: var(--text-h2);
+    }
+    .privacy {
+      padding: var(--space-10) var(--space-5);
     }
   }
 </style>
 
 <script>
   import { apiBase } from '../scripts/api.js';
-  import { send, isNuevaOla, enterNuevaOla } from '../scripts/waitlist.js';
-  import { BETA, target, parts } from '../scripts/countdown.js';
+  import { send, isNuevaOla } from '../scripts/waitlist.js';
 
   const REDUCE = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -2011,47 +1668,6 @@ const faqs = [
     }
   });
 
-  // ── Countdown: usa las funciones puras portadas (BETA/target/parts) ──
-  (function () {
-    const cd = document.getElementById('countdown');
-    if (!cd) return;
-    const dEl = document.getElementById('cd-d');
-    const hEl = document.getElementById('cd-h');
-    const mEl = document.getElementById('cd-m');
-    const sEl = document.getElementById('cd-s');
-    const pad = (n: number) => String(n).padStart(2, '0');
-    let timer: number;
-    if (Date.now() >= BETA) enterNuevaOla(); // si la beta ya cerró, arranca en modo Nueva Ola
-    const tick = () => {
-      const now = Date.now();
-      if (now >= BETA) enterNuevaOla(); // idempotente
-      const diff = target(now) - now;
-      if (diff <= 0) {
-        cd.classList.add('is-live');
-        [dEl, hEl, mEl, sEl].forEach((e) => e && (e.textContent = '00'));
-        clearInterval(timer);
-        return;
-      }
-      const p = parts(diff);
-      if (dEl) dEl.textContent = pad(p.d);
-      if (hEl) hEl.textContent = pad(p.h);
-      if (mEl) mEl.textContent = pad(p.m);
-      if (sEl) {
-        const s = pad(p.s);
-        if (sEl.textContent !== s) {
-          sEl.textContent = s;
-          if (!REDUCE) {
-            sEl.classList.remove('cd-flip');
-            void sEl.offsetWidth; // reinicia la animación
-            sEl.classList.add('cd-flip');
-          }
-        }
-      }
-    };
-    tick();
-    timer = window.setInterval(tick, 1000);
-  })();
-
   // ── Micro-feedback en formularios ──
   function shakeErr(el: HTMLInputElement) {
     el.classList.add('err');
@@ -2235,26 +1851,4 @@ const faqs = [
     reveals.forEach((el) => el.classList.add('in'));
   }
 
-  // ── Count-up de cifras al entrar en viewport (hero + secciones inferiores) ──
-  const figSel = '.stat-card__value, .presu-showcase .sv';
-  if (!REDUCE) {
-    if ('IntersectionObserver' in window) {
-      const io2 = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((en) => {
-            if (en.isIntersecting) {
-              countUp(en.target as HTMLElement);
-              io2.unobserve(en.target);
-            }
-          });
-        },
-        { threshold: 0.4 }
-      );
-      document.querySelectorAll<HTMLElement>(figSel).forEach((el) => io2.observe(el));
-      // Red de seguridad: si el observer no dispara, cuenta igual.
-      setTimeout(() => document.querySelectorAll<HTMLElement>(figSel).forEach(countUp), 1600);
-    } else {
-      document.querySelectorAll<HTMLElement>(figSel).forEach(countUp);
-    }
-  }
 </script>

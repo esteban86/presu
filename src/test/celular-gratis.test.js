@@ -36,33 +36,16 @@ const html = hayBuild ? readFileSync(INDEX, 'utf8') : '';
 /** Lo que nombra al celular, en cualquiera de sus formas. */
 const CELULAR = /celular|móvil|movil|sincroniz/i;
 
-/** Las clases exactas de cada tarjeta, tal como salen en el HTML construido. */
-const GRATIS = 'plan reveal';
-const PAGO = 'plan plan--pro reveal';
-
 /**
- * Saca los beneficios (uno por `<li>`) de una de las dos tarjetas de plan.
- *
- * Ancla en el atributo `class="…"` COMPLETO y no en el nombre suelto de la clase.
- * Astro incrusta el CSS en la misma página, así que buscar `plan--pro` a secas cae
- * primero en la regla `.plan--pro{…}` del `<style>` y de ahí el siguiente
- * `plan-list` es el del plan GRATIS — o sea que el guardia terminaba revisando la
- * tarjeta equivocada. Pasó al escribirlo: el test se cayó contra una web correcta.
- *
- * Devuelve null si no encuentra la estructura, y el test lo trata como FALLA, no
- * como "no aplica": un rediseño que renombre las clases dejaría este guardia
- * pasando en vacío, que es la forma clásica de que un test deje de proteger.
+ * Desde la portada que vende (#39, CA8) no hay tarjetas de plan ni precios. Lo que
+ * este guardia sigue cuidando es lo mismo de antes, con otra forma: la única frase
+ * que habla de pago (la respuesta de «¿Tiene costo?», `data-afirma="faq-costo"`)
+ * dice que el celular es gratis y ata el pago al correo del computador, nunca al
+ * celular ni a la sincronización.
  */
-function beneficiosDe(claseTarjeta) {
-  const i = html.indexOf(`class="${claseTarjeta}"`);
-  if (i < 0) return null;
-  const ul = html.indexOf('class="plan-list"', i);
-  if (ul < 0) return null;
-  const fin = html.indexOf('</ul>', ul);
-  if (fin < 0) return null;
-  return [...html.slice(ul, fin).matchAll(/<li[^>]*>([\s\S]*?)<\/li>/g)].map((m) =>
-    m[1].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim(),
-  );
+function respuestaDeCosto() {
+  const m = html.match(/<p[^>]*data-afirma="faq-costo"[^>]*>([\s\S]*?)<\/p>/);
+  return m ? m[1].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() : null;
 }
 
 describe('el celular es gratis, y la portada tiene que decirlo (App Store 3.1.1)', () => {
@@ -70,24 +53,27 @@ describe('el celular es gratis, y la portada tiene que decirlo (App Store 3.1.1)
     expect(hayBuild, `falta ${INDEX} — este test revisa el HTML construido`).toBe(true);
   });
 
-  it('encuentra las dos tarjetas de plan, con beneficios (si falla, cambió el marcado)', () => {
-    expect(beneficiosDe(GRATIS)?.length, 'no encontré beneficios en la tarjeta del plan gratis').toBeGreaterThan(0);
-    expect(beneficiosDe(PAGO)?.length, 'no encontré beneficios en la tarjeta del plan pago').toBeGreaterThan(0);
+  it('la portada no tiene tarjetas de plan (CA8)', () => {
+    expect(html).not.toMatch(/class="plan( |")/);
+    expect(html).not.toMatch(/class="plan plan--pro/);
   });
 
-  it('el plan DE PAGO no ofrece el celular ni la sincronización', () => {
-    const culpables = beneficiosDe(PAGO).filter((b) => CELULAR.test(b));
-    expect(
-      culpables,
-      'la tarjeta de pago volvió a listar el celular: eso es lo que Apple rechazó dos veces',
-    ).toEqual([]);
+  it('encuentra la respuesta de «¿Tiene costo?» (si falla, cambió el marcado)', () => {
+    expect(respuestaDeCosto(), 'no encontré data-afirma="faq-costo"').toBeTruthy();
   });
 
-  it('el plan GRATIS sí ofrece el celular', () => {
-    expect(
-      beneficiosDe(GRATIS).filter((b) => CELULAR.test(b)).length,
-      'el celular desapareció del plan gratis: o se movió al pago, o se borró sin querer',
-    ).toBeGreaterThan(0);
+  it('dice que el celular es gratis', () => {
+    const r = respuestaDeCosto() ?? '';
+    const frase = r.split(/(?<=\.)\s/).find((f) => CELULAR.test(f)) ?? '';
+    expect(frase, 'la respuesta de costo ya no nombra el celular').not.toBe('');
+    expect(frase).toMatch(/gratis|también/i);
+  });
+
+  it('la frase del pago no nombra el celular ni la sincronización', () => {
+    const r = respuestaDeCosto() ?? '';
+    const delPago = r.split(/(?<=\.)\s/).filter((f) => /pago|pagas/i.test(f));
+    expect(delPago.length, 'la respuesta de costo ya no dice qué es de pago').toBeGreaterThan(0);
+    for (const f of delPago) expect(f, 'el pago volvió a atarse al celular').not.toMatch(CELULAR);
   });
 
   /**

@@ -15,24 +15,22 @@
       "url": "https://presu.io/",
       "name": "Presu",
       "inLanguage": "es-CO",
-      "publisher": { "@id": "https://asimetrica.co/#organization" }
+      "publisher": {
+        "@id": "https://asimetrica.co/#organization"
+      }
     },
     {
       "@type": "SoftwareApplication",
       "@id": "https://presu.io/#app",
       "name": "Presu",
       "applicationCategory": "FinanceApplication",
-      "operatingSystem": "macOS, Windows",
+      "operatingSystem": "macOS, Windows, iOS",
       "inLanguage": "es-CO",
       "url": "https://presu.io/",
       "image": "https://presu.io/presu-og.png",
-      "description": "Presu reúne los gastos de tus bancos colombianos, los organiza solos y te muestra a dónde se va tu plata. Local-first, y la sincronización va cifrada de extremo a extremo: la llave se queda en tus dispositivos.",
-      "publisher": { "@id": "https://asimetrica.co/#organization" },
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "COP",
-        "description": "Empieza gratis con importación manual y panel básico."
+      "description": "Presu lee los movimientos de tu correo y de tus extractos, los ordena solo y te dice cómo vas este mes y qué viene. Llega a Mac, Windows e iPhone al mismo tiempo. Tus datos viven en tu equipo, y la sincronización va cifrada de extremo a extremo.",
+      "publisher": {
+        "@id": "https://asimetrica.co/#organization"
       }
     },
     {
@@ -41,28 +39,51 @@
       "mainEntity": [
         {
           "@type": "Question",
+          "name": "¿Tengo que anotar cada gasto?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Presu lee tus movimientos del correo y de tus extractos y, en iPhone, de los SMS de tu banco: lo configuras una vez. Solo anotas lo que no deja rastro, como el efectivo."
+          }
+        },
+        {
+          "@type": "Question",
           "name": "¿Es seguro? ¿Dónde quedan mis datos?",
-          "acceptedAnswer": { "@type": "Answer", "text": "En tu computador. Presu es local-first: tu base de datos vive en tu equipo, no en un servidor nuestro. Si activas la sincronización para usar Presu también en el celular —que es gratis—, tus movimientos viajan cifrados de extremo a extremo —como en WhatsApp—: la llave viaja protegida con tu frase de acceso y en el servidor no hay nada legible, ni para nosotros. Si enciendes la IA opcional, el texto viaja enmascarado y las imágenes que eliges, como un pantallazo, van tal cual." }
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "En tu equipo. Presu guarda tu base de datos en tu computador o en tu celular, no en un servidor nuestro. Si sincronizas los dos, tus movimientos viajan cifrados de extremo a extremo: la llave queda protegida con tu frase de acceso y en el servidor no hay nada legible, ni para nosotros. Si enciendes la IA opcional, el texto viaja enmascarado y las imágenes que eliges, como un pantallazo, van tal cual."
+          }
         },
         {
           "@type": "Question",
           "name": "¿Necesito dar la clave de mi banco?",
-          "acceptedAnswer": { "@type": "Answer", "text": "No. Presu no se conecta a tu banca en línea ni te pide usuario o clave. Importas el PDF de tu extracto (o un pantallazo) y Presu lo lee." }
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Presu no se conecta a tu banca en línea ni te pide usuario o clave. Lee lo que tu banco ya te manda: los avisos y extractos de tu correo, o el PDF que importas."
+          }
         },
         {
           "@type": "Question",
           "name": "¿Qué bancos sirven?",
-          "acceptedAnswer": { "@type": "Answer", "text": "Presu detecta el banco solo cuando importas el PDF de tu extracto. Si no reconoce el formato, la IA opcional lo lee con el texto enmascarado." }
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Presu detecta el banco solo cuando importas el PDF de tu extracto. Si no reconoce el formato, la IA opcional lo lee con el texto enmascarado."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "¿En qué aparatos funciona?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Presu llega a Mac, Windows e iPhone al mismo tiempo. Si usas el computador y el celular, se sincronizan cifrados de extremo a extremo."
+          }
         },
         {
           "@type": "Question",
           "name": "¿Tiene costo?",
-          "acceptedAnswer": { "@type": "Answer", "text": "Presu a mano es gratis para siempre: tu historial, tus presupuestos y tu panel se quedan, y usar Presu en el celular sincronizado con tu computador también es gratis. Lo que tiene precio es Presu Pro: que tu correo traiga los movimientos solo. Si entras temprano, conservas además un precio especial de pionero." }
-        },
-        {
-          "@type": "Question",
-          "name": "¿Funciona en Mac, Windows o celular?",
-          "acceptedAnswer": { "@type": "Answer", "text": "Sí. Presu ya está en iPhone y es gratis. Tus movimientos se sincronizan cifrados de extremo a extremo con tu Mac o tu PC." }
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Empezar es gratis, y usar Presu en el celular también. En el computador, que tu correo traiga los movimientos solo es la parte de pago. Si entras temprano, conservas un precio especial de pionero."
+          }
         }
       ]
     }

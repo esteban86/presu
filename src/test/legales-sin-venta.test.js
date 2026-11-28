@@ -87,11 +87,13 @@ describe('las páginas legales no llevan a comprar (App Store 3.1.1)', () => {
  * TODAS partes, los tests de arriba pasarían y la web perdería su portada.
  */
 describe('la portada conserva lo suyo', () => {
-  it('sigue teniendo precios y captación', () => {
+  // Desde la portada que vende (#39, CA8) la portada ya no muestra precios: lo suyo
+  // es la captación. Lo que no puede perder es la lista de espera.
+  it('sigue teniendo la captación', () => {
     const p = join(process.cwd(), 'dist', 'index.html');
     if (!existsSync(p)) return;
     const html = readFileSync(p, 'utf8');
-    expect(html).toMatch(/#planes/);
     expect(html).toMatch(/#waitlist/);
+    expect(html).toMatch(/id="waitlist-form"/);
   });
 });

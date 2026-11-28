@@ -54,16 +54,11 @@ function vinetaDePlan(plan) {
   return li.find((t) => new RegExp(`plan ${plan}\\b`, 'i').test(t)) ?? null;
 }
 
-/** Los beneficios de una tarjeta de plan de la portada (ver celular-gratis.test.js). */
-function beneficiosDe(claseTarjeta) {
+/** La respuesta de «¿Tiene costo?» de la portada, en texto plano. */
+function respuestaDeCosto() {
   if (!index) return null;
-  const i = index.indexOf(`class="${claseTarjeta}"`);
-  if (i < 0) return null;
-  const ul = index.indexOf('class="plan-list"', i);
-  if (ul < 0) return null;
-  const fin = index.indexOf('</ul>', ul);
-  if (fin < 0) return null;
-  return [...index.slice(ul, fin).matchAll(/<li[^>]*>([\s\S]*?)<\/li>/g)].map((m) => plano(m[1]));
+  const m = index.match(/<p[^>]*data-afirma="faq-costo"[^>]*>([\s\S]*?)<\/p>/);
+  return m ? plano(m[1]) : null;
 }
 
 describe('las páginas legales no contradicen a la tabla de precios', () => {
@@ -87,8 +82,13 @@ describe('las páginas legales no contradicen a la tabla de precios', () => {
    * solo, no. Si algún día se borra aquel, esto deja de proteger lo que parece proteger.
    */
   it('la portada y los términos ponen el celular en el mismo plan', () => {
-    const enGratisPortada = beneficiosDe('plan reveal').some((b) => CELULAR.test(b));
-    const enPagoPortada = beneficiosDe('plan plan--pro reveal').some((b) => CELULAR.test(b));
+    // Desde la portada que vende (#39) no hay tarjetas de plan: lo que la portada dice del
+    // pago vive en la respuesta de «¿Tiene costo?» (`data-afirma="faq-costo"`).
+    const costo = respuestaDeCosto();
+    expect(costo, 'no encontré data-afirma="faq-costo" en la portada').toBeTruthy();
+    const frases = costo.split(/(?<=\.)\s/);
+    const enGratisPortada = frases.some((f) => CELULAR.test(f) && /gratis|también/i.test(f) && !/pago/i.test(f));
+    const enPagoPortada = frases.some((f) => CELULAR.test(f) && /pago/i.test(f));
 
     expect(
       CELULAR.test(vinetaDePlan('gratis')),
