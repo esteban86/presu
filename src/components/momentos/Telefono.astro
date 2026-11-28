@@ -16,20 +16,23 @@
 // vista (`.corre`, de `correr-a-la-vista.ts`). Sin JavaScript o con «reducir movimiento», derecho.
 // Solo `transform` y `opacity`: no corre nada de la página.
 //
-// Para un lector de pantalla no existe (`aria-hidden`): el rótulo lo pone quien lo usa.
+// Para un lector de pantalla no existe (`aria-hidden`), salvo con `decorativo={false}`.
 export interface Props {
   /** Ancho máximo, en px. En pantallas angostas se achica (84vw). */
   ancho?: number;
   inclinacion?: 'none' | 'izquierda' | 'derecha';
+  /** Sin la barra de estado ni la barra de inicio dibujadas: para una captura, que ya trae las suyas. */
   barraDeEstado?: boolean;
+  /** Decorativo (por defecto): fuera del lector de pantalla. En `false`, lo de adentro se lee (una captura con su `alt`). */
+  decorativo?: boolean;
 }
-const { ancho = 340, inclinacion = 'none', barraDeEstado = true } = Astro.props;
+const { ancho = 340, inclinacion = 'none', barraDeEstado = true, decorativo = true } = Astro.props;
 ---
 
 <div
   class:list={['iphone', inclinacion !== 'none' && `iphone--${inclinacion}`]}
   style={`--ancho:${ancho}px`}
-  aria-hidden="true"
+  aria-hidden={decorativo ? 'true' : undefined}
 >
   <div class="cuerpo">
     <span class="boton boton--accion"></span>
@@ -65,7 +68,7 @@ const { ancho = 340, inclinacion = 'none', barraDeEstado = true } = Astro.props;
             )
           }
           <slot />
-          <span class="inicio-barra"></span>
+          {barraDeEstado && <span class="inicio-barra" />}
         </div>
         <span class="isla"></span>
         <span class="vidrio"></span>

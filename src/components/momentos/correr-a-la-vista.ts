@@ -23,3 +23,6 @@ if ('IntersectionObserver' in window) {
 }
 preparar();
 reducir.addEventListener('change', preparar);
+
+// Módulo, no script global: sus nombres no chocan con los de otros módulos.
+export {};

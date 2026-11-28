@@ -21,6 +21,7 @@ import FaqItem from '../components/ui/FaqItem.astro';
 import MomentoEntraSolo from '../components/momentos/MomentoEntraSolo.astro';
 import MomentoComoVas from '../components/momentos/MomentoComoVas.astro';
 import MomentoQueViene from '../components/momentos/MomentoQueViene.astro';
+import Galeria from '../components/galeria/Galeria.astro';
 import homeJsonLd from '../data/home-jsonld.json';
 import afirmaciones from '../data/afirmaciones.json';
 
@@ -217,6 +218,15 @@ const jsonLd = {
         </article>
       ))}
     </div>
+  </Section>
+
+  <!-- ══════════════════ 3b · ASÍ SE VE PRESU ══════════════════ -->
+  <Section id="asi-se-ve" eyebrow="Así se ve Presu">
+    <div class="sec-head reveal">
+      <h2>Las pantallas <span class="mark">de la app</span>.</h2>
+      <p class="sec-lead">Con datos de ejemplo, en el Mac y en el iPhone.</p>
+    </div>
+    <Galeria />
   </Section>
 
   <!-- ══════════════════ 4 · TUS DATOS SON TUYOS ══════════════════ -->

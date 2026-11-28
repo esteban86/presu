@@ -12,20 +12,22 @@
 //   arriba). Con una captura, `barraDeMenu={false}`.
 //
 // `inclinacion`: entra girado y se endereza al entrar a la vista, como el iPhone.
-// Para un lector de pantalla no existe (`aria-hidden`): el rótulo lo pone quien lo usa.
+// Para un lector de pantalla no existe (`aria-hidden`), salvo con `decorativo={false}`.
 export interface Props {
   /** Ancho máximo de todo el aparato (con la base), en px. */
   ancho?: number;
   inclinacion?: 'none' | 'izquierda' | 'derecha';
   barraDeMenu?: boolean;
+  /** Decorativo (por defecto): fuera del lector de pantalla. En `false`, lo de adentro se lee. */
+  decorativo?: boolean;
 }
-const { ancho = 780, inclinacion = 'none', barraDeMenu = true } = Astro.props;
+const { ancho = 780, inclinacion = 'none', barraDeMenu = true, decorativo = true } = Astro.props;
 ---
 
 <div
   class:list={['mac', inclinacion !== 'none' && `mac--${inclinacion}`]}
   style={`--ancho:${ancho}px`}
-  aria-hidden="true"
+  aria-hidden={decorativo ? 'true' : undefined}
 >
   <div class="mac__cuerpo">
     <div class="tapa">

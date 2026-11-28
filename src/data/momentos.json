@@ -2,54 +2,56 @@
   "_origen": "node scripts/actualizar-datos-de-la-demo.mjs --app <repo de la app> --mes 2026-11 --hoy 2026-11-27: la MISMA base que cifras-de-la-demo.json.",
   "mes": "2026-11",
   "hoy": "2026-11-27",
-  "diaDeLaEscena": "2026-11-26",
+  "diaDeLaEscena": "2026-11-27",
   "llega": {
-    "id": 709,
-    "fecha": "2026-11-26",
+    "id": 701,
+    "fecha": "2026-11-27",
     "comercio": "Taxi",
     "categoria": "Transporte",
     "color": "#3B82F6",
     "cuenta": "Ahorros Banco Andino",
     "tipoDeCuenta": "bank_account",
     "banco": "Banco Andino",
-    "monto": 16400
+    "monto": 14600
   },
   "hoyAntes": [
     {
-      "id": 711,
-      "fecha": "2026-11-26",
-      "comercio": "Droguería",
-      "categoria": "Salud",
-      "color": "#EF4444",
-      "cuenta": "Tarjeta Ceiba",
-      "tipoDeCuenta": "credit_card",
-      "banco": "Banco Ceiba",
-      "monto": 56400
-    },
-    {
-      "id": 710,
-      "fecha": "2026-11-26",
+      "id": 702,
+      "fecha": "2026-11-27",
       "comercio": "Parqueadero",
       "categoria": "Transporte",
       "color": "#3B82F6",
       "cuenta": "Ahorros Banco Andino",
       "tipoDeCuenta": "bank_account",
       "banco": "Banco Andino",
-      "monto": 7000
+      "monto": 8500
     },
     {
-      "id": 708,
-      "fecha": "2026-11-26",
-      "comercio": "Café",
+      "id": 700,
+      "fecha": "2026-11-27",
+      "comercio": "Panadería",
       "categoria": "Café y antojos",
       "color": "#A16207",
-      "cuenta": "Tarjeta Ceiba",
-      "tipoDeCuenta": "credit_card",
-      "banco": "Banco Ceiba",
-      "monto": 10900
+      "cuenta": "Ahorros Banco Andino",
+      "tipoDeCuenta": "bank_account",
+      "banco": "Banco Andino",
+      "monto": 8400
+    }
+  ],
+  "ayer": [
+    {
+      "id": 699,
+      "fecha": "2026-11-26",
+      "comercio": "Taxi",
+      "categoria": "Transporte",
+      "color": "#3B82F6",
+      "cuenta": "Ahorros Banco Andino",
+      "tipoDeCuenta": "bank_account",
+      "banco": "Banco Andino",
+      "monto": 13400
     },
     {
-      "id": 707,
+      "id": 698,
       "fecha": "2026-11-26",
       "comercio": "Panadería",
       "categoria": "Café y antojos",
@@ -57,49 +59,25 @@
       "cuenta": "Ahorros Banco Andino",
       "tipoDeCuenta": "bank_account",
       "banco": "Banco Andino",
-      "monto": 4500
-    }
-  ],
-  "ayer": [
-    {
-      "id": 702,
-      "fecha": "2026-11-25",
-      "comercio": "Parqueadero",
-      "categoria": "Transporte",
-      "color": "#3B82F6",
-      "cuenta": "Ahorros Banco Andino",
-      "tipoDeCuenta": "bank_account",
-      "banco": "Banco Andino",
-      "monto": 4400
+      "monto": 4300
     },
     {
-      "id": 700,
-      "fecha": "2026-11-25",
-      "comercio": "Café",
-      "categoria": "Café y antojos",
-      "color": "#A16207",
-      "cuenta": "Tarjeta Ceiba",
-      "tipoDeCuenta": "credit_card",
-      "banco": "Banco Ceiba",
-      "monto": 9100
-    },
-    {
-      "id": 699,
-      "fecha": "2026-11-25",
-      "comercio": "Restaurante",
-      "categoria": "Restaurantes",
-      "color": "#F97316",
+      "id": 695,
+      "fecha": "2026-11-26",
+      "comercio": "Supermercado",
+      "categoria": "Mercado",
+      "color": "#22C55E",
       "cuenta": "Tarjeta Cóndor",
       "tipoDeCuenta": "credit_card",
       "banco": "Banco Andino",
-      "monto": 32600
+      "monto": 167900
     }
   ],
   "ritmo": {
     "dia": 27,
     "diasDelMes": 30,
     "tope": 3260000,
-    "gastado": 2645800,
+    "gastado": 2548000,
     "veredicto": {
       "estado": "VAS BIEN ESTE MES",
       "tono": "positive",
@@ -108,7 +86,7 @@
           "text": "Te quedan "
         },
         {
-          "text": "$ 614.200",
+          "text": "$ 712.000",
           "accent": true
         },
         {
@@ -119,145 +97,145 @@
     "lleva": [
       39300,
       28200,
-      82500,
-      134100,
-      672100,
+      51200,
+      96500,
+      271000,
+      730100,
       753600,
-      766000,
+      797400,
       797400,
       820900,
-      889800,
-      1085700,
-      1208700,
-      1226800,
+      880300,
+      955400,
+      1200100,
+      1214300,
+      1280300,
       1322000,
-      1325900,
-      1487000,
+      1357800,
+      1516400,
       1649700,
       1877800,
       1945000,
-      2133000,
+      2114600,
       2192500,
-      2242400,
-      2326500,
-      2533400,
-      2607000,
-      2645800,
-      2645800
+      2210700,
+      2309600,
+      2516500,
+      2548000
     ],
     "paraCerrarEnTuTope": [
-      96998,
-      149414,
-      252325,
-      402681,
-      502320,
-      681801,
-      772893,
-      942091,
-      1123213,
-      1198906,
-      1241449,
-      1366836,
-      1607797,
-      1684979,
-      1733920,
-      1913378,
-      2028034,
-      2155218,
-      2257920,
-      2361103,
-      2414359,
-      2461452,
-      2546040,
-      2631118,
-      2743893,
-      2807436,
-      2901338,
-      3004964,
-      3101364,
+      81232,
+      130696,
+      224297,
+      326331,
+      458777,
+      738641,
+      804565,
+      958965,
+      1140087,
+      1187177,
+      1236315,
+      1359090,
+      1598818,
+      1657485,
+      1718483,
+      1874087,
+      1992216,
+      2077445,
+      2198470,
+      2335712,
+      2403606,
+      2477046,
+      2578068,
+      2652125,
+      2781177,
+      2888084,
+      2967992,
+      3077986,
+      3153635,
       3260000
     ],
-    "esperadoHoy": 2901338,
+    "esperadoHoy": 2967992,
     "donas": [
       {
         "categoria": "Mercado",
         "color": "#22C55E",
-        "gastado": 1018600,
+        "gastado": 1005700,
         "tope": 1200000,
-        "pct": 85,
+        "pct": 84,
         "tramos": [
           {
             "tipo": "hecho",
             "desde": 0,
-            "hasta": 0.8488
+            "hasta": 0.8381
           },
           {
             "tipo": "falta",
-            "desde": 0.8488,
-            "hasta": 0.8722
+            "desde": 0.8381,
+            "hasta": 0.9221
           }
         ],
-        "muesca": 0.8722
+        "muesca": 0.9221
       },
       {
         "categoria": "Restaurantes",
         "color": "#F97316",
-        "gastado": 482000,
+        "gastado": 449400,
         "tope": 600000,
-        "pct": 80,
+        "pct": 75,
         "tramos": [
           {
             "tipo": "hecho",
             "desde": 0,
-            "hasta": 0.8033
+            "hasta": 0.749
           },
           {
             "tipo": "falta",
-            "desde": 0.8033,
-            "hasta": 0.904
+            "desde": 0.749,
+            "hasta": 0.9054
           }
         ],
-        "muesca": 0.904
+        "muesca": 0.9054
       },
       {
         "categoria": "Transporte",
         "color": "#3B82F6",
-        "gastado": 603900,
+        "gastado": 576100,
         "tope": 650000,
-        "pct": 93,
+        "pct": 89,
         "tramos": [
           {
             "tipo": "hecho",
             "desde": 0,
-            "hasta": 0.8997
+            "hasta": 0.8863
           },
           {
-            "tipo": "adelantado",
-            "desde": 0.8997,
-            "hasta": 0.9291
+            "tipo": "falta",
+            "desde": 0.8863,
+            "hasta": 0.9092
           }
         ],
-        "muesca": 0.8997
+        "muesca": 0.9092
       },
       {
         "categoria": "Café y antojos",
         "color": "#A16207",
-        "gastado": 213400,
+        "gastado": 188900,
         "tope": 260000,
-        "pct": 82,
+        "pct": 73,
         "tramos": [
           {
             "tipo": "hecho",
             "desde": 0,
-            "hasta": 0.8208
+            "hasta": 0.7265
           },
           {
             "tipo": "falta",
-            "desde": 0.8208,
-            "hasta": 0.9278
+            "desde": 0.7265,
+            "hasta": 0.9099
           }
         ],
-        "muesca": 0.9278
+        "muesca": 0.9099
       },
       {
         "categoria": "Entretenimiento",

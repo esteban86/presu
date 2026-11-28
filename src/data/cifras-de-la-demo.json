@@ -2,27 +2,27 @@
   "mes": "2026-11",
   "hoy": "2026-11-27",
   "ingresos": 5500000,
-  "gastos": 4853900,
-  "balance": 646100,
+  "gastos": 4699700,
+  "balance": 800300,
   "topes": [
     {
       "categoria": "Mercado",
-      "gastado": 1018600,
+      "gastado": 1005700,
       "tope": 1200000
     },
     {
       "categoria": "Restaurantes",
-      "gastado": 482000,
+      "gastado": 449400,
       "tope": 600000
     },
     {
       "categoria": "Transporte",
-      "gastado": 603900,
+      "gastado": 576100,
       "tope": 650000
     },
     {
       "categoria": "Café y antojos",
-      "gastado": 213400,
+      "gastado": 188900,
       "tope": 260000
     },
     {

@@ -1,0 +1,406 @@
+---
+// Galeria.astro — «Así se ve Presu»: capturas REALES de la app (con la base de demostración) dentro
+// de los marcos realistas de los momentos.
+//
+// - Un MacBook grande con las cuatro pantallas del escritorio. Se cambian con las pestañas de abajo
+//   y, a la vista y sin «reducir movimiento», solas cada 5 s con un fundido (`galeria.ts`). Las
+//   capturas del escritorio son recortes del área de contenido, sin la barra lateral: se dibuja la
+//   barra lateral de la app y el título de la pantalla, y la captura va arriba a su ancho natural;
+//   lo que sobra abajo es el fondo de la app (#16151a), nunca se estira. «Ritmo del mes» es el cajón
+//   de una categoría: va como cajón a la derecha, sobre Categorías atenuada.
+// - Dos iPhone al lado, montados un poco uno sobre otro. Sus capturas traen su propia barra de
+//   estado: el marco no dibuja la suya (`barraDeEstado={false}`), y su Dynamic Island queda encima
+//   de la de la captura, en el mismo lugar.
+// - En el celular, una fila que se desliza de lado con imán (scroll-snap), sin scroll de la página.
+//
+// Cada `<img>` lleva `alt` en español que dice qué pantalla es, sin cifras ni afirmaciones nuevas,
+// `width`/`height` leídos del archivo y carga perezosa. Los textos de las pestañas son los nombres
+// de las pantallas.
+import Portatil from '../momentos/Portatil.astro';
+import Telefono from '../momentos/Telefono.astro';
+import { dimensionesWebp } from '../../lib/dimensiones-webp.js';
+
+const img = (src: string) => {
+  const { ancho, alto } = dimensionesWebp(src);
+  return { src, width: ancho, height: alto };
+};
+
+const MENU = ['Inicio', 'Movimientos', 'Categorías', 'Cuentas', 'Análisis'];
+const escritorio = [
+  {
+    nombre: 'Inicio',
+    activo: 'Inicio',
+    captura: img('/capturas/escritorio-inicio.webp'),
+    alt: 'Inicio de Presu en el Mac: el veredicto del mes, lo que entró y salió, y tus topes por categoría',
+  },
+  {
+    nombre: 'Ritmo del mes',
+    activo: 'Categorías',
+    fondo: img('/capturas/escritorio-categorias.webp'),
+    titulo: 'Categorías',
+    captura: img('/capturas/escritorio-ritmo.webp'),
+    cajon: true,
+    alt: 'Una categoría de Presu en el Mac, con lo gastado día a día contra la línea para cerrar en tu tope',
+  },
+  {
+    nombre: 'Categorías',
+    activo: 'Categorías',
+    captura: img('/capturas/escritorio-categorias.webp'),
+    alt: 'Categorías de Presu en el Mac, cada una con lo que llevas y su tope',
+  },
+  {
+    nombre: 'Movimientos',
+    activo: 'Movimientos',
+    captura: img('/capturas/escritorio-movimientos.webp'),
+    alt: 'Movimientos de Presu en el Mac, con su comercio, su categoría y su cuenta',
+  },
+];
+const celular = [
+  {
+    nombre: 'Inicio',
+    captura: img('/capturas/celular-inicio.webp'),
+    alt: 'Inicio de Presu en el iPhone, con lo que llevas en el mes y los movimientos de hoy',
+  },
+  {
+    nombre: 'Lo que viene',
+    captura: img('/capturas/celular-lo-que-viene.webp'),
+    alt: 'Lo que viene en Presu para iPhone, con lo que se repite cada mes',
+  },
+];
+---
+
+<div class="galeria" data-galeria>
+  <div class="galeria__fila">
+    <figure class="pieza pieza--mac">
+      <Portatil ancho={860} decorativo={false}>
+        <div class="pantallas">
+          {
+            escritorio.map((p, i) => (
+              <div
+                class="pantalla-app"
+                id={`galeria-pantalla-${i}`}
+                role="tabpanel"
+                data-pantalla={i}
+                data-activa={i === 0 ? '' : undefined}
+                aria-hidden={i === 0 ? undefined : 'true'}
+              >
+                <aside class="lado" aria-hidden="true">
+                  <span class="marca-presu">presu</span>
+                  {MENU.map((m) => (
+                    <span class:list={['lado__item', m === p.activo && 'lado__item--activo']}>{m}</span>
+                  ))}
+                </aside>
+                <div class="contenido">
+                  <p class="contenido__titulo" aria-hidden="true">
+                    {p.titulo ?? p.nombre}
+                  </p>
+                  {p.cajon && p.fondo ? (
+                    <>
+                      <img class="captura captura--atenuada" {...p.fondo} alt="" loading="lazy" decoding="async" />
+                      <div class="cajon">
+                        <img class="captura" {...p.captura} alt={p.alt} loading="lazy" decoding="async" />
+                      </div>
+                    </>
+                  ) : (
+                    <img class="captura" {...p.captura} alt={p.alt} loading="lazy" decoding="async" />
+                  )}
+                </div>
+              </div>
+            ))
+          }
+        </div>
+      </Portatil>
+      <div class="pestanas" role="tablist" aria-label="Pantallas de Presu en el Mac">
+        {
+          escritorio.map((p, i) => (
+            <button
+              type="button"
+              class="pestana"
+              role="tab"
+              id={`galeria-pestana-${i}`}
+              aria-controls={`galeria-pantalla-${i}`}
+              aria-selected={i === 0 ? 'true' : 'false'}
+              data-pantalla-boton={i}
+            >
+              {p.nombre}
+            </button>
+          ))
+        }
+      </div>
+    </figure>
+
+    {
+      celular.map((p, i) => (
+        <figure class:list={['pieza', 'pieza--iphone', `pieza--iphone-${i}`]}>
+          <Telefono ancho={250} barraDeEstado={false} decorativo={false}>
+            <img {...p.captura} alt={p.alt} loading="lazy" decoding="async" />
+          </Telefono>
+          <figcaption class="pie">{p.nombre}</figcaption>
+        </figure>
+      ))
+    }
+  </div>
+</div>
+
+<script>
+  import './galeria';
+</script>
+
+<style>
+  .galeria {
+    position: relative;
+  }
+  .galeria__fila {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto;
+    align-items: end;
+  }
+  .pieza {
+    margin: 0;
+  }
+  .pieza--mac {
+    grid-column: 1;
+    grid-row: 1;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-8);
+    width: min(100% - 200px, 860px);
+  }
+  /* Los dos iPhone, montados sobre el borde derecho del MacBook, uno un poco detrás del otro. */
+  .pieza--iphone {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-3);
+    width: 250px;
+  }
+  .pieza--iphone-0 {
+    z-index: 3;
+    right: 120px;
+    bottom: 56px;
+  }
+  .pieza--iphone-1 {
+    z-index: 2;
+    right: 0;
+    bottom: 150px;
+  }
+  /* En el escritorio los iPhone van montados y su rótulo quedaría tapado: solo en la fila del celular. */
+  .pie {
+    display: none;
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    letter-spacing: var(--tracking-mono);
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+  }
+
+  /* ───────── Dentro de la pantalla del MacBook (1em = 1/64 de su ancho) ───────── */
+  .pantallas {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    background: #16151a;
+  }
+  .pantalla-app {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: 10.5em 1fr;
+    background: #16151a;
+    opacity: 0;
+    transition: opacity 0.7s ease;
+  }
+  .pantalla-app[data-activa] {
+    opacity: 1;
+  }
+  .lado {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25em;
+    padding: 1.6em 1em;
+    background: #111014;
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  .marca-presu {
+    position: relative;
+    isolation: isolate;
+    align-self: flex-start;
+    margin: 0 0 1em 0.5em;
+    font-family: var(--font-display);
+    font-weight: var(--weight-bold);
+    font-size: 1.7em;
+    letter-spacing: -0.04em;
+  }
+  .marca-presu::after {
+    content: '';
+    position: absolute;
+    left: -0.06em;
+    right: -0.08em;
+    bottom: 0.12em;
+    height: 0.2em;
+    border-radius: 999px;
+    background: var(--presu-emerald);
+    transform: rotate(-2deg);
+    z-index: -1;
+  }
+  .lado__item {
+    padding: 0.6em 0.8em;
+    border-radius: 0.7em;
+    font-size: 0.95em;
+    color: var(--text-secondary);
+  }
+  .lado__item--activo {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+  }
+  .contenido {
+    position: relative;
+    min-width: 0;
+    overflow: hidden;
+    padding: 1.5em 1.8em 0;
+  }
+  .contenido__titulo {
+    margin: 0 0 0.9em;
+    font-family: var(--font-display);
+    font-weight: var(--weight-bold);
+    font-size: 1.7em;
+    line-height: 1.1;
+  }
+  .captura {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .captura--atenuada {
+    opacity: 0.35;
+  }
+  .cajon {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 40%;
+    background: #16151a;
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: -2em 0 4em rgba(0, 0, 0, 0.55);
+  }
+
+  /* ───────── Las pestañas ───────── */
+  .pestanas {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-2);
+    padding: 4px;
+    border-radius: var(--radius-full);
+    background: var(--surface);
+    border: 1px solid var(--border);
+  }
+  .pestana {
+    position: relative;
+    min-height: 40px;
+    padding: 0 var(--space-4);
+    border: 0;
+    border-radius: var(--radius-full);
+    background: transparent;
+    font-family: var(--font-body);
+    font-size: var(--text-label);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition:
+      background var(--dur-fast) var(--ease-out),
+      color var(--dur-fast) var(--ease-out);
+  }
+  .pestana:hover {
+    color: var(--text-primary);
+  }
+  .pestana[aria-selected='true'] {
+    background: var(--surface-elevated);
+    color: var(--text-primary);
+  }
+  .pestana[aria-selected='true']::after {
+    content: '';
+    position: absolute;
+    left: 22%;
+    right: 22%;
+    bottom: 7px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--presu-emerald);
+  }
+  .pestana:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+  }
+
+  /* ───────── Pantallas medianas: los iPhone, más chicos ───────── */
+  @media (max-width: 1100px) {
+    .pieza--mac {
+      width: min(100% - 150px, 860px);
+    }
+    .pieza--iphone {
+      width: 200px;
+    }
+    .pieza--iphone-0 {
+      right: 90px;
+    }
+  }
+
+  /* ───────── El celular: una fila que se desliza de lado, con imán ───────── */
+  @media (max-width: 760px) {
+    .galeria {
+      margin: 0 calc(-1 * var(--screen-pad));
+    }
+    .galeria__fila {
+      display: flex;
+      align-items: center;
+      gap: var(--space-6);
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      padding: var(--space-6) var(--screen-pad) var(--space-8);
+      scrollbar-width: none;
+      overscroll-behavior-x: contain;
+    }
+    .galeria__fila::-webkit-scrollbar {
+      display: none;
+    }
+    .pieza {
+      flex: none;
+      scroll-snap-align: center;
+    }
+    .pieza--mac {
+      width: 88vw;
+      gap: var(--space-5);
+    }
+    .pestanas {
+      flex-wrap: nowrap;
+      gap: 0;
+    }
+    .pestana {
+      min-height: 36px;
+      padding: 0 var(--space-3);
+      font-size: var(--text-caption);
+      white-space: nowrap;
+    }
+    .pie {
+      display: block;
+    }
+    .pieza--iphone {
+      position: relative;
+      right: auto;
+      bottom: auto;
+      width: 62vw;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pantalla-app {
+      transition: none;
+    }
+  }
+</style>

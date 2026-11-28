@@ -5,8 +5,8 @@
  *   con `data-demo`. Cada monto visible adentro sale de `src/data/cifras-de-la-demo.json` o de
  *   `src/data/momentos.json`, que `scripts/actualizar-datos-de-la-demo.mjs` escribe juntos sobre la
  *   MISMA base. FUERA de esos paneles no hay ningún monto: una cifra suelta no tendría de dónde salir.
- * - No queda ningún hueco de captura (`.hueco-captura`), ni una `<img>` de las capturas viejas
- *   (`/capturas/`): los pantallazos se volvieron momentos.
+ * - No queda ningún hueco de captura (`.hueco-captura`). Las capturas reales (galería «Así se ve
+ *   Presu») son imágenes: sus cifras no son texto, y las vigila `capturas.test.js`.
  *
  * Se revisa el HTML CONSTRUIDO. Corre `npm run build` antes.
  */
@@ -82,11 +82,6 @@ describe('los montos de la portada salen de la demo', () => {
   it('no queda ningún hueco de captura: todos se volvieron una Captura', () => {
     const huecos = buscar(cargar(), (n) => clases(n).includes('hueco-captura'));
     expect(huecos.map((n) => atributo(n, 'data-captura'))).toEqual([]);
-  });
-
-  it('no queda ninguna captura vieja de /capturas/', () => {
-    const imgs = buscar(cargar(), (n) => n.nodeName === 'img' && (atributo(n, 'src') ?? '').startsWith('/capturas/'));
-    expect(imgs.map((n) => atributo(n, 'src'))).toEqual([]);
   });
 
   it('cada monto visible de los paneles está en cifras-de-la-demo.json', () => {

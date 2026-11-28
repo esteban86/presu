@@ -37,10 +37,11 @@ function cargar() {
 }
 
 describe('los marcos de los aparatos', () => {
-  it('dos iPhone y un MacBook, cada uno con sus piezas y fuera del lector de pantalla', () => {
+  it('en los momentos, dos iPhone y un MacBook, cada uno con sus piezas y fuera del lector de pantalla', () => {
     const { doc } = cargar();
-    const iphones = conClase(doc, 'iphone');
-    const macs = conClase(doc, 'mac');
+    const momentos = buscar(doc, (n) => atributo(n, 'data-momento') !== undefined);
+    const iphones = momentos.flatMap((m) => conClase(m, 'iphone'));
+    const macs = momentos.flatMap((m) => conClase(m, 'mac'));
     expect(iphones.length).toBe(2);
     expect(macs.length).toBe(1);
     for (const t of iphones) {
