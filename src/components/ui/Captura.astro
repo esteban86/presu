@@ -1,0 +1,98 @@
+---
+// Captura.astro — un pantallazo REAL de la app dentro de un marco de aparato hecho en CSS
+// (spec «presu.io que vende», §6.2: el marco en código, no una foto de stock).
+//
+// Las capturas salen de la app con la base de demostración (receta en el repo de la app:
+// docs/web/capturas.md) y viven en public/capturas/. `width` y `height` se leen del archivo,
+// así el navegador reserva el lugar antes de cargar. Solo la captura con `prioridad` carga de
+// una; las demás esperan a estar cerca de la vista (`loading="lazy"`).
+import { dimensionesWebp } from '../../lib/dimensiones-webp.js';
+
+export interface Props {
+  src: string;
+  alt: string;
+  aparato: 'mac' | 'iphone';
+  /** Ancho en px con que se dibuja (el alto sale de la proporción del archivo). */
+  ancho: number;
+  prioridad?: boolean;
+}
+
+const { src, alt, aparato, ancho, prioridad = false } = Astro.props;
+const { ancho: anchoReal, alto: altoReal } = dimensionesWebp(src);
+const alto = Math.round((ancho * altoReal) / anchoReal);
+---
+
+<figure class:list={['captura', `captura--${aparato}`]} style={`--captura-ancho:${ancho}px`}>
+  {
+    aparato === 'mac' && (
+      <div class="captura__barra" aria-hidden="true">
+        <>
+          <span />
+          <span />
+          <span />
+        </>
+      </div>
+    )
+  }
+  <img
+    class="captura__img"
+    src={src}
+    alt={alt}
+    width={ancho}
+    height={alto}
+    loading={prioridad ? 'eager' : 'lazy'}
+    fetchpriority={prioridad ? 'high' : undefined}
+    decoding="async"
+  />
+</figure>
+
+<style>
+  .captura {
+    margin: 0;
+    width: 100%;
+    max-width: var(--captura-ancho);
+    background: #0a0a0c;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.45);
+    overflow: hidden;
+  }
+  .captura__img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .captura--mac {
+    border-radius: 12px;
+  }
+  .captura__barra {
+    display: flex;
+    gap: 7px;
+    padding: 10px 12px;
+    background: #17171b;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+  .captura__barra span {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: #3a3a40;
+  }
+  .captura__barra span:nth-child(1) {
+    background: #ff5f57;
+  }
+  .captura__barra span:nth-child(2) {
+    background: #febc2e;
+  }
+  .captura__barra span:nth-child(3) {
+    background: #28c840;
+  }
+  .captura--iphone {
+    padding: 8px;
+    border-radius: 44px;
+    border: 2px solid #2a2a30;
+    background: #050506;
+  }
+  .captura--iphone .captura__img {
+    border-radius: 36px;
+  }
+</style>

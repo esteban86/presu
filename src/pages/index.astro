@@ -8,15 +8,18 @@
 // Toda frase que afirma algo de la app lleva `data-afirma` y vive primero en
 // `src/data/afirmaciones.json`, con la línea de la app que la prueba (CA4).
 //
-// Los pantallazos (Tarea 8) y el video (Tarea 9) todavía no existen: en su lugar van
-// huecos marcados (`.hueco-captura[data-captura]`, `.hueco-vsl`), que esas tareas
-// reemplazan por `Captura` y `Vsl`.
+// Los pantallazos son de la app real con la base de demostración (Tarea 8,
+// `public/capturas/`, dentro de `Captura`). El video (Tarea 9) todavía no existe: en su
+// lugar va un hueco marcado (`.hueco-vsl`), que esa tarea reemplaza por `Vsl`.
+// Los textos alternativos dicen qué pantalla es, sin cifras ni detalles: las capturas se
+// vuelven a tomar con los mismos nombres y lo que muestran puede cambiar.
 //
 // El markup del hero conserva el contrato de DOM de los scripts de la lista:
 // #hero-form + #hero-email + #hero-err + #hero-ok, #waitlist-form, .proof .count.
 import Base from '../layouts/Base.astro';
 import Section from '../components/ui/Section.astro';
 import FaqItem from '../components/ui/FaqItem.astro';
+import Captura from '../components/ui/Captura.astro';
 import homeJsonLd from '../data/home-jsonld.json';
 import afirmaciones from '../data/afirmaciones.json';
 
@@ -59,23 +62,24 @@ const verbos = [
     n: '1',
     titulo: 'Entra solo',
     afirma: ['entra-correo', 'entra-sms', 'entra-extracto'],
-    mac: { captura: 'escritorio-correo', rotulo: 'Mac · Tu correo trae los movimientos' },
-    iphone: { captura: 'iphone-revisar', rotulo: 'iPhone · Por revisar' },
+    // No hay pantallazo del correo: van los movimientos que entraron y lo que queda por revisar.
+    mac: { src: '/capturas/escritorio-movimientos.webp', alt: 'Movimientos de Presu en el Mac, con su comercio, su categoría y su monto' },
+    iphone: { src: '/capturas/celular-revisar.webp', alt: 'Por revisar de Presu en el iPhone, con un movimiento para confirmar' },
   },
   {
     n: '2',
     titulo: 'Se ordena solo',
     afirma: ['ordena-categorias', 'ordena-fijos', 'ordena-topes'],
-    mac: { captura: 'escritorio-inicio', rotulo: 'Mac · Inicio del mes' },
-    iphone: { captura: 'iphone-categoria', rotulo: 'iPhone · Una categoría' },
+    mac: { src: '/capturas/escritorio-inicio.webp', alt: 'Inicio de Presu en el Mac con lo que entró y salió en el mes y tus topes por categoría' },
+    iphone: { src: '/capturas/celular-inicio.webp', alt: 'Inicio de Presu en el iPhone con el gasto del mes y tus topes' },
   },
   {
     n: '3',
     titulo: 'Te dice cómo vas',
     afirma: ['vas-tope', 'vas-viene', 'vas-mes-pasado'],
-    mac: { captura: 'escritorio-ritmo', rotulo: 'Mac · Tu mes contra tu tope' },
+    mac: { src: '/capturas/escritorio-ritmo.webp', alt: 'Una categoría de Presu en el Mac, con lo gastado día a día contra su tope' },
     // «Lo que viene» solo está probado en el iPhone: se muestra con su pantallazo.
-    iphone: { captura: 'iphone-inicio', rotulo: 'iPhone · Inicio y lo que viene' },
+    iphone: { src: '/capturas/celular-lo-que-viene.webp', alt: 'Lo que viene en Presu para iPhone' },
   },
 ];
 
@@ -130,6 +134,7 @@ const jsonLd = {
         <span class="pill-badge"><span class="ping"></span> Lista de espera abierta</span>
         <h1>¿Llega fin de mes y no sabes en qué se te <span class="mark">fue la plata</span>?</h1>
         <p class="pitch" data-afirma="promesa">{t('promesa')}</p>
+        <p class="sub" data-afirma="llega-aparatos">{t('llega-aparatos')}</p>
 
         <form id="hero-form" class="capture" novalidate>
           <div class="capture-row">
@@ -205,15 +210,10 @@ const jsonLd = {
           </div>
           <div class="verbo__media">
             <div class="verbo__par">
-            <div class="hueco-captura hueco-captura--mac" data-captura={v.mac.captura} data-aparato="mac" role="img" aria-label={`Pantallazo pendiente: ${v.mac.rotulo}`}>
-              <span class="hueco-barra" aria-hidden="true"><i></i><i></i><i></i></span>
-              <span class="hueco-rotulo">{v.mac.rotulo}</span>
-              <span class="hueco-nota">Pantallazo de la app</span>
-            </div>
-            <div class="hueco-captura hueco-captura--iphone" data-captura={v.iphone.captura} data-aparato="iphone" role="img" aria-label={`Pantallazo pendiente: ${v.iphone.rotulo}`}>
-              <span class="hueco-isla" aria-hidden="true"></span>
-              <span class="hueco-rotulo">{v.iphone.rotulo}</span>
-            </div>
+              <Captura src={v.mac.src} alt={v.mac.alt} aparato="mac" ancho={720} />
+              <div class="verbo__iphone">
+                <Captura src={v.iphone.src} alt={v.iphone.alt} aparato="iphone" ancho={230} />
+              </div>
             </div>
           </div>
         </article>
@@ -251,10 +251,6 @@ const jsonLd = {
         <h2>Si la plata es <span class="mark">de la casa</span>, también.</h2>
         <p class="sec-lead" data-afirma="familia-texto">{t('familia-texto')}</p>
       </div>
-      <div class="hueco-captura hueco-captura--iphone hueco-captura--sola" data-captura="iphone-familia" data-aparato="iphone" role="img" aria-label="Pantallazo pendiente: iPhone · Familia">
-        <span class="hueco-isla" aria-hidden="true"></span>
-        <span class="hueco-rotulo">iPhone · Familia</span>
-      </div>
     </div>
   </Section>
 
@@ -290,7 +286,7 @@ const jsonLd = {
     <div class="cta-glow" aria-hidden="true"></div>
     <div class="sec-head reveal">
       <h2>Que el próximo fin de mes <span class="mark">no te tome</span> por sorpresa.</h2>
-      <p class="sec-lead" id="waitlist-lede"><span data-afirma="llega-aparatos">{t('llega-aparatos')}</span> Déjanos tu correo y te avisamos apenas abramos. Sin spam.</p>
+      <p class="sec-lead" id="waitlist-lede">Déjanos tu correo y te avisamos apenas abramos. Sin spam.</p>
       <div class="proof hidden" id="proof-wait">
         <span class="proof-dot" aria-hidden="true"></span><span class="avatars" aria-hidden="true"><i class="av"></i><i class="av"></i><i class="av"></i><i class="av"></i></span>
         <b class="count">—</b><span class="proof-txt">&nbsp;personas ya en la lista</span>
@@ -690,8 +686,7 @@ const jsonLd = {
   /* ───────── Huecos: pantallazos (Tarea 8) y video (Tarea 9) ─────────
      Un panel oscuro enmarcado con su rótulo, para que la página se vea terminada
      mientras llegan las piezas reales. Lo reemplazan `Captura` y `Vsl`. */
-  .hueco-vsl,
-  .hueco-captura {
+  .hueco-vsl {
     position: relative;
     z-index: 1;
     display: flex;
@@ -735,48 +730,6 @@ const jsonLd = {
   .hueco-nota {
     font-size: var(--text-caption);
     color: var(--text-tertiary);
-  }
-  .hueco-captura--mac {
-    width: 100%;
-    aspect-ratio: 16 / 10;
-    border-radius: var(--radius-lg);
-    padding-top: var(--space-10);
-  }
-  .hueco-barra {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    display: flex;
-    gap: 6px;
-    padding: 12px 14px;
-    border-bottom: 1px solid var(--border);
-  }
-  .hueco-barra i {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: var(--border);
-  }
-  .hueco-captura--iphone {
-    width: 34%;
-    max-width: 210px;
-    aspect-ratio: 9 / 19.5;
-    border-radius: 34px;
-    border-width: 6px;
-    border-color: var(--bg-raised);
-    outline: 1px solid var(--border);
-    padding: var(--space-4) var(--space-3);
-  }
-  .hueco-isla {
-    position: absolute;
-    top: 10px;
-    left: 50%;
-    width: 34%;
-    height: 14px;
-    transform: translateX(-50%);
-    border-radius: var(--radius-full);
-    background: var(--bg-base, #08080a);
   }
 
   /* ───────────────── Cabeceras de sección ───────────────── */
@@ -822,6 +775,9 @@ const jsonLd = {
   .verbo > * {
     min-width: 0;
   }
+  .verbo:nth-child(even) {
+    grid-template-columns: 1.2fr 0.8fr;
+  }
   .verbo:nth-child(even) .verbo__texto {
     order: 2;
   }
@@ -862,23 +818,18 @@ const jsonLd = {
     position: relative;
     padding-bottom: var(--space-8);
   }
-  /* El rótulo del Mac no queda debajo del iPhone que se le monta encima. */
-  .verbo__par .hueco-captura--mac {
-    padding-right: 36%;
-  }
-  .verbo__par .hueco-captura--iphone {
+  .verbo__iphone {
     position: absolute;
     right: -2%;
     bottom: 0;
     z-index: 2;
+    width: 30%;
+    max-width: 230px;
   }
 
   /* ───────────────── 5 · Familia ───────────────── */
   .familia {
-    display: grid;
-    grid-template-columns: 1.3fr 0.7fr;
-    gap: var(--space-10);
-    align-items: center;
+    max-width: 44rem;
   }
   .familia h2 {
     margin: 0;
@@ -889,11 +840,6 @@ const jsonLd = {
     letter-spacing: var(--tracking-tight);
     color: var(--text-primary);
     text-wrap: balance;
-  }
-  .hueco-captura--sola {
-    width: 100%;
-    max-width: 240px;
-    justify-self: center;
   }
 
   .card {
@@ -1398,6 +1344,9 @@ const jsonLd = {
     .hero-viz {
       order: 2;
     }
+    .verbo:nth-child(even) {
+      grid-template-columns: 1fr;
+    }
     .verbo:nth-child(even) .verbo__texto {
       order: 0;
     }
@@ -1422,9 +1371,15 @@ const jsonLd = {
     .verbos {
       gap: var(--space-16);
     }
-    .hueco-captura--iphone {
-      border-radius: 24px;
-      border-width: 4px;
+    /* En el celular el iPhone no tapa el Mac: va debajo, montado apenas en la esquina. */
+    .verbo__par {
+      padding-bottom: 0;
+    }
+    .verbo__iphone {
+      position: relative;
+      right: auto;
+      width: 58%;
+      margin: calc(-1 * var(--space-10)) 0 0 auto;
     }
     .hueco-rotulo {
       font-size: 0.62rem;
