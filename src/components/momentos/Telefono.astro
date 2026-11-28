@@ -1,0 +1,125 @@
+---
+// Telefono.astro — el iPhone de los momentos de la portada, hecho en CSS (sin imágenes).
+//
+// Dibuja el marco, la pantalla, la barra de estado y la barra de inicio; lo de adentro llega por el
+// `slot`. Dentro de `.lienzo`, 1em = 1/32 del ancho de la pantalla: todo el dibujo escala junto, sin
+// JavaScript. Para un lector de pantalla no existe (`aria-hidden`): el rótulo lo pone el momento.
+---
+
+<div class="telefono" aria-hidden="true">
+  <div class="pantalla">
+    <div class="lienzo">
+      <div class="barra-de-estado">
+        <span class="hora">9:41</span>
+        <span class="isla"></span>
+        <span class="estado-iconos">
+          <svg viewBox="0 0 18 12"
+            ><rect x="0" y="8" width="3" height="4" rx="1"></rect><rect x="5" y="5.5" width="3" height="6.5" rx="1"
+            ></rect><rect x="10" y="3" width="3" height="9" rx="1"></rect><rect x="15" y="0" width="3" height="12" rx="1"
+            ></rect></svg
+          >
+          <svg viewBox="0 0 27 12"
+            ><rect x="0.5" y="0.5" width="22" height="11" rx="3.2" fill="none" stroke="currentColor" opacity="0.45"
+            ></rect><rect x="2" y="2" width="17" height="8" rx="2"></rect><rect x="24" y="4" width="2" height="4" rx="1"
+              opacity="0.45"></rect></svg
+          >
+        </span>
+      </div>
+      <slot />
+      <span class="inicio-barra"></span>
+    </div>
+  </div>
+</div>
+
+<style>
+  .telefono {
+    position: relative;
+    width: min(100%, 360px);
+    aspect-ratio: 9 / 19.3;
+    padding: 11px;
+    border-radius: 56px;
+    background: linear-gradient(160deg, #2b2b31 0%, #0b0b0d 38%, #050506 70%, #1c1c21 100%);
+    box-shadow:
+      inset 0 0 0 1.5px rgba(255, 255, 255, 0.09),
+      inset 0 0 0 5px #050506,
+      0 50px 90px -30px rgba(0, 0, 0, 0.75),
+      0 0 0 1px rgba(255, 255, 255, 0.04),
+      0 30px 120px -40px rgba(52, 211, 153, 0.22);
+  }
+  .pantalla {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    border-radius: 45px;
+    background:
+      radial-gradient(120% 55% at 50% -8%, rgba(52, 211, 153, 0.13), transparent 60%),
+      #08080a;
+    container-type: size;
+  }
+  .lienzo {
+    position: absolute;
+    inset: 0;
+    font-size: 10px;
+    font-size: 3.125cqi;
+    font-family: var(--font-body);
+    color: var(--text-primary);
+  }
+  .barra-de-estado {
+    position: absolute;
+    top: 1.55em;
+    left: 0;
+    right: 0;
+    height: 2.8em;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2.6em 0 3.3em;
+  }
+  .hora {
+    font-weight: var(--weight-semibold);
+    font-size: 1.5em;
+    letter-spacing: -0.01em;
+  }
+  .isla {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: 9.8em;
+    height: 2.9em;
+    transform: translateX(-50%);
+    border-radius: 2em;
+    background: #000;
+  }
+  .estado-iconos {
+    display: flex;
+    gap: 0.6em;
+    align-items: center;
+  }
+  .estado-iconos svg {
+    fill: currentColor;
+    height: 1.15em;
+    width: auto;
+  }
+  .inicio-barra {
+    position: absolute;
+    z-index: 5;
+    left: 50%;
+    bottom: 0.9em;
+    width: 12.5em;
+    height: 0.5em;
+    border-radius: 1em;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.55);
+  }
+  @media (max-width: 640px) {
+    .telefono {
+      width: min(84vw, 318px);
+      padding: 10px;
+      border-radius: 50px;
+    }
+    .pantalla {
+      border-radius: 40px;
+    }
+  }
+</style>

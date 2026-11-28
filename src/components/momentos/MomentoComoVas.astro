@@ -1,0 +1,761 @@
+---
+// MomentoComoVas.astro — el momento «Te dice cómo vas» de la portada (#39): el Inicio del escritorio
+// en una ventana de Mac hecha en CSS, con una sola escena que se repite cada 10 s:
+//   1. aparece el veredicto del mes, con las palabras del escritorio (`buildVerdict`), y el marcador
+//      de Presu subraya la cifra de lo que te queda;
+//   2. las donas de tus topes se llenan hasta su porcentaje, con la muesca de dónde irías hoy;
+//   3. se dibuja la línea «para cerrar en tu tope» y, sobre ella, lo que llevas hasta hoy.
+//
+// Nada se escribe a mano: el veredicto, las donas (con la forma canónica del núcleo,
+// `formaDeLaDona`) y las dos curvas salen de `momentos.json` → `ritmo`, y los topes de
+// `cifras-de-la-demo.json`. Los dos se escriben juntos con `scripts/actualizar-datos-de-la-demo.mjs`.
+// 🔴 Con tope, la curva es «para cerrar en tu tope», nunca «sueles llevar» (AGENTS.md).
+//
+// Accesibilidad y movimiento: como los otros momentos (ver `correr-a-la-vista.ts`). Un solo
+// `role="img"`; sin JavaScript o con «reducir movimiento», el cuadro final quieto; solo se animan
+// `opacity`, `transform` y el recorte (`clip-path`, `mask`) de piezas de tamaño fijo: no corre nada.
+import momentos from '../../data/momentos.json';
+import cifras from '../../data/cifras-de-la-demo.json';
+import { formatCOPCompact } from '../../lib/format.js';
+
+const r = momentos.ritmo;
+if (momentos.mes !== cifras.mes) throw new Error('momentos.json y cifras-de-la-demo.json son de meses distintos');
+const sumaTopes = cifras.topes.reduce((s, t) => s + t.tope, 0);
+const sumaGastado = cifras.topes.reduce((s, t) => s + t.gastado, 0);
+if (r.tope !== sumaTopes || r.gastado !== sumaGastado) throw new Error('el ritmo no es el de las cifras de la demo');
+
+const pesos = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 });
+const cop = (n: number): string => pesos.format(n);
+const pctTotal = Math.round((sumaGastado / sumaTopes) * 100);
+
+// La gráfica: x = día del mes, y = plata acumulada. viewBox de 600 × 170, con aire arriba para el tope.
+const W = 600;
+const H = 170;
+const techo = sumaTopes * 1.12;
+const x = (dia: number) => (dia / r.diasDelMes) * W;
+const y = (plata: number) => H - (plata / techo) * H;
+const trazo = (puntos: [number, number][]) =>
+  puntos.map(([d, v], i) => `${i ? 'L' : 'M'}${x(d).toFixed(1)} ${y(v).toFixed(1)}`).join(' ');
+const lineaReal = trazo([[0, 0], ...r.lleva.map((v, i): [number, number] => [i + 1, v])]);
+const lineaParaCerrar = trazo([[0, 0], ...r.paraCerrarEnTuTope.map((v, i): [number, number] => [i + 1, v])]);
+const yTope = y(sumaTopes);
+const hoyX = (r.dia / r.diasDelMes) * 100;
+const hoyY = (y(r.lleva[r.lleva.length - 1]) / H) * 100;
+
+// Una dona: cada tramo de `formaDeLaDona` es un arco (pathLength = 100), y la muesca, una rayita.
+const COLOR_DEL_TRAMO: Record<string, string> = {
+  hecho: 'var(--presu-emerald)',
+  falta: 'rgba(52, 211, 153, 0.3)',
+  adelantado: 'var(--color-warning)',
+  pasado: 'var(--color-negative)',
+  vuelta: 'var(--color-negative)',
+};
+const N = r.donas.length;
+const ROTULO =
+  `Una escena de Presu en el Mac. Arriba, el veredicto del mes: ` +
+  `${r.veredicto.segmentos.map((s) => s.text).join('')} ` +
+  `Las donas de tus ${N} topes se llenan: ` +
+  r.donas.map((d) => `${d.categoria} ${d.pct} %`).join(', ') +
+  `. Abajo, lo que llevas en el mes contra la línea para cerrar en tu tope.`;
+
+// Las donas se llenan una tras otra: cada una adelanta su ciclo un poco (ver el CSS).
+const estiloDona = (i: number) => `--adelanto:${-(N - 1 - i) * 0.12}s`;
+---
+
+<div class="momento" data-momento="como-vas" data-demo role="img" aria-label={ROTULO}>
+  <div class="ventana" aria-hidden="true">
+    <div class="barra">
+      <span class="luz luz--roja"></span><span class="luz luz--ambar"></span><span class="luz luz--verde"></span>
+      <span class="barra__titulo">Presu</span>
+    </div>
+    <div class="lienzo">
+      <aside class="lado">
+        <span class="marca-presu">presu</span>
+        <span class="lado__item lado__item--activo">Inicio</span>
+        <span class="lado__item">Movimientos</span>
+        <span class="lado__item">Categorías</span>
+        <span class="lado__item">Cuentas</span>
+        <span class="lado__item">Análisis</span>
+      </aside>
+
+      <div class="app">
+        <p class="titulo">Inicio</p>
+
+        <div class="veredicto">
+          <p class="veredicto__estado"><span class="punto"></span>{r.veredicto.estado}</p>
+          <p class="veredicto__frase">
+            {
+              r.veredicto.segmentos.map((s) =>
+                s.accent ? (
+                  <span class="cifra">
+                    <span class="marca cifra__marca" />
+                    <span class="cifra__texto">{s.text}</span>
+                  </span>
+                ) : (
+                  <span>{s.text}</span>
+                ),
+              )
+            }
+          </p>
+        </div>
+
+        <div class="tarjeta">
+          <div class="tarjeta__cabeza">
+            <span class="tarjeta__titulo">Presupuestos del mes</span>
+            <span class="tarjeta__total">{cop(sumaGastado)} / {cop(sumaTopes)} <b>{pctTotal}%</b></span>
+          </div>
+          <div class="donas">
+            {
+              r.donas.map((d, i) => (
+                <div class="dona" style={estiloDona(i)}>
+                  <span class="dona__aro">
+                  <svg viewBox="0 0 44 44" class="dona__svg">
+                    <circle cx="22" cy="22" r="17" class="dona__pista" pathLength="100" />
+                  </svg>
+                  <span class="dona__arcos">
+                  <svg viewBox="0 0 44 44" class="dona__svg">
+                      {d.tramos.map((t) => (
+                        <circle
+                          cx="22"
+                          cy="22"
+                          r="17"
+                          pathLength="100"
+                          stroke={COLOR_DEL_TRAMO[t.tipo] ?? 'var(--presu-emerald)'}
+                          stroke-dasharray={`${((t.hasta - t.desde) * 100).toFixed(2)} 100`}
+                          stroke-dashoffset={(-t.desde * 100).toFixed(2)}
+                        />
+                      ))}
+                  </svg>
+                  </span>
+                  {d.muesca != null && (
+                    <svg viewBox="0 0 44 44" class="dona__svg dona__muesca">
+                      <line x1="35.6" y1="22" x2="42.4" y2="22" transform={`rotate(${(d.muesca * 360).toFixed(1)} 22 22)`} />
+                    </svg>
+                  )}
+                  <span class="dona__pct">{d.pct}%</span>
+                  </span>
+                  <span class="dona__nombre">{d.categoria}</span>
+                  <span class="dona__queda">{formatCOPCompact(d.tope - d.gastado)}</span>
+                </div>
+              ))
+            }
+          </div>
+          <div class="leyenda-donas">
+            <span><i class="ley ley--ambar"></i>lo que vas por encima</span>
+            <span><i class="ley ley--muesca"></i>dónde deberías ir hoy</span>
+          </div>
+        </div>
+
+        <div class="tarjeta tarjeta--ritmo">
+          <div class="tarjeta__cabeza">
+            <span class="tarjeta__titulo">Ritmo del mes</span>
+            <span class="leyenda">
+              <span><i class="ley ley--real"></i>Real</span>
+              <span><i class="ley ley--punteada"></i>Para cerrar en tu tope</span>
+            </span>
+          </div>
+          <div class="grafica">
+            <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" class="grafica__svg">
+              <line x1="0" x2={W} y1={yTope} y2={yTope} class="grafica__tope" />
+              <line x1="0" x2={W} y1={H} y2={H} class="grafica__base" />
+              <g class="grafica__para-cerrar"><path d={lineaParaCerrar} /></g>
+              <g class="grafica__real"><path d={lineaReal} /></g>
+            </svg>
+            <span class="grafica__plano">
+              <span class="grafica__rotulo-tope" style={`top:${((yTope / H) * 100).toFixed(1)}%`}
+                >Tu tope {formatCOPCompact(sumaTopes)}</span
+              >
+              <span class="grafica__hoy" style={`left:${hoyX.toFixed(1)}%;top:${hoyY.toFixed(1)}%`}></span>
+            </span>
+            <span class="grafica__eje">
+              <span>1</span><span class="grafica__eje-hoy" style={`left:${hoyX.toFixed(1)}%`}>HOY</span><span
+                >{r.diasDelMes}</span
+              >
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  import './correr-a-la-vista';
+</script>
+
+<style>
+  @property --lleno {
+    syntax: '<percentage>';
+    inherits: false;
+    initial-value: 100%;
+  }
+
+  .momento {
+    --ciclo: 10s;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+  }
+
+  /* ───────── La ventana ───────── */
+  .ventana {
+    width: 100%;
+    max-width: 760px;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #0b0b0e;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow:
+      0 50px 100px -40px rgba(0, 0, 0, 0.8),
+      0 30px 120px -50px rgba(52, 211, 153, 0.2);
+    container-type: inline-size;
+  }
+  .barra {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    height: 34px;
+    padding: 0 13px;
+    background: #17171b;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+  .luz {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+  }
+  .luz--roja {
+    background: #ff5f57;
+  }
+  .luz--ambar {
+    background: #febc2e;
+  }
+  .luz--verde {
+    background: #28c840;
+  }
+  .barra__titulo {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--font-body);
+    font-size: 12px;
+    color: var(--text-tertiary);
+  }
+
+  /* 1em = 1/72 del ancho de la ventana: todo escala junto. En una ventana angosta, más grande y sin la barra lateral. */
+  .lienzo {
+    display: grid;
+    grid-template-columns: 14em 1fr;
+    font-size: 10px;
+    font-size: calc(100cqi / 72);
+    font-family: var(--font-body);
+    color: var(--text-primary);
+  }
+  .lado {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+    padding: 2.2em 1.4em;
+    background: #0e0e12;
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  .marca-presu {
+    position: relative;
+    isolation: isolate;
+    align-self: flex-start;
+    margin: 0 0 1.6em 0.6em;
+    font-family: var(--font-display);
+    font-weight: var(--weight-bold);
+    font-size: 2.2em;
+    letter-spacing: -0.04em;
+  }
+  .marca-presu::after {
+    content: '';
+    position: absolute;
+    left: -0.06em;
+    right: -0.08em;
+    bottom: 0.12em;
+    height: 0.2em;
+    border-radius: 999px;
+    background: var(--presu-emerald);
+    transform: rotate(-2deg);
+    z-index: -1;
+  }
+  .lado__item {
+    padding: 0.75em 0.9em;
+    border-radius: 0.8em;
+    font-size: 1.3em;
+    color: var(--text-secondary);
+  }
+  .lado__item--activo {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+  }
+  .app {
+    min-width: 0;
+    padding: 2.4em 2.8em 2.8em;
+    display: flex;
+    flex-direction: column;
+    gap: 1.6em;
+  }
+  .titulo {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: var(--weight-bold);
+    font-size: 2.3em;
+  }
+
+  .veredicto {
+    padding: 1.8em 2.2em;
+    border-radius: 2.2em;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: linear-gradient(100deg, rgba(52, 211, 153, 0.14), rgba(255, 255, 255, 0.03) 45%);
+  }
+  .veredicto__estado {
+    display: flex;
+    align-items: center;
+    gap: 0.7em;
+    margin: 0 0 0.8em;
+    font-family: var(--font-mono);
+    font-size: 1.1em;
+    letter-spacing: 0.16em;
+    color: var(--presu-emerald);
+  }
+  .punto {
+    width: 0.7em;
+    height: 0.7em;
+    border-radius: 50%;
+    background: var(--presu-emerald);
+  }
+  .veredicto__frase {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: var(--weight-semibold);
+    font-size: 2.15em;
+    line-height: 1.3;
+    letter-spacing: -0.015em;
+  }
+  .cifra {
+    position: relative;
+    isolation: isolate;
+    white-space: nowrap;
+    color: var(--presu-emerald);
+  }
+  .cifra__texto {
+    position: relative;
+    z-index: 1;
+  }
+  .marca {
+    position: absolute;
+    border-radius: 999px;
+    background: var(--presu-emerald);
+    transform-origin: left center;
+  }
+  .cifra__marca {
+    z-index: 0;
+    left: -0.04em;
+    right: -0.06em;
+    bottom: -0.08em;
+    height: 0.16em;
+    transform: rotate(-1.2deg);
+  }
+
+  .tarjeta {
+    padding: 1.7em 2em 1.8em;
+    border-radius: 1.8em;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    background: rgba(255, 255, 255, 0.02);
+  }
+  .tarjeta__cabeza {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1em;
+    margin-bottom: 1.4em;
+  }
+  .tarjeta__titulo {
+    font-weight: var(--weight-semibold);
+    font-size: 1.45em;
+  }
+  .tarjeta__total {
+    font-family: var(--font-mono);
+    font-size: 1.15em;
+    color: var(--text-secondary);
+    white-space: nowrap;
+  }
+  .tarjeta__total b {
+    font-weight: var(--weight-medium);
+    color: var(--presu-emerald);
+  }
+
+  .donas {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 1em;
+  }
+  .dona {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3em;
+    min-width: 0;
+  }
+  .dona__aro {
+    position: relative;
+    width: 7.4em;
+    height: 7.4em;
+  }
+  .dona__arcos {
+    position: absolute;
+    inset: 0;
+  }
+  .dona__svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+    overflow: visible;
+  }
+  .dona__svg circle {
+    fill: none;
+    stroke-width: 4.6;
+  }
+  .dona__pista {
+    stroke: rgba(255, 255, 255, 0.07);
+  }
+  /* El llenado es una máscara cónica sobre los arcos (que ya tienen su forma final): empieza arriba y gira. */
+  .dona__arcos {
+    -webkit-mask: conic-gradient(#000 var(--lleno), transparent 0);
+    mask: conic-gradient(#000 var(--lleno), transparent 0);
+  }
+  .dona__muesca line {
+    stroke: #f4f4f3;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+  }
+  .dona__pct {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    font-family: var(--font-display);
+    font-weight: var(--weight-semibold);
+    font-size: 1.3em;
+  }
+  .dona__nombre {
+    margin-top: 0.5em;
+    font-size: 1.15em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+  .dona__queda {
+    font-family: var(--font-mono);
+    font-size: 1em;
+    color: var(--text-tertiary);
+  }
+  .leyenda-donas,
+  .leyenda {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6em 1.6em;
+    font-size: 1.1em;
+    color: var(--text-secondary);
+  }
+  .leyenda-donas {
+    margin-top: 1.4em;
+  }
+  .leyenda span,
+  .leyenda-donas span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+  }
+  .ley {
+    display: inline-block;
+  }
+  .ley--ambar {
+    width: 0.7em;
+    height: 0.7em;
+    border-radius: 50%;
+    background: var(--color-warning);
+  }
+  .ley--muesca {
+    width: 0.15em;
+    height: 1em;
+    background: #f4f4f3;
+  }
+  .ley--real {
+    width: 1.6em;
+    height: 0.22em;
+    border-radius: 1em;
+    background: var(--presu-emerald);
+  }
+  .ley--punteada {
+    width: 1.6em;
+    height: 0;
+    border-top: 0.2em dashed rgba(244, 244, 243, 0.55);
+  }
+
+  .grafica {
+    position: relative;
+    height: 15em;
+    margin-top: 0.4em;
+  }
+  .grafica__svg {
+    position: absolute;
+    inset: 0 0 2em 0;
+    width: 100%;
+    height: calc(100% - 2em);
+    overflow: visible;
+  }
+  .grafica__svg path,
+  .grafica__svg line {
+    fill: none;
+    vector-effect: non-scaling-stroke;
+  }
+  .grafica__tope {
+    stroke: var(--color-negative);
+    stroke-width: 1.2;
+    stroke-dasharray: 5 5;
+    opacity: 0.7;
+  }
+  .grafica__base {
+    stroke: rgba(255, 255, 255, 0.1);
+    stroke-width: 1;
+  }
+  .grafica__para-cerrar path {
+    stroke: rgba(244, 244, 243, 0.5);
+    stroke-width: 1.6;
+    stroke-dasharray: 6 5;
+  }
+  .grafica__real path {
+    stroke: var(--presu-emerald);
+    stroke-width: 2.6;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+  }
+  .grafica__rotulo-tope {
+    position: absolute;
+    right: 0;
+    transform: translateY(-130%);
+    font-family: var(--font-mono);
+    font-size: 1.05em;
+    color: var(--color-negative);
+    opacity: 0.85;
+  }
+  .grafica__plano {
+    position: absolute;
+    inset: 0 0 2em 0;
+  }
+  .grafica__hoy {
+    position: absolute;
+    width: 1.1em;
+    height: 1.1em;
+    margin: -0.55em 0 0 -0.55em;
+    border-radius: 50%;
+    background: var(--presu-emerald);
+    box-shadow: 0 0 0 0.35em rgba(52, 211, 153, 0.25);
+  }
+  .grafica__eje {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1.4em;
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--font-mono);
+    font-size: 1em;
+    color: var(--text-tertiary);
+  }
+  .grafica__eje-hoy {
+    position: absolute;
+    transform: translateX(-50%);
+    color: var(--text-secondary);
+  }
+
+  /* ───────── Ventana angosta (el celular) ───────── */
+  @container (max-width: 520px) {
+    .lienzo {
+      grid-template-columns: 1fr;
+      font-size: calc(100cqi / 40);
+    }
+    .lado {
+      display: none;
+    }
+    .app {
+      padding: 1.8em 1.8em 2em;
+    }
+    .donas {
+      grid-template-columns: repeat(3, 1fr);
+      row-gap: 1.6em;
+    }
+    .tarjeta__cabeza {
+      flex-direction: column;
+      gap: 0.5em;
+    }
+    .veredicto__frase {
+      font-size: 1.95em;
+    }
+  }
+
+  /* ───────── La escena, en el tiempo ───────── */
+  .momento.animada .app {
+    animation: m2-app var(--ciclo) linear infinite both;
+  }
+  .momento.animada .veredicto {
+    animation: m2-veredicto var(--ciclo) linear infinite both;
+  }
+  .momento.animada .cifra__marca {
+    animation: m2-marca var(--ciclo) linear infinite both;
+  }
+  .momento.animada .dona__arcos {
+    animation: m2-llena var(--ciclo) linear infinite both;
+    animation-delay: var(--adelanto);
+  }
+  .momento.animada .dona__pct {
+    animation: m2-pct var(--ciclo) linear infinite both;
+    animation-delay: var(--adelanto);
+  }
+  .momento.animada .dona__muesca {
+    animation: m2-muesca var(--ciclo) linear infinite both;
+    animation-delay: var(--adelanto);
+  }
+  .momento.animada .grafica__para-cerrar {
+    animation: m2-dibuja-punteada var(--ciclo) linear infinite both;
+  }
+  .momento.animada .grafica__real {
+    animation: m2-dibuja-real var(--ciclo) linear infinite both;
+  }
+  .momento.animada .grafica__hoy,
+  .momento.animada .grafica__eje-hoy {
+    animation: m2-hoy var(--ciclo) linear infinite both;
+  }
+  .momento.animada * {
+    animation-play-state: paused;
+  }
+  .momento.animada.corre * {
+    animation-play-state: running;
+  }
+
+  /* Las donas adelantan su ciclo hasta 0,6 s (`--adelanto`): su vuelta a cero cae entre el 94 % y
+     el 100 %, siempre con la pantalla fundida (`m2-app`). 0,4 s veredicto · 1,5 s marcador ·
+     2,2–3,4 s donas · 4,4 s punteada · 5,4 s lo que llevas · 6,8 s hoy · 8,8 s se funde. */
+  @keyframes m2-app {
+    0% {
+      opacity: 0;
+      animation-timing-function: ease-out;
+    }
+    4%,
+    88% {
+      opacity: 1;
+      animation-timing-function: ease-in;
+    }
+    92%,
+    100% {
+      opacity: 0;
+    }
+  }
+  @keyframes m2-veredicto {
+    0%,
+    4% {
+      opacity: 0;
+      transform: translateY(0.8em);
+      animation-timing-function: cubic-bezier(0.2, 0.85, 0.25, 1);
+    }
+    11%,
+    100% {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes m2-marca {
+    0%,
+    13% {
+      transform: rotate(-1.2deg) scaleX(0);
+      animation-timing-function: cubic-bezier(0.3, 0.7, 0.2, 1);
+    }
+    19%,
+    100% {
+      transform: rotate(-1.2deg) scaleX(1);
+    }
+  }
+  @keyframes m2-llena {
+    0%,
+    22% {
+      --lleno: 0%;
+      animation-timing-function: cubic-bezier(0.3, 0.6, 0.2, 1);
+    }
+    34%,
+    100% {
+      --lleno: 100%;
+    }
+  }
+  @keyframes m2-pct {
+    0%,
+    27% {
+      opacity: 0;
+    }
+    33%,
+    100% {
+      opacity: 1;
+    }
+  }
+  @keyframes m2-muesca {
+    0%,
+    33% {
+      opacity: 0;
+    }
+    37%,
+    100% {
+      opacity: 1;
+    }
+  }
+  @keyframes m2-dibuja-punteada {
+    0%,
+    42% {
+      clip-path: inset(-10% 100% -10% 0);
+      animation-timing-function: cubic-bezier(0.45, 0, 0.3, 1);
+    }
+    54%,
+    100% {
+      clip-path: inset(-10% 0 -10% 0);
+    }
+  }
+  @keyframes m2-dibuja-real {
+    0%,
+    52% {
+      clip-path: inset(-10% 100% -10% 0);
+      animation-timing-function: cubic-bezier(0.45, 0, 0.3, 1);
+    }
+    67%,
+    100% {
+      clip-path: inset(-10% 0 -10% 0);
+    }
+  }
+  @keyframes m2-hoy {
+    0%,
+    66% {
+      opacity: 0;
+      scale: 0.4;
+      animation-timing-function: cubic-bezier(0.3, 1.5, 0.5, 1);
+    }
+    70%,
+    100% {
+      opacity: 1;
+      scale: 1;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .momento *,
+    .momento.animada * {
+      animation: none !important;
+    }
+  }
+</style>

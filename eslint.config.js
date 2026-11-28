@@ -51,7 +51,7 @@ export default [
   },
   {
     // Config/tooling en Node.
-    files: ['*.mjs', '*.config.js', '*.config.mjs', 'eslint.config.js'],
+    files: ['*.mjs', 'scripts/**/*.mjs', '*.config.js', '*.config.mjs', 'eslint.config.js'],
     languageOptions: { ecmaVersion: 2024, sourceType: 'module', globals: { ...globals.node } },
     rules: relaxed,
   },

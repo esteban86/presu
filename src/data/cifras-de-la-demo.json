@@ -1,37 +1,38 @@
 {
   "mes": "2026-11",
+  "hoy": "2026-11-27",
   "ingresos": 5500000,
-  "gastos": 4838500,
-  "balance": 661500,
+  "gastos": 4853900,
+  "balance": 646100,
   "topes": [
     {
       "categoria": "Mercado",
-      "gastado": 1003100,
-      "tope": 1000000
+      "gastado": 1018600,
+      "tope": 1200000
     },
     {
       "categoria": "Restaurantes",
-      "gastado": 492900,
-      "tope": 450000
-    },
-    {
-      "categoria": "Transporte",
-      "gastado": 591100,
+      "gastado": 482000,
       "tope": 600000
     },
     {
+      "categoria": "Transporte",
+      "gastado": 603900,
+      "tope": 650000
+    },
+    {
       "categoria": "Café y antojos",
-      "gastado": 212300,
-      "tope": 200000
+      "gastado": 213400,
+      "tope": 260000
     },
     {
       "categoria": "Entretenimiento",
-      "gastado": 162800,
+      "gastado": 163800,
       "tope": 250000
     },
     {
       "categoria": "Ropa y hogar",
-      "gastado": 138800,
+      "gastado": 164100,
       "tope": 300000
     }
   ]

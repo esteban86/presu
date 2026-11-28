@@ -13,14 +13,8 @@
 // - El movimiento que llega y los de la lista salen de `src/data/momentos.json`.
 // - El total del mes es `gastos` de `src/data/cifras-de-la-demo.json`; el de antes, ese menos el
 //   movimiento que llega. Los dos JSON salen de la MISMA base de demostración.
-// Receta de `momentos.json` (en el repo de la app, sobre el commit que escribió las cifras):
-// copiar `packages/core/src/demo/base-de-demostracion.ts` a una carpeta aparte, cambiar su import
-// de `CATEGORIA_DEL_ENLACE` por una constante, y con Node 24 (corre TypeScript sin compilar) llamar
-// `baseDeDemostracion(mes)`: `llega` es un gasto (`real_expense`) del último día con movimientos
-// pagado con la Tarjeta Cóndor; `hoyAntes`, los otros gastos de ese día; `ayer`, tres del día
-// anterior con categorías distintas. Cada fila lleva `comercio`, `categoria`, `color` (el de la
-// categoría en la demo), `cuenta`, `banco` y `monto`. La prueba `momento-entra-solo.test.js`
-// comprueba que todo cuadre con cifras-de-la-demo.json.
+// Los dos JSON se escriben juntos con `scripts/actualizar-datos-de-la-demo.mjs` (ver su cabecera).
+// La prueba `momento-entra-solo.test.js` comprueba que todo cuadre con cifras-de-la-demo.json.
 //
 // Accesibilidad y movimiento:
 // - Para un lector de pantalla es UNA imagen (`role="img"`) con su rótulo; lo de adentro no se lee.
@@ -29,6 +23,7 @@
 // - Corre solo mientras está a la vista (IntersectionObserver) y se pausa al salir.
 // - Todo se mueve con `transform` y `opacity` dentro de un marco de tamaño fijo: no corre nada de
 //   la página (sin layout shift).
+import Telefono from './Telefono.astro';
 import momentos from '../../data/momentos.json';
 import cifras from '../../data/cifras-de-la-demo.json';
 
@@ -50,7 +45,8 @@ const [anio, mesNum] = momentos.mes.split('-').map(Number);
 const nombreDelMes = new Intl.DateTimeFormat('es-CO', { month: 'long', timeZone: 'UTC' }).format(
   new Date(Date.UTC(anio, mesNum - 1, 1)),
 );
-const diaDeHoy = Number(momentos.hoy.slice(8, 10));
+// El día de la escena: el último con un gasto de Banco Andino hasta `hoy` (ver el generador).
+const diaDeHoy = Number(momentos.diaDeLaEscena.slice(8, 10));
 const fechaCorta = `${diaDeHoy} de ${nombreDelMes.slice(0, 3)}.`;
 
 // El dibujo de cada categoría: es presentación, no dato. Una categoría sin dibujo lleva su inicial.
@@ -70,34 +66,17 @@ const inicial = (texto: string): string => texto.trim().charAt(0).toUpperCase();
 
 const ROTULO =
   `Una escena de Presu en el iPhone. Llega un aviso de ${llega.banco}: una compra de ${cop(llega.monto)} ` +
-  `en ${llega.comercio.toLowerCase()} con la ${llega.cuenta}. El marcador de Presu subraya el monto y el ` +
+  `en ${llega.comercio.toLowerCase()}, de la cuenta ${llega.cuenta}. El marcador de Presu subraya el monto y el ` +
   `comercio, y el aviso se vuelve un movimiento de hoy, ya en la categoría ${llega.categoria}. ` +
   `El total del mes pasa a ${cop(totalDespues)}. No tuviste que escribir nada.`;
 
+const conQue =
+  llega.tipoDeCuenta === 'credit_card' ? ` con tu ${llega.cuenta}.` : ' desde tu cuenta de ahorros.';
 const filaEstilo = (f: Fila) => `--c:${f.color}`;
 ---
 
 <div class="momento" data-momento="entra-solo" data-demo role="img" aria-label={ROTULO}>
-  <div class="telefono" aria-hidden="true">
-    <div class="pantalla">
-      <div class="lienzo">
-        <div class="barra-de-estado">
-          <span class="hora">9:41</span>
-          <span class="isla"></span>
-          <span class="estado-iconos">
-            <svg viewBox="0 0 18 12" class="senal"
-              ><rect x="0" y="8" width="3" height="4" rx="1"></rect><rect x="5" y="5.5" width="3" height="6.5" rx="1"
-              ></rect><rect x="10" y="3" width="3" height="9" rx="1"></rect><rect x="15" y="0" width="3" height="12" rx="1"
-              ></rect></svg
-            >
-            <svg viewBox="0 0 27 12" class="bateria"
-              ><rect x="0.5" y="0.5" width="22" height="11" rx="3.2" fill="none" stroke="currentColor" opacity="0.45"
-              ></rect><rect x="2" y="2" width="17" height="8" rx="2"></rect><rect x="24" y="4" width="2" height="4" rx="1"
-                opacity="0.45"></rect></svg
-            >
-          </span>
-        </div>
-
+  <Telefono>
         <div class="app">
           <p class="mes">{nombreDelMes}</p>
           <p class="rotulo">Este mes llevas</p>
@@ -198,45 +177,17 @@ const filaEstilo = (f: Fila) => `--c:${f.color}`;
                 ><span class="marca aviso__marca-comercio"></span><span class="marcado__texto"
                   >{llega.comercio.toUpperCase()}</span
                 ></span
-              ><span class="aviso__resto"> con tu {llega.cuenta}.</span>
+              ><span class="aviso__resto">{conQue}</span>
             </span>
           </span>
         </div>
 
         <span class="velo"></span>
-        <span class="inicio-barra"></span>
-      </div>
-    </div>
-  </div>
+  </Telefono>
 </div>
 
 <script>
-  // Corre solo con movimiento permitido y mientras se ve. Sin este script (o con «reducir
-  // movimiento») queda el cuadro final, quieto.
-  const reducir = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const piezas = Array.from(document.querySelectorAll<HTMLElement>('[data-momento]'));
-
-  function preparar(): void {
-    for (const el of piezas) {
-      if (reducir.matches || !('IntersectionObserver' in window)) {
-        el.classList.remove('animada', 'corre');
-        continue;
-      }
-      el.classList.add('animada');
-    }
-  }
-
-  if ('IntersectionObserver' in window) {
-    const io = new IntersectionObserver(
-      (entradas) => {
-        for (const e of entradas) e.target.classList.toggle('corre', e.isIntersecting);
-      },
-      { threshold: 0.35 },
-    );
-    for (const el of piezas) io.observe(el);
-  }
-  preparar();
-  reducir.addEventListener('change', preparar);
+  import './correr-a-la-vista';
 </script>
 
 <style>
@@ -249,79 +200,6 @@ const filaEstilo = (f: Fila) => `--c:${f.color}`;
     display: flex;
     justify-content: center;
     width: 100%;
-  }
-
-  /* ───────── El aparato ───────── */
-  .telefono {
-    position: relative;
-    width: min(100%, 360px);
-    aspect-ratio: 9 / 19.3;
-    padding: 11px;
-    border-radius: 56px;
-    background: linear-gradient(160deg, #2b2b31 0%, #0b0b0d 38%, #050506 70%, #1c1c21 100%);
-    box-shadow:
-      inset 0 0 0 1.5px rgba(255, 255, 255, 0.09),
-      inset 0 0 0 5px #050506,
-      0 50px 90px -30px rgba(0, 0, 0, 0.75),
-      0 0 0 1px rgba(255, 255, 255, 0.04),
-      0 30px 120px -40px rgba(52, 211, 153, 0.22);
-  }
-  .pantalla {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    border-radius: 45px;
-    background:
-      radial-gradient(120% 55% at 50% -8%, rgba(52, 211, 153, 0.13), transparent 60%),
-      #08080a;
-    container-type: size;
-  }
-  /* 1em = 1/32 del ancho de la pantalla: todo el dibujo escala junto, sin JavaScript. */
-  .lienzo {
-    position: absolute;
-    inset: 0;
-    font-size: 10px;
-    font-size: 3.125cqi;
-    font-family: var(--font-body);
-    color: var(--ink);
-  }
-
-  .barra-de-estado {
-    position: absolute;
-    top: 1.55em;
-    left: 0;
-    right: 0;
-    height: 2.8em;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 2.6em 0 3.3em;
-  }
-  .hora {
-    font-weight: var(--weight-semibold);
-    font-size: 1.5em;
-    letter-spacing: -0.01em;
-  }
-  .isla {
-    position: absolute;
-    left: 50%;
-    top: 0;
-    width: 9.8em;
-    height: 2.9em;
-    transform: translateX(-50%);
-    border-radius: 2em;
-    background: #000;
-  }
-  .estado-iconos {
-    display: flex;
-    gap: 0.6em;
-    align-items: center;
-  }
-  .estado-iconos svg {
-    fill: currentColor;
-    height: 1.15em;
-    width: auto;
   }
 
   /* ───────── La pantalla de la app ───────── */
@@ -586,16 +464,6 @@ const filaEstilo = (f: Fila) => `--c:${f.color}`;
     height: 17em;
     background: linear-gradient(to bottom, transparent, #08080a 78%);
     pointer-events: none;
-  }
-  .inicio-barra {
-    position: absolute;
-    left: 50%;
-    bottom: 0.9em;
-    width: 12.5em;
-    height: 0.5em;
-    border-radius: 1em;
-    transform: translateX(-50%);
-    background: rgba(255, 255, 255, 0.55);
   }
 
   /* ───────── La escena, en el tiempo ─────────
@@ -872,14 +740,4 @@ const filaEstilo = (f: Fila) => `--c:${f.color}`;
     }
   }
 
-  @media (max-width: 640px) {
-    .telefono {
-      width: min(84vw, 318px);
-      padding: 10px;
-      border-radius: 50px;
-    }
-    .pantalla {
-      border-radius: 40px;
-    }
-  }
 </style>

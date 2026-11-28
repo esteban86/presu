@@ -1,0 +1,322 @@
+---
+// MomentoQueViene.astro — el momento «Lo que viene» de la portada (#39), en un iPhone hecho en CSS:
+// la línea de tiempo arranca en hoy y, uno tras otro, aparecen los pagos que se repiten cada mes en
+// su próxima fecha, como en «Lo que viene» del celular («Se repite cada mes; lo detectó Presu»,
+// fechas corridas al día hábil anterior). Al final, el marcador subraya el pago más grande.
+//
+// Solo iPhone: «Lo que viene» solo está probado en el celular (afirmación `vas-viene`).
+// Sin tarjetas y sin un total: la app muestra una tarjeta con el mínimo de su EXTRACTO (la demo no
+// tiene extractos de tarjeta) y no suma entre filas (`lo-que-viene-pure.ts`, «Nada se suma entre filas»).
+//
+// Los pagos salen de `momentos.json` → `loQueViene` (`scripts/actualizar-datos-de-la-demo.mjs`).
+// Accesibilidad y movimiento: como los otros momentos (`correr-a-la-vista.ts`).
+import Telefono from './Telefono.astro';
+import momentos from '../../data/momentos.json';
+
+const pagos = momentos.loQueViene;
+if (pagos.length === 0) throw new Error('momentos.json no trae pagos por venir');
+for (const p of pagos) if (p.fecha <= momentos.hoy) throw new Error(`«${p.nombre}» no es después de hoy`);
+
+const pesos = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 });
+const cop = (n: number): string => pesos.format(n);
+const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+const MESES_LARGOS = [
+  'enero',
+  'febrero',
+  'marzo',
+  'abril',
+  'mayo',
+  'junio',
+  'julio',
+  'agosto',
+  'septiembre',
+  'octubre',
+  'noviembre',
+  'diciembre',
+];
+const dia = (f: string) => Number(f.slice(8, 10));
+const mesCorto = (f: string) => MESES[Number(f.slice(5, 7)) - 1];
+const fechaLarga = (f: string) => `${dia(f)} de ${MESES_LARGOS[Number(f.slice(5, 7)) - 1]}`;
+// El rótulo de la lista: el mes de lo que viene (la portada no dice «pago»: CA15).
+const mesesDeLaLista = [...new Set(pagos.map((p) => p.fecha.slice(0, 7)))];
+const seccion =
+  mesesDeLaLista.length === 1 ? MESES_LARGOS[Number(mesesDeLaLista[0].slice(5, 7)) - 1] : 'Lo que se repite';
+const elMasGrande = pagos.reduce((a, b) => (b.monto > a.monto ? b : a));
+
+const ROTULO =
+  `Una escena de Presu en el iPhone: Lo que viene. Desde hoy, ${fechaLarga(momentos.hoy)}, aparecen uno tras otro ` +
+  `los gastos que se repiten cada mes, en su próxima fecha: ` +
+  pagos.map((p) => `${p.nombre}, ${cop(p.monto)}, el ${fechaLarga(p.fecha)}`).join('; ') +
+  `. El marcador de Presu subraya el más grande.`;
+
+// Cada pago entra a su turno: un keyframe propio por fila (sin `animation-delay`, que correría su
+// vuelta a cero fuera del fundido).
+const entrada = (i: number) => 10 + i * 8;
+const css = pagos
+  .map((_, i) => {
+    const a = entrada(i);
+    return `@keyframes m3-fila-${i} { 0%, ${a}% { opacity: 0; transform: translateX(1.6em); animation-timing-function: cubic-bezier(0.2, 0.85, 0.25, 1); } ${a + 5}%, 100% { opacity: 1; transform: none; } }
+@keyframes m3-punto-${i} { 0%, ${a}% { transform: scale(0); animation-timing-function: cubic-bezier(0.3, 1.6, 0.5, 1); } ${a + 3}%, 100% { transform: none; } }
+[data-momento='que-viene'].animada .fila-${i} { animation: m3-fila-${i} var(--ciclo) linear infinite both; }
+[data-momento='que-viene'].animada .fila-${i} .linea__punto { animation: m3-punto-${i} var(--ciclo) linear infinite both; }`;
+  })
+  .join('\n');
+const finDeLaLinea = entrada(pagos.length - 1) + 4;
+const cssLinea = `@keyframes m3-linea { 0%, 6% { transform: scaleY(0); animation-timing-function: cubic-bezier(0.45, 0, 0.3, 1); } ${finDeLaLinea}%, 100% { transform: none; } }
+@keyframes m3-marca { 0%, ${finDeLaLinea + 4}% { transform: rotate(-1.4deg) scaleX(0); animation-timing-function: cubic-bezier(0.3, 0.7, 0.2, 1); } ${finDeLaLinea + 10}%, 100% { transform: rotate(-1.4deg) scaleX(1); } }
+[data-momento='que-viene'].animada .linea__eje { animation: m3-linea var(--ciclo) linear infinite both; }
+[data-momento='que-viene'].animada .monto__marca { animation: m3-marca var(--ciclo) linear infinite both; }
+[data-momento='que-viene'].animada * { animation-play-state: paused; }
+[data-momento='que-viene'].animada.corre * { animation-play-state: running; }
+@media (prefers-reduced-motion: reduce) { [data-momento='que-viene'] * { animation: none !important; } }`;
+---
+
+<div class="momento" data-momento="que-viene" data-demo role="img" aria-label={ROTULO}>
+  <Telefono>
+    <div class="app">
+      <p class="titulo">Lo que viene</p>
+      <p class="seccion">{seccion}</p>
+
+      <div class="linea">
+        <span class="linea__eje"></span>
+        <div class="hoy">
+          <span class="linea__punto linea__punto--hoy"></span>
+          <span class="hoy__texto">Hoy · {dia(momentos.hoy)} de {mesCorto(momentos.hoy)}.</span>
+        </div>
+        {
+          pagos.map((p, i) => (
+            <div class={`pago fila-${i}`}>
+              <span class="pago__fecha">
+                <span class="pago__dia">{dia(p.fecha)}</span>
+                <span class="pago__mes">{mesCorto(p.fecha)}</span>
+              </span>
+              <span class="linea__punto" />
+              <span class="pago__tarjeta">
+                <span class="pago__fila">
+                  <span class="pago__nombre">{p.nombre}</span>
+                  <span class="monto">
+                    {p === elMasGrande && <span class="marca monto__marca" />}
+                    <span class="monto__texto">{cop(p.monto)}</span>
+                  </span>
+                </span>
+                <span class="pago__sub">
+                  <span class="insignia">Estimado</span>Se repite cada mes; lo detectó Presu
+                </span>
+              </span>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+    <span class="velo"></span>
+  </Telefono>
+  <Fragment set:html={`<style>${css}\n${cssLinea}</style>`} />
+</div>
+
+<script>
+  import './correr-a-la-vista';
+</script>
+
+<style>
+  .momento {
+    --ciclo: 10s;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+  }
+  .app {
+    position: absolute;
+    inset: 6.6em 0 0;
+    padding: 0 2.2em;
+  }
+  .titulo {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: var(--weight-bold);
+    font-size: 2.9em;
+    letter-spacing: -0.02em;
+  }
+  .sub {
+    margin: 0.5em 0 0;
+    font-size: 1.3em;
+    color: var(--text-secondary);
+  }
+  .seccion {
+    margin: 2.4em 0 1.4em;
+    font-family: var(--font-mono);
+    font-size: 1.05em;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+  }
+
+  /* La línea de tiempo: la fecha a la izquierda, el punto sobre el eje y la tarjeta del pago. */
+  .linea {
+    --col: 3.6em;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 1.1em;
+  }
+  .linea__eje {
+    position: absolute;
+    left: calc(var(--col) + 2.05em);
+    top: 0.9em;
+    bottom: 3.4em;
+    width: 0.16em;
+    border-radius: 1em;
+    background: linear-gradient(to bottom, var(--presu-emerald), rgba(52, 211, 153, 0.18));
+    transform-origin: top;
+  }
+  .linea__punto {
+    position: relative;
+    z-index: 1;
+    flex: none;
+    width: 1em;
+    height: 1em;
+    margin-left: 0.53em;
+    border-radius: 50%;
+    background: #08080a;
+    border: 0.2em solid var(--presu-emerald);
+  }
+  .linea__punto--hoy {
+    background: var(--presu-emerald);
+    box-shadow: 0 0 0 0.4em rgba(52, 211, 153, 0.2);
+  }
+  .hoy {
+    display: flex;
+    align-items: center;
+    gap: 1.1em;
+    padding-left: calc(var(--col) + 1.1em);
+    height: 2.4em;
+  }
+  .hoy__texto {
+    font-family: var(--font-mono);
+    font-size: 1.1em;
+    letter-spacing: 0.04em;
+    color: var(--presu-emerald);
+  }
+  .pago {
+    display: flex;
+    align-items: center;
+    gap: 1.1em;
+  }
+  .pago__fecha {
+    width: var(--col);
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    line-height: 1;
+  }
+  .pago__dia {
+    font-family: var(--font-display);
+    font-weight: var(--weight-bold);
+    font-size: 2.2em;
+    letter-spacing: -0.03em;
+  }
+  .pago__mes {
+    margin-top: 0.25em;
+    font-family: var(--font-mono);
+    font-size: 1em;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-tertiary);
+  }
+  .pago__tarjeta {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7em;
+    padding: 1.3em 1.4em;
+    border-radius: 1.6em;
+    background: rgba(255, 255, 255, 0.045);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+  }
+  .pago__fila {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.8em;
+  }
+  .pago__nombre {
+    min-width: 0;
+    font-size: 1.45em;
+    font-weight: var(--weight-medium);
+    line-height: 1.2;
+  }
+  .monto {
+    position: relative;
+    isolation: isolate;
+    flex: none;
+    font-family: var(--font-mono);
+    font-size: 1.4em;
+    font-variant-numeric: tabular-nums;
+  }
+  .monto__texto {
+    position: relative;
+    z-index: 1;
+  }
+  .marca {
+    position: absolute;
+    border-radius: 999px;
+    background: var(--presu-emerald);
+    transform-origin: left center;
+  }
+  .monto__marca {
+    z-index: 0;
+    left: -0.15em;
+    right: -0.15em;
+    bottom: -0.22em;
+    height: 0.36em;
+    transform: rotate(-1.4deg);
+  }
+  .pago__sub {
+    font-size: 1.08em;
+    line-height: 1.55;
+    color: var(--text-tertiary);
+  }
+  .insignia {
+    display: inline-block;
+    margin-right: 0.5em;
+    padding: 0.05em 0.6em;
+    border-radius: 1em;
+    background: rgba(255, 255, 255, 0.07);
+    color: var(--text-secondary);
+  }
+  .velo {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 12em;
+    background: linear-gradient(to bottom, transparent, #08080a 80%);
+    pointer-events: none;
+  }
+
+  .momento.animada .app {
+    animation: m3-app var(--ciclo) linear infinite both;
+  }
+  @keyframes m3-app {
+    0% {
+      opacity: 0;
+      animation-timing-function: ease-out;
+    }
+    4%,
+    88% {
+      opacity: 1;
+      animation-timing-function: ease-in;
+    }
+    92%,
+    100% {
+      opacity: 0;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .momento *,
+    .momento.animada * {
+      animation: none !important;
+    }
+  }
+</style>

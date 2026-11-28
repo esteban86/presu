@@ -1,79 +1,326 @@
 {
-  "_origen": "baseDeDemostracion(\"2026-11\") de packages/core/src/demo en el commit 43e5a8aaa7 del repo de la app: la MISMA base que escribió cifras-de-la-demo.json. Receta en src/components/momentos/MomentoEntraSolo.astro.",
+  "_origen": "node scripts/actualizar-datos-de-la-demo.mjs --app <repo de la app> --mes 2026-11 --hoy 2026-11-27: la MISMA base que cifras-de-la-demo.json.",
   "mes": "2026-11",
-  "hoy": "2026-11-29",
+  "hoy": "2026-11-27",
+  "diaDeLaEscena": "2026-11-26",
   "llega": {
-    "id": 707,
-    "fecha": "2026-11-29",
-    "comercio": "Supermercado",
-    "categoria": "Mercado",
-    "color": "#22C55E",
-    "cuenta": "Tarjeta Cóndor",
+    "id": 709,
+    "fecha": "2026-11-26",
+    "comercio": "Taxi",
+    "categoria": "Transporte",
+    "color": "#3B82F6",
+    "cuenta": "Ahorros Banco Andino",
+    "tipoDeCuenta": "bank_account",
     "banco": "Banco Andino",
-    "monto": 150000
+    "monto": 16400
   },
   "hoyAntes": [
     {
-      "id": 710,
-      "fecha": "2026-11-29",
+      "id": 711,
+      "fecha": "2026-11-26",
       "comercio": "Droguería",
       "categoria": "Salud",
       "color": "#EF4444",
       "cuenta": "Tarjeta Ceiba",
+      "tipoDeCuenta": "credit_card",
       "banco": "Banco Ceiba",
       "monto": 56400
     },
     {
-      "id": 709,
-      "fecha": "2026-11-29",
+      "id": 710,
+      "fecha": "2026-11-26",
       "comercio": "Parqueadero",
       "categoria": "Transporte",
       "color": "#3B82F6",
       "cuenta": "Ahorros Banco Andino",
+      "tipoDeCuenta": "bank_account",
       "banco": "Banco Andino",
       "monto": 7000
     },
     {
       "id": 708,
-      "fecha": "2026-11-29",
+      "fecha": "2026-11-26",
       "comercio": "Café",
       "categoria": "Café y antojos",
       "color": "#A16207",
       "cuenta": "Tarjeta Ceiba",
+      "tipoDeCuenta": "credit_card",
       "banco": "Banco Ceiba",
       "monto": 10900
-    }
-  ],
-  "ayer": [
-    {
-      "id": 706,
-      "fecha": "2026-11-28",
-      "comercio": "Parqueadero",
-      "categoria": "Transporte",
-      "color": "#3B82F6",
-      "cuenta": "Ahorros Banco Andino",
-      "banco": "Banco Andino",
-      "monto": 4400
     },
     {
-      "id": 703,
-      "fecha": "2026-11-28",
+      "id": 707,
+      "fecha": "2026-11-26",
       "comercio": "Panadería",
       "categoria": "Café y antojos",
       "color": "#A16207",
       "cuenta": "Ahorros Banco Andino",
+      "tipoDeCuenta": "bank_account",
       "banco": "Banco Andino",
       "monto": 4500
-    },
+    }
+  ],
+  "ayer": [
     {
       "id": 702,
-      "fecha": "2026-11-28",
+      "fecha": "2026-11-25",
+      "comercio": "Parqueadero",
+      "categoria": "Transporte",
+      "color": "#3B82F6",
+      "cuenta": "Ahorros Banco Andino",
+      "tipoDeCuenta": "bank_account",
+      "banco": "Banco Andino",
+      "monto": 4400
+    },
+    {
+      "id": 700,
+      "fecha": "2026-11-25",
+      "comercio": "Café",
+      "categoria": "Café y antojos",
+      "color": "#A16207",
+      "cuenta": "Tarjeta Ceiba",
+      "tipoDeCuenta": "credit_card",
+      "banco": "Banco Ceiba",
+      "monto": 9100
+    },
+    {
+      "id": 699,
+      "fecha": "2026-11-25",
       "comercio": "Restaurante",
       "categoria": "Restaurantes",
       "color": "#F97316",
       "cuenta": "Tarjeta Cóndor",
+      "tipoDeCuenta": "credit_card",
       "banco": "Banco Andino",
       "monto": 32600
+    }
+  ],
+  "ritmo": {
+    "dia": 27,
+    "diasDelMes": 30,
+    "tope": 3260000,
+    "gastado": 2645800,
+    "veredicto": {
+      "estado": "VAS BIEN ESTE MES",
+      "tono": "positive",
+      "segmentos": [
+        {
+          "text": "Te quedan "
+        },
+        {
+          "text": "$ 614.200",
+          "accent": true
+        },
+        {
+          "text": " de tu tope, y vas en lo justo para cerrar en él."
+        }
+      ]
+    },
+    "lleva": [
+      39300,
+      28200,
+      82500,
+      134100,
+      672100,
+      753600,
+      766000,
+      797400,
+      820900,
+      889800,
+      1085700,
+      1208700,
+      1226800,
+      1322000,
+      1325900,
+      1487000,
+      1649700,
+      1877800,
+      1945000,
+      2133000,
+      2192500,
+      2242400,
+      2326500,
+      2533400,
+      2607000,
+      2645800,
+      2645800
+    ],
+    "paraCerrarEnTuTope": [
+      96998,
+      149414,
+      252325,
+      402681,
+      502320,
+      681801,
+      772893,
+      942091,
+      1123213,
+      1198906,
+      1241449,
+      1366836,
+      1607797,
+      1684979,
+      1733920,
+      1913378,
+      2028034,
+      2155218,
+      2257920,
+      2361103,
+      2414359,
+      2461452,
+      2546040,
+      2631118,
+      2743893,
+      2807436,
+      2901338,
+      3004964,
+      3101364,
+      3260000
+    ],
+    "esperadoHoy": 2901338,
+    "donas": [
+      {
+        "categoria": "Mercado",
+        "color": "#22C55E",
+        "gastado": 1018600,
+        "tope": 1200000,
+        "pct": 85,
+        "tramos": [
+          {
+            "tipo": "hecho",
+            "desde": 0,
+            "hasta": 0.8488
+          },
+          {
+            "tipo": "falta",
+            "desde": 0.8488,
+            "hasta": 0.8722
+          }
+        ],
+        "muesca": 0.8722
+      },
+      {
+        "categoria": "Restaurantes",
+        "color": "#F97316",
+        "gastado": 482000,
+        "tope": 600000,
+        "pct": 80,
+        "tramos": [
+          {
+            "tipo": "hecho",
+            "desde": 0,
+            "hasta": 0.8033
+          },
+          {
+            "tipo": "falta",
+            "desde": 0.8033,
+            "hasta": 0.904
+          }
+        ],
+        "muesca": 0.904
+      },
+      {
+        "categoria": "Transporte",
+        "color": "#3B82F6",
+        "gastado": 603900,
+        "tope": 650000,
+        "pct": 93,
+        "tramos": [
+          {
+            "tipo": "hecho",
+            "desde": 0,
+            "hasta": 0.8997
+          },
+          {
+            "tipo": "adelantado",
+            "desde": 0.8997,
+            "hasta": 0.9291
+          }
+        ],
+        "muesca": 0.8997
+      },
+      {
+        "categoria": "Café y antojos",
+        "color": "#A16207",
+        "gastado": 213400,
+        "tope": 260000,
+        "pct": 82,
+        "tramos": [
+          {
+            "tipo": "hecho",
+            "desde": 0,
+            "hasta": 0.8208
+          },
+          {
+            "tipo": "falta",
+            "desde": 0.8208,
+            "hasta": 0.9278
+          }
+        ],
+        "muesca": 0.9278
+      },
+      {
+        "categoria": "Entretenimiento",
+        "color": "#EC4899",
+        "gastado": 163800,
+        "tope": 250000,
+        "pct": 66,
+        "tramos": [
+          {
+            "tipo": "hecho",
+            "desde": 0,
+            "hasta": 0.6552
+          },
+          {
+            "tipo": "falta",
+            "desde": 0.6552,
+            "hasta": 0.9502
+          }
+        ],
+        "muesca": 0.9502
+      },
+      {
+        "categoria": "Ropa y hogar",
+        "color": "#14B8A6",
+        "gastado": 164100,
+        "tope": 300000,
+        "pct": 55,
+        "tramos": [
+          {
+            "tipo": "hecho",
+            "desde": 0,
+            "hasta": 0.547
+          },
+          {
+            "tipo": "falta",
+            "desde": 0.547,
+            "hasta": 0.8593
+          }
+        ],
+        "muesca": 0.8593
+      }
+    ]
+  },
+  "loQueViene": [
+    {
+      "nombre": "Arriendo",
+      "fecha": "2026-12-04",
+      "monto": 1450000
+    },
+    {
+      "nombre": "Internet y celular",
+      "fecha": "2026-12-07",
+      "monto": 125900
+    },
+    {
+      "nombre": "Energía",
+      "fecha": "2026-12-10",
+      "monto": 158400
+    },
+    {
+      "nombre": "Acueducto",
+      "fecha": "2026-12-11",
+      "monto": 67000
     }
   ]
 }

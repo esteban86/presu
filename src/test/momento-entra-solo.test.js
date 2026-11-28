@@ -66,6 +66,7 @@ describe('momento «Entra solo»', () => {
     expect(rotulo).not.toMatch(/\bSMS\b/i);
     expect(buscar(pieza, (n) => n.nodeName === 'img' || n.nodeName === 'picture')).toEqual([]);
     const [aparato] = buscar(pieza, (n) => clases(n).includes('telefono'));
+    expect(aparato, 'falta el iPhone').toBeDefined();
     expect(atributo(aparato, 'aria-hidden')).toBe('true');
   });
 
@@ -89,10 +90,12 @@ describe('momento «Entra solo»', () => {
       expect(f.fecha.startsWith(`${momentos.mes}-`), `${f.comercio} es de otro mes`).toBe(true);
       expect(Number.isInteger(f.monto) && f.monto > 0, `${f.comercio}`).toBe(true);
     }
-    expect(momentos.llega.fecha).toBe(momentos.hoy);
-    expect(momentos.llega.cuenta).toBe('Tarjeta Cóndor');
+    // La escena pasa el último día con un gasto de Banco Andino hasta `hoy` (ver el generador).
+    expect(momentos.diaDeLaEscena <= momentos.hoy).toBe(true);
+    expect(momentos.llega.fecha).toBe(momentos.diaDeLaEscena);
     expect(momentos.llega.banco).toBe('Banco Andino');
-    for (const f of momentos.hoyAntes) expect(f.fecha).toBe(momentos.hoy);
+    for (const f of momentos.hoyAntes) expect(f.fecha).toBe(momentos.diaDeLaEscena);
+    for (const f of momentos.ayer) expect(f.fecha < momentos.diaDeLaEscena).toBe(true);
     const ids = filas.map((f) => f.id);
     expect(new Set(ids).size, 'un movimiento repetido').toBe(ids.length);
 

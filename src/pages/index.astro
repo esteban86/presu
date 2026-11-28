@@ -1,26 +1,26 @@
 ---
 // index.astro — la portada que vende (spec «presu.io que vende», #39, §6.1).
-// Orden: hero (el dolor, la promesa, el video y la lista) → el dolor → tres verbos
-// con pantallazos del Mac y del iPhone → tus datos son tuyos → Familia → lo que te
+// Orden: hero (el dolor, la promesa, el video y la lista) → el dolor → tres verbos,
+// cada uno con un momento animado de la app → tus datos son tuyos → Familia → lo que te
 // llevas por entrar ahora → preguntas → la lista otra vez.
 //
 // Sin precios (CA8) y con UNA sola acción: el formulario de la lista (CA14).
 // Toda frase que afirma algo de la app lleva `data-afirma` y vive primero en
 // `src/data/afirmaciones.json`, con la línea de la app que la prueba (CA4).
 //
-// Los pantallazos son de la app real con la base de demostración (Tarea 8,
-// `public/capturas/`, dentro de `Captura`). El video (Tarea 9) todavía no existe: en su
+// Los momentos (`src/components/momentos/`) están hechos en código, con las cifras de la base
+// de demostración (`src/data/momentos.json` y `cifras-de-la-demo.json`, que escribe
+// `scripts/actualizar-datos-de-la-demo.mjs`). El video (Tarea 9) todavía no existe: en su
 // lugar va un hueco marcado (`.hueco-vsl`), que esa tarea reemplaza por `Vsl`.
-// Los textos alternativos dicen qué pantalla es, sin cifras ni detalles: las capturas se
-// vuelven a tomar con los mismos nombres y lo que muestran puede cambiar.
 //
 // El markup del hero conserva el contrato de DOM de los scripts de la lista:
 // #hero-form + #hero-email + #hero-err + #hero-ok, #waitlist-form, .proof .count.
 import Base from '../layouts/Base.astro';
 import Section from '../components/ui/Section.astro';
 import FaqItem from '../components/ui/FaqItem.astro';
-import Captura from '../components/ui/Captura.astro';
 import MomentoEntraSolo from '../components/momentos/MomentoEntraSolo.astro';
+import MomentoComoVas from '../components/momentos/MomentoComoVas.astro';
+import MomentoQueViene from '../components/momentos/MomentoQueViene.astro';
 import homeJsonLd from '../data/home-jsonld.json';
 import afirmaciones from '../data/afirmaciones.json';
 
@@ -57,8 +57,8 @@ const dolores = [
   },
 ];
 
-// 3 · Tres verbos como prueba. El primero es un momento animado en un iPhone hecho en código
-// (`MomentoEntraSolo`); los otros dos, su pantallazo del Mac y del iPhone.
+// 3 · Tres verbos como prueba, cada uno con UN momento de la app, animado y hecho en código
+// (`src/components/momentos/`): un iPhone, un Mac y otro iPhone.
 const verbos = [
   {
     n: '1',
@@ -72,16 +72,15 @@ const verbos = [
     n: '2',
     titulo: 'Se ordena solo',
     afirma: ['ordena-categorias', 'ordena-fijos', 'ordena-topes'],
-    mac: { src: '/capturas/escritorio-inicio.webp', alt: 'Inicio de Presu en el Mac con lo que entró y salió en el mes y tus topes por categoría' },
-    iphone: { src: '/capturas/celular-inicio.webp', alt: 'Inicio de Presu en el iPhone con el gasto del mes y tus topes' },
+    // El Inicio del Mac: el veredicto del mes, las donas de tus topes y el ritmo (`MomentoComoVas`).
+    momento: 'como-vas',
   },
   {
     n: '3',
     titulo: 'Te dice cómo vas',
     afirma: ['vas-tope', 'vas-viene', 'vas-mes-pasado'],
-    mac: { src: '/capturas/escritorio-ritmo.webp', alt: 'Una categoría de Presu en el Mac, con lo gastado día a día contra su tope' },
-    // «Lo que viene» solo está probado en el iPhone: se muestra con su pantallazo.
-    iphone: { src: '/capturas/celular-lo-que-viene.webp', alt: 'Lo que viene en Presu para iPhone' },
+    // «Lo que viene» solo está probado en el iPhone: va en un iPhone (`MomentoQueViene`).
+    momento: 'que-viene',
   },
 ];
 
@@ -211,16 +210,9 @@ const jsonLd = {
             </ul>
           </div>
           <div class="verbo__media">
-            {v.momento === 'entra-solo' ? (
-              <MomentoEntraSolo />
-            ) : v.mac && v.iphone ? (
-              <div class="verbo__par">
-                <Captura src={v.mac.src} alt={v.mac.alt} aparato="mac" ancho={720} />
-                <div class="verbo__iphone">
-                  <Captura src={v.iphone.src} alt={v.iphone.alt} aparato="iphone" ancho={230} />
-                </div>
-              </div>
-            ) : null}
+            {v.momento === 'entra-solo' && <MomentoEntraSolo />}
+            {v.momento === 'como-vas' && <MomentoComoVas />}
+            {v.momento === 'que-viene' && <MomentoQueViene />}
           </div>
         </article>
       ))}
@@ -820,18 +812,6 @@ const jsonLd = {
     border-radius: 2px;
     background: var(--presu-emerald);
   }
-  .verbo__par {
-    position: relative;
-    padding-bottom: var(--space-8);
-  }
-  .verbo__iphone {
-    position: absolute;
-    right: -2%;
-    bottom: 0;
-    z-index: 2;
-    width: 30%;
-    max-width: 230px;
-  }
 
   /* ───────────────── 5 · Familia ───────────────── */
   .familia {
@@ -1376,16 +1356,6 @@ const jsonLd = {
     }
     .verbos {
       gap: var(--space-16);
-    }
-    /* En el celular el iPhone no tapa el Mac: va debajo, montado apenas en la esquina. */
-    .verbo__par {
-      padding-bottom: 0;
-    }
-    .verbo__iphone {
-      position: relative;
-      right: auto;
-      width: 58%;
-      margin: calc(-1 * var(--space-10)) 0 0 auto;
     }
     .hueco-rotulo {
       font-size: 0.62rem;

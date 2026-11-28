@@ -1,31 +1,24 @@
 /**
- * Capturas reales de la app y cifras de la demo (spec «presu.io que vende», CA10, CA11, CA12, §6.2).
+ * Cada monto de la portada sale de la base de demostración (spec «presu.io que vende», CA10, CA11).
  *
- * - Toda `<img>` de `/capturas/` en la portada tiene `alt`, `width` y `height`, y carga perezosa
- *   (`loading="lazy"`) salvo las del hero, que son las que se ven al abrir. En la portada que
- *   vende (#39) el hero lleva el video y ninguna captura, así que todas cargan perezosas: una
- *   captura bajo el pliegue con prioridad le quitaría ancho de banda al LCP (CA12).
- * - Ya no queda ningún hueco de captura (`.hueco-captura`): cada uno se volvió una `Captura`.
- * - Cada archivo de `public/capturas/` pesa como mucho 400 KB, y cada captura de la portada existe.
- * - Cada monto visible de un panel dibujado en código (marcado con `data-demo`) sale de
- *   `src/data/cifras-de-la-demo.json`: la salida de `scripts/exportar-cifras-de-la-demo.mjs` del repo
- *   de la app, sobre la MISMA base sembrada en los pantallazos. Un monto escrito a mano no cuadra
- *   con el pantallazo de al lado. Y FUERA de esos paneles no hay ningún monto: la portada que vende
- *   no tiene vitrina en código, y una cifra suelta no tendría de dónde salir.
+ * - Los momentos animados (`src/components/momentos/`) son paneles dibujados en código y van marcados
+ *   con `data-demo`. Cada monto visible adentro sale de `src/data/cifras-de-la-demo.json` o de
+ *   `src/data/momentos.json`, que `scripts/actualizar-datos-de-la-demo.mjs` escribe juntos sobre la
+ *   MISMA base. FUERA de esos paneles no hay ningún monto: una cifra suelta no tendría de dónde salir.
+ * - No queda ningún hueco de captura (`.hueco-captura`), ni una `<img>` de las capturas viejas
+ *   (`/capturas/`): los pantallazos se volvieron momentos.
  *
  * Se revisa el HTML CONSTRUIDO. Corre `npm run build` antes.
  */
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parse } from 'parse5';
 import { describe, expect, it } from 'vitest';
 
 const RAIZ = process.cwd();
 const RUTA = join(RAIZ, 'dist', 'index.html');
-const CARPETA = join(RAIZ, 'public', 'capturas');
 const CIFRAS = join(RAIZ, 'src', 'data', 'cifras-de-la-demo.json');
 const MOMENTOS = join(RAIZ, 'src', 'data', 'momentos.json');
-const TOPE_DE_PESO = 400 * 1024;
 
 /** Un panel dibujado en código con cifras de la demo se marca con `data-demo`. */
 const esPanel = (n) => atributo(n, 'data-demo') !== undefined;
@@ -44,12 +37,6 @@ function textoDe(nodo, { sinPaneles = false } = {}) {
   return (nodo.childNodes ?? []).map((h) => textoDe(h, { sinPaneles })).join(' ');
 }
 
-/** Si el nodo vive dentro del hero (`section.hero`). */
-function enElHero(doc, objetivo) {
-  const heroes = buscar(doc, (n) => n.nodeName === 'section' && clases(n).includes('hero'));
-  return heroes.some((h) => buscar(h, (n) => n === objetivo).length > 0);
-}
-
 function buscar(nodo, cumple, salida = []) {
   if (cumple(nodo)) salida.push(nodo);
   for (const hijo of nodo.childNodes ?? []) buscar(hijo, cumple, salida);
@@ -62,13 +49,6 @@ function cargar() {
   return parse(readFileSync(RUTA, 'utf8'));
 }
 
-function capturasDe(doc) {
-  return buscar(
-    doc,
-    (n) => n.nodeName === 'img' && (atributo(n, 'src') ?? '').startsWith('/capturas/'),
-  );
-}
-
 /** «$1.234.567» y «$1,23M» / «$662K» de cada cifra de la demo, como los escribe la web. */
 function montosPermitidos(cifras, momentos) {
   const numeros = [cifras.ingresos, cifras.gastos, cifras.balance];
@@ -77,6 +57,9 @@ function montosPermitidos(cifras, momentos) {
   if (momentos) {
     for (const m of [momentos.llega, ...momentos.hoyAntes, ...momentos.ayer]) numeros.push(m.monto);
     numeros.push(cifras.gastos - momentos.llega.monto);
+    // «Te dice cómo vas»: lo que queda de la suma de tus topes. «Lo que viene»: cada pago.
+    numeros.push(momentos.ritmo.tope - momentos.ritmo.gastado);
+    for (const p of momentos.loQueViene) numeros.push(p.monto);
   }
   for (const t of cifras.topes) numeros.push(t.gastado, t.tope, Math.abs(t.tope - t.gastado));
   const sumaTopes = cifras.topes.reduce((s, t) => s + t.tope, 0);
@@ -95,42 +78,15 @@ function montosPermitidos(cifras, momentos) {
 
 const normal = (monto) => monto.replace(/^[−-]/, '').replace(/\s/g, '');
 
-describe('capturas reales de la app en la portada', () => {
-  it('hay capturas, y cada una tiene alt, width, height y carga perezosa salvo las del hero', () => {
-    const doc = cargar();
-    const imgs = capturasDe(doc);
-    expect(
-      imgs.length,
-      'la portada no muestra ninguna captura de /capturas/',
-    ).toBeGreaterThanOrEqual(2);
-    imgs.forEach((img) => {
-      const src = atributo(img, 'src');
-      expect((atributo(img, 'alt') ?? '').trim().length, `${src} sin alt`).toBeGreaterThan(0);
-      expect(atributo(img, 'width') ?? '', `${src} sin width`).toMatch(/^[1-9]\d*$/);
-      expect(atributo(img, 'height') ?? '', `${src} sin height`).toMatch(/^[1-9]\d*$/);
-      if (enElHero(doc, img)) expect(atributo(img, 'loading'), `${src} está en el hero`).not.toBe('lazy');
-      else expect(atributo(img, 'loading'), `${src} sin loading="lazy"`).toBe('lazy');
-    });
-  });
-
+describe('los montos de la portada salen de la demo', () => {
   it('no queda ningún hueco de captura: todos se volvieron una Captura', () => {
     const huecos = buscar(cargar(), (n) => clases(n).includes('hueco-captura'));
     expect(huecos.map((n) => atributo(n, 'data-captura'))).toEqual([]);
   });
 
-  it('cada captura de la portada existe en public/capturas y cada archivo pesa ≤ 400 KB', () => {
-    expect(existsSync(CARPETA), 'falta public/capturas').toBe(true);
-    const archivos = readdirSync(CARPETA).filter((f) => !f.startsWith('.'));
-    expect(archivos.length).toBeGreaterThan(0);
-    for (const f of archivos) {
-      expect(statSync(join(CARPETA, f)).size, `${f} pesa más de 400 KB`).toBeLessThanOrEqual(
-        TOPE_DE_PESO,
-      );
-    }
-    for (const img of capturasDe(cargar())) {
-      const nombre = atributo(img, 'src').slice('/capturas/'.length);
-      expect(archivos, `${nombre} no está en public/capturas`).toContain(nombre);
-    }
+  it('no queda ninguna captura vieja de /capturas/', () => {
+    const imgs = buscar(cargar(), (n) => n.nodeName === 'img' && (atributo(n, 'src') ?? '').startsWith('/capturas/'));
+    expect(imgs.map((n) => atributo(n, 'src'))).toEqual([]);
   });
 
   it('cada monto visible de los paneles está en cifras-de-la-demo.json', () => {
