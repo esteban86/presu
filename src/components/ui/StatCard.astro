@@ -1,16 +1,19 @@
 ---
-// StatCard.astro — tarjeta compacta de métrica (Ingresos / Gastos). Cifra
-// en Space Grotesk tabular; badge de delta opcional debajo. `value` y
-// `delta` llegan pre-formateados (ver src/lib/format.js). Slot "icon"
-// opcional para el ícono junto al label.
+// StatCard.astro — tarjeta compacta de métrica (Ingresos / Gastos / Balance). Cifra
+// en Space Grotesk tabular; badge de delta opcional debajo. La cifra NO llega
+// escrita: sale de la base de demostración (src/lib/cifras-de-la-demo.js), la misma
+// de los pantallazos. Slot "icon" opcional para el ícono junto al label.
+import { cifraDelMes } from '../../lib/cifras-de-la-demo.js';
+
 export interface Props {
   label: string;
-  value: string;
+  cifra: 'ingresos' | 'gastos' | 'balance';
   delta?: string;
   deltaTone?: 'positive' | 'negative' | 'warning' | 'info' | 'neutral';
 }
 
-const { label, value, delta, deltaTone = 'positive' } = Astro.props;
+const { label, cifra, delta, deltaTone = 'positive' } = Astro.props;
+const value = cifraDelMes(cifra, { compacta: true });
 const hasIcon = Astro.slots.has('icon');
 ---
 

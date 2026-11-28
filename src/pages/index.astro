@@ -16,26 +16,11 @@ import CategoryDonut from '../components/ui/CategoryDonut.astro';
 import BanksStrip from '../components/ui/BanksStrip.astro';
 import Showcase from '../components/ui/Showcase.astro';
 import FaqItem from '../components/ui/FaqItem.astro';
-import { formatCOPCompact, CATEGORIES } from '../lib/format.js';
 import homeJsonLd from '../data/home-jsonld.json';
 
 // Turnstile: solo se renderiza si hay site key (build-time). Sin ella, el widget
 // no aparece y el worker no exige token (rollout inerte hasta provisionar).
 const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '';
-
-const ingresos = formatCOPCompact(6420000); // "$6,42M"
-const gastos = formatCOPCompact(4740000); // "$4,74M"
-const balance = formatCOPCompact(1680000); // "$1,68M" (= ingresos − gastos)
-
-// Gastos por categoría (dona del panel) — suman exactamente 4.740.000 = `gastos`.
-const spendByCategory = [
-  { ...CATEGORIES.vivienda, amount: '$1.500.000', value: 1500000 },
-  { ...CATEGORIES.mercado, amount: '$900.000', value: 900000 },
-  { ...CATEGORIES.restaurantes, amount: '$620.000', value: 620000 },
-  { ...CATEGORIES.salud, amount: '$420.000', value: 420000 },
-  { ...CATEGORIES.transporte, amount: '$480.000', value: 480000 },
-  { ...CATEGORIES.otros, amount: '$820.000', value: 820000 },
-];
 
 // El problema — la tensión, con la frase humana primero.
 const problems = [
@@ -80,15 +65,6 @@ const steps = [
     body: 'Cuánto entró, cuánto salió y cómo vas contra tus topes. La respuesta primero; los números, si los quieres.',
     afirma: 'paso-3',
   },
-];
-
-// Mira por dentro — movimientos reales (Colombia).
-const txns = [
-  { emoji: '💰', name: 'Nómina', bank: 'Bancolombia', amount: '+$5.200.000', income: true },
-  { emoji: '🏠', name: 'Arriendo', bank: 'Davivienda', amount: '−$1.500.000' },
-  { emoji: '🛒', name: 'Éxito Poblado', bank: 'Bancolombia', amount: '−$124.300' },
-  { emoji: '🍔', name: 'Rappi', bank: 'Nu', amount: '−$32.500' },
-  { emoji: '🎬', name: 'Netflix', bank: 'RappiCard', amount: '−$44.900' },
 ];
 
 // FAQ — preguntas reales de la landing en vivo.

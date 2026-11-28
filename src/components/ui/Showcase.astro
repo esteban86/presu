@@ -1,9 +1,18 @@
 ---
 // Showcase — "Mira lo que verás por dentro"
-// Sección de vistas de la app (mockups en HTML/CSS/SVG). Autocontenida: trae sus
+// Sección de vistas de la app: pantallazos REALES del Mac y del iPhone con la base de
+// demostración (spec «presu.io que vende», §6.2; receta en el repo de la app,
+// docs/web/capturas.md). Las cifras de los pies salen de la misma demo
+// (src/lib/cifras-de-la-demo.js): ninguna se escribe a mano. Autocontenida: trae sus
 // propios tokens y CSS con <style> scoped de Astro (aislado del resto del landing).
-// Portada desde la landing estática (main:index.html) a la migración Astro.
-import Logo from '../Logo.astro';
+import Captura from './Captura.astro';
+import { cifras, cifraDelMes, topeDe } from '../../lib/cifras-de-la-demo.js';
+import { formatCOP } from '../../lib/format.js';
+
+const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+const [anio, mes] = cifras.mes.split('-').map(Number);
+const mesDeLaDemo = `${MESES[mes - 1]} de ${anio}`;
+const mercado = topeDe('Mercado');
 ---
 
 <section class="presu-showcase">
@@ -24,49 +33,13 @@ import Logo from '../Logo.astro';
             <li data-afirma="inicio-anillos"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Presupuestos por categoría en anillos</li>
           </ul>
         </div>
-        <div class="show-art">
+        <div class="show-art show-art--capturas">
           <div class="panel-glow" style="background:linear-gradient(120deg,#818CF8,#34D399)"></div>
-          <div class="panel">
-            <span class="panel-cap">Inicio</span>
-            <div class="dash-top">
-              <span class="m-chip">📅 Mes actual ▾</span>
-              <span class="m-chip">Todas las cuentas ▾</span>
-              <span class="m-chip"><span class="gd"></span> 12 visitas</span>
-              <span class="dash-date">2026-06-01 → 06-30</span>
-            </div>
-            <div class="verdict-line">
-              <span class="vl-tag"><span class="vl-dot"></span> Vas bien</span>
-              <p class="vl-txt">Hasta ahora <b>te sobran $1.680.000</b> de lo que entró este mes.</p>
-            </div>
-            <div class="stat-grid">
-              <div class="stat">
-                <div class="sl" style="color:var(--mint-bright)">↗ Ingresos</div>
-                <svg class="spark" viewBox="0 0 72 26" preserveAspectRatio="none" aria-hidden="true"><polyline points="0,20 12,17 24,18 36,10 48,7 60,9 72,4" fill="none" stroke="var(--mint-bright)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                <div class="sv" style="color:var(--mint-bright)">$6.420.000</div>
-                <div class="sd"><b style="color:var(--mint-bright)">↑ 9.2%</b> vs mes ant.</div>
-              </div>
-              <div class="stat">
-                <div class="sl" style="color:var(--coral)">↘ Gastos</div>
-                <svg class="spark" viewBox="0 0 72 26" preserveAspectRatio="none" aria-hidden="true"><polyline points="0,8 12,6 24,12 36,7 48,14 60,11 72,16" fill="none" stroke="var(--coral)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                <div class="sv" style="color:var(--coral)">$4.740.000</div>
-                <div class="sd"><b style="color:var(--mint-bright)">↓ 8.4%</b> vs mes ant.</div>
-              </div>
-              <div class="stat">
-                <div class="sl" style="color:var(--indigo-soft)">▦ Balance</div>
-                <svg class="spark" viewBox="0 0 72 26" preserveAspectRatio="none" aria-hidden="true"><polyline points="0,18 12,20 24,13 36,15 48,9 60,11 72,5" fill="none" stroke="var(--indigo-soft)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                <div class="sv" style="color:var(--indigo-soft)">$1.680.000</div>
-                <div class="sd"><b style="color:var(--mint-bright)">↑ 138.5%</b> vs mes ant.</div>
-              </div>
-            </div>
-            <div class="budget-hd"><span class="bt">Presupuestos del mes</span><span class="bn">$4.740.000 / $5.700.000 · 83%</span></div>
-            <div class="rings">
-              <div class="ring"><div class="rc" style="--rc-color:var(--amber);--target:83%;--k:0"><b>83%</b></div><span class="rt">Vivienda</span></div>
-              <div class="ring"><div class="rc" style="--rc-color:var(--amber);--target:90%;--k:1"><b>90%</b></div><span class="rt">Alimentación</span></div>
-              <div class="ring"><div class="rc" style="--rc-color:var(--mint);--target:60%;--k:2"><b>60%</b></div><span class="rt">Salud</span></div>
-              <div class="ring"><div class="rc" style="--rc-color:var(--mint);--target:64%;--k:3"><b>64%</b></div><span class="rt">Hija</span></div>
-              <div class="ring"><div class="rc" style="--rc-color:var(--mint);--target:45%;--k:4"><b>45%</b></div><span class="rt">Familia</span></div>
-            </div>
-          </div>
+          <figure class="capturas">
+            <div class="capturas__mac"><Captura src="/capturas/escritorio-inicio.webp" alt="Presu en el Mac con la demo: el Inicio dice cuánto te queda de tu tope, con ingresos, gastos, balance y los presupuestos del mes en anillos" aparato="mac" ancho={640} prioridad /></div>
+            <div class="capturas__iphone"><Captura src="/capturas/celular-inicio.webp" alt="Presu en el iPhone con la demo: el Inicio dice cuánto llevas en tus topes y dibuja el gasto del mes contra el tope" aparato="iphone" ancho={190} /></div>
+            <figcaption class="capturas__pie">Pantallas reales con la demo de {mesDeLaDemo}: entraron {cifraDelMes('ingresos')}, salieron {cifraDelMes('gastos')} y quedan {cifraDelMes('balance')}.</figcaption>
+          </figure>
         </div>
       </div>
 
@@ -82,44 +55,13 @@ import Logo from '../Logo.astro';
             <li data-afirma="ritmo-proyeccion"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Proyección de cómo cerrarás el mes</li>
           </ul>
         </div>
-        <div class="show-art">
+        <div class="show-art show-art--capturas">
           <div class="panel-glow" style="background:linear-gradient(120deg,#34D399,#818CF8)"></div>
-          <div class="panel">
-            <span class="panel-cap">Ritmo de gasto</span>
-            <div class="chart-hd"><span class="ct">Ritmo de Gasto</span><span class="cl">Ver análisis →</span></div>
-            <div style="position:relative">
-              <svg viewBox="0 0 340 184" width="100%" style="display:block" role="img" aria-label="Gráfica de ritmo de gasto">
-                <defs>
-                  <linearGradient id="realfill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#34D399" stop-opacity=".30"/><stop offset="1" stop-color="#34D399" stop-opacity="0"/></linearGradient>
-                  <linearGradient id="lineg" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FBBF24"/><stop offset=".5" stop-color="#9BE15D"/><stop offset="1" stop-color="#34D399"/></linearGradient>
-                </defs>
-                <line x1="30" y1="24" x2="332" y2="24" stroke="rgba(255,255,255,.05)"/>
-                <line x1="30" y1="87" x2="332" y2="87" stroke="rgba(255,255,255,.05)"/>
-                <line x1="30" y1="150" x2="332" y2="150" stroke="rgba(255,255,255,.09)"/>
-                <line x1="30" y1="35" x2="332" y2="35" stroke="#FB7185" stroke-width="1.6" stroke-dasharray="6 5" opacity=".7"/>
-                <path d="M30 148 C80 130 110 112 150 100 C200 84 270 54 326 42" fill="none" stroke="rgba(255,255,255,.42)" stroke-width="2.2" stroke-dasharray="6 5"/>
-                <path class="area-fade" d="M30 140 C66 132 92 116 120 108 C156 98 182 95 210 86 L210 150 L30 150 Z" fill="url(#realfill)"/>
-                <path class="grow-line" pathLength="1" d="M30 140 C66 132 92 116 120 108 C156 98 182 95 210 86" fill="none" stroke="url(#lineg)" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
-                <line x1="210" y1="22" x2="210" y2="150" stroke="#8B8DF7" stroke-width="1.4" stroke-dasharray="4 4" opacity=".55"/>
-                <circle class="land-pulse" cx="210" cy="86" r="8.5" fill="#34D399" opacity=".25" style="transform-box:fill-box;transform-origin:center"/>
-                <circle class="land-dot" cx="210" cy="86" r="5" fill="#34D399" stroke="#0A0A0C" stroke-width="2.2"/>
-                <line x1="300" y1="35" x2="300" y2="150" stroke="rgba(255,255,255,.12)" stroke-width="1"/>
-                <circle cx="300" cy="44" r="4" fill="#9A9AA6" stroke="#0A0A0C" stroke-width="2"/>
-                <text x="4" y="27" fill="#6B6B76" font-size="8.5" font-family="JetBrains Mono">6M</text>
-                <text x="4" y="90" fill="#6B6B76" font-size="8.5" font-family="JetBrains Mono">3M</text>
-                <text x="4" y="152" fill="#6B6B76" font-size="8.5" font-family="JetBrains Mono">0</text>
-                <text x="28" y="167" fill="#6B6B76" font-size="8.5" font-family="JetBrains Mono">Día 1</text>
-                <text x="195" y="167" fill="#8B8DF7" font-size="8.5" font-weight="600" font-family="JetBrains Mono">Hoy</text>
-                <text x="284" y="167" fill="#6B6B76" font-size="8.5" font-family="JetBrains Mono">Día 27</text>
-              </svg>
-              <div class="chart-pill pop" style="left:45%;top:24%">$268.000 por debajo</div>
-            </div>
-            <div class="chart-legend">
-              <span><i style="border:0;height:3px;width:18px;border-radius:2px;background:linear-gradient(90deg,#FBBF24,#34D399)"></i> Real</span>
-              <span><i style="border-color:rgba(255,255,255,.45);border-top-style:dashed"></i> Para cerrar en tu tope</span>
-              <span><i style="border-color:#FB7185;border-top-style:dashed"></i> Techo del presupuesto</span>
-            </div>
-          </div>
+          <figure class="capturas">
+            <div class="capturas__mac"><Captura src="/capturas/escritorio-ritmo.webp" alt="Presu en el Mac con la demo: el detalle de Mercado con su ritmo diario, la línea para cerrar en tu tope y el tope mismo" aparato="mac" ancho={640} /></div>
+            <div class="capturas__iphone"><Captura src="/capturas/celular-categoria.webp" alt="Presu en el iPhone con la demo: Mercado al 100 % de su tope, con lo que deberías llevar para cerrar en él" aparato="iphone" ancho={190} /></div>
+            <figcaption class="capturas__pie">Mercado en la demo: {formatCOP(mercado.gastado)} de un tope de {formatCOP(mercado.tope)}.</figcaption>
+          </figure>
         </div>
       </div>
 
@@ -135,26 +77,13 @@ import Logo from '../Logo.astro';
             <li data-afirma="correo-duplicados"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Detecta duplicados para no repetir movimientos</li>
           </ul>
         </div>
-        <div class="show-art">
+        <div class="show-art show-art--capturas">
           <div class="panel-glow" style="background:linear-gradient(120deg,#818CF8,#A855F7)"></div>
-          <div class="panel">
-            <span class="panel-cap">Sincronización</span>
-            <div class="sync-hd"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg> Sincronización con tu correo</div>
-            <div class="sync-stat">270 transacciones importadas desde el correo</div>
-            <div class="sync-period"><span class="p">⚡ 24 horas</span><span class="p on">7 días</span><span class="p">30 días</span><span class="p">90 días</span></div>
-            <div class="sync-status"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg> Gmail conectado</div>
-            <div class="sync-banks">Extractos PDF: <span class="bk">Bancolombia</span><span class="bk">Davivienda</span><span class="bk">Nu</span><span class="bk">RappiCard</span></div>
-            <div class="prog-row"><span>10/20 correos · <span style="color:var(--mint-bright)">6 importadas</span> · 4 omitidas</span><span>50%</span></div>
-            <div class="prog"><i></i></div>
-            <div class="console">
-              <div>7:59:21 p.m. [1/20] <span class="imp">Importada: NONNA MALL DEL ESTE</span></div>
-              <div>7:59:21 p.m. [2/20] <span class="dup">Duplicado: BOLD CO SAS</span></div>
-              <div>7:59:22 p.m. [3/20] <span class="imp">Importada: D1 CRA 70 — $48.900</span></div>
-              <div>7:59:22 p.m. [4/20] <span class="imp">Importada: RAPPI COL — $32.500</span></div>
-              <div>7:59:23 p.m. [5/20] <span class="dup">Duplicado: UBER BV USD-USD COLO</span></div>
-              <div>7:59:23 p.m. [6/20] <span class="imp">Importada: ÉXITO POBLADO — $124.300</span></div>
-            </div>
-          </div>
+          <figure class="capturas">
+            <div class="capturas__mac"><Captura src="/capturas/escritorio-movimientos.webp" alt="Presu en el Mac con la demo: la lista de movimientos del día, cada uno con su banco y su categoría" aparato="mac" ancho={640} /></div>
+            <div class="capturas__iphone"><Captura src="/capturas/celular-revisar.webp" alt="Presu en el iPhone con la demo: Revisar pregunta a qué cuenta fue un traslado" aparato="iphone" ancho={190} /></div>
+            <figcaption class="capturas__pie">Movimientos de la demo, cada uno con su banco y su categoría.</figcaption>
+          </figure>
         </div>
       </div>
 
@@ -201,6 +130,11 @@ import Logo from '../Logo.astro';
   .presu-showcase .show-list li{display:flex;gap:10px;align-items:flex-start;color:var(--tx);font-size:.97rem}
   .presu-showcase .show-list svg{color:var(--mint-bright);flex:none;margin-top:3px}
   .presu-showcase .show-art{position:relative}
+  /* capturas reales: el Mac de fondo y el iPhone encima, abajo a la derecha */
+  .presu-showcase .capturas{position:relative;z-index:2;margin:0;padding-bottom:28px}
+  .presu-showcase .capturas__mac{width:88%}
+  .presu-showcase .capturas__iphone{position:absolute;right:0;bottom:0;width:30%}
+  .presu-showcase .capturas__pie{margin-top:14px;width:66%;color:var(--mut);font-size:.84rem;line-height:1.45}
   .presu-showcase .panel-glow{position:absolute;inset:-14% -10%;border-radius:50%;filter:blur(74px);opacity:.4;z-index:0}
   .presu-showcase .panel{background:linear-gradient(180deg,var(--bg-3),var(--bg-2));border:1px solid var(--line-2);border-radius:var(--radius);box-shadow:var(--sh-lg);padding:18px;position:relative;z-index:2}
   .presu-showcase .panel-cap{position:absolute;top:-11px;left:20px;z-index:3;background:rgba(52,211,153,.14);border:1px solid rgba(52,211,153,.34);color:var(--mint);font-family:var(--mono);font-size:.6rem;font-weight:500;padding:4px 10px;border-radius:999px;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap}
