@@ -1,0 +1,79 @@
+{
+  "_origen": "baseDeDemostracion(\"2026-11\") de packages/core/src/demo en el commit 43e5a8aaa7 del repo de la app: la MISMA base que escribió cifras-de-la-demo.json. Receta en src/components/momentos/MomentoEntraSolo.astro.",
+  "mes": "2026-11",
+  "hoy": "2026-11-29",
+  "llega": {
+    "id": 707,
+    "fecha": "2026-11-29",
+    "comercio": "Supermercado",
+    "categoria": "Mercado",
+    "color": "#22C55E",
+    "cuenta": "Tarjeta Cóndor",
+    "banco": "Banco Andino",
+    "monto": 150000
+  },
+  "hoyAntes": [
+    {
+      "id": 710,
+      "fecha": "2026-11-29",
+      "comercio": "Droguería",
+      "categoria": "Salud",
+      "color": "#EF4444",
+      "cuenta": "Tarjeta Ceiba",
+      "banco": "Banco Ceiba",
+      "monto": 56400
+    },
+    {
+      "id": 709,
+      "fecha": "2026-11-29",
+      "comercio": "Parqueadero",
+      "categoria": "Transporte",
+      "color": "#3B82F6",
+      "cuenta": "Ahorros Banco Andino",
+      "banco": "Banco Andino",
+      "monto": 7000
+    },
+    {
+      "id": 708,
+      "fecha": "2026-11-29",
+      "comercio": "Café",
+      "categoria": "Café y antojos",
+      "color": "#A16207",
+      "cuenta": "Tarjeta Ceiba",
+      "banco": "Banco Ceiba",
+      "monto": 10900
+    }
+  ],
+  "ayer": [
+    {
+      "id": 706,
+      "fecha": "2026-11-28",
+      "comercio": "Parqueadero",
+      "categoria": "Transporte",
+      "color": "#3B82F6",
+      "cuenta": "Ahorros Banco Andino",
+      "banco": "Banco Andino",
+      "monto": 4400
+    },
+    {
+      "id": 703,
+      "fecha": "2026-11-28",
+      "comercio": "Panadería",
+      "categoria": "Café y antojos",
+      "color": "#A16207",
+      "cuenta": "Ahorros Banco Andino",
+      "banco": "Banco Andino",
+      "monto": 4500
+    },
+    {
+      "id": 702,
+      "fecha": "2026-11-28",
+      "comercio": "Restaurante",
+      "categoria": "Restaurantes",
+      "color": "#F97316",
+      "cuenta": "Tarjeta Cóndor",
+      "banco": "Banco Andino",
+      "monto": 32600
+    }
+  ]
+}

@@ -1,0 +1,885 @@
+---
+// MomentoEntraSolo.astro — el primer momento de la portada, «Entra solo» (#39).
+//
+// Un iPhone hecho en código, con UNA escena de la app que se repite cada 10 s:
+//   1. llega un aviso del banco (Banco Andino, por la Tarjeta Cóndor);
+//   2. el marcador de Presu subraya el monto y el comercio, y el resto del aviso se apaga;
+//   3. el aviso baja y se vuelve un movimiento de la lista «Hoy», que se pinta con su categoría;
+//   4. el total del mes rueda hasta la cifra nueva y el marcador vuelve a subrayarla.
+// Es el gesto del hero de la bienvenida del celular («el marcador», HeroElMarcador.tsx): avisos
+// en letra chica, el marcador solo sobre la plata, una cifra clara al final.
+//
+// Las cifras NO se escriben acá:
+// - El movimiento que llega y los de la lista salen de `src/data/momentos.json`.
+// - El total del mes es `gastos` de `src/data/cifras-de-la-demo.json`; el de antes, ese menos el
+//   movimiento que llega. Los dos JSON salen de la MISMA base de demostración.
+// Receta de `momentos.json` (en el repo de la app, sobre el commit que escribió las cifras):
+// copiar `packages/core/src/demo/base-de-demostracion.ts` a una carpeta aparte, cambiar su import
+// de `CATEGORIA_DEL_ENLACE` por una constante, y con Node 24 (corre TypeScript sin compilar) llamar
+// `baseDeDemostracion(mes)`: `llega` es un gasto (`real_expense`) del último día con movimientos
+// pagado con la Tarjeta Cóndor; `hoyAntes`, los otros gastos de ese día; `ayer`, tres del día
+// anterior con categorías distintas. Cada fila lleva `comercio`, `categoria`, `color` (el de la
+// categoría en la demo), `cuenta`, `banco` y `monto`. La prueba `momento-entra-solo.test.js`
+// comprueba que todo cuadre con cifras-de-la-demo.json.
+//
+// Accesibilidad y movimiento:
+// - Para un lector de pantalla es UNA imagen (`role="img"`) con su rótulo; lo de adentro no se lee.
+// - Sin JavaScript, o con «reducir movimiento», se ve quieto el cuadro final (el movimiento ya en
+//   la lista y el total nuevo). Los estilos base SON ese cuadro; la animación se agrega encima.
+// - Corre solo mientras está a la vista (IntersectionObserver) y se pausa al salir.
+// - Todo se mueve con `transform` y `opacity` dentro de un marco de tamaño fijo: no corre nada de
+//   la página (sin layout shift).
+import momentos from '../../data/momentos.json';
+import cifras from '../../data/cifras-de-la-demo.json';
+
+type Fila = (typeof momentos)['hoyAntes'][number];
+
+const pesos = new Intl.NumberFormat('es-CO', {
+  style: 'currency',
+  currency: 'COP',
+  maximumFractionDigits: 0,
+});
+const cop = (n: number): string => pesos.format(n);
+
+const llega = momentos.llega;
+if (momentos.mes !== cifras.mes) throw new Error('momentos.json y cifras-de-la-demo.json son de meses distintos');
+const totalDespues = cifras.gastos;
+const totalAntes = cifras.gastos - llega.monto;
+
+const [anio, mesNum] = momentos.mes.split('-').map(Number);
+const nombreDelMes = new Intl.DateTimeFormat('es-CO', { month: 'long', timeZone: 'UTC' }).format(
+  new Date(Date.UTC(anio, mesNum - 1, 1)),
+);
+const diaDeHoy = Number(momentos.hoy.slice(8, 10));
+const fechaCorta = `${diaDeHoy} de ${nombreDelMes.slice(0, 3)}.`;
+
+// El dibujo de cada categoría: es presentación, no dato. Una categoría sin dibujo lleva su inicial.
+const ICONOS: Record<string, string> = {
+  Mercado:
+    '<circle cx="9.5" cy="19.5" r="1.4"/><circle cx="17.5" cy="19.5" r="1.4"/><path d="M2.8 3.8h2.6l2.3 11h10.6l2-7.6H6.1"/>',
+  Salud: '<rect x="4" y="4" width="16" height="16" rx="4.5"/><path d="M12 8.5v7M8.5 12h7"/>',
+  Transporte:
+    '<path d="M5 16V12l1.7-4.4A2 2 0 0 1 8.6 6.3h6.8a2 2 0 0 1 1.9 1.3L19 12v4"/><path d="M4 12h16v4.5H4z"/><path d="M7 19v-2.5M17 19v-2.5"/>',
+  'Café y antojos':
+    '<path d="M4.5 9.5h11v4.5a4.5 4.5 0 0 1-4.5 4.5H9a4.5 4.5 0 0 1-4.5-4.5z"/><path d="M15.5 10.5h1.2a2.4 2.4 0 0 1 0 4.8h-1.2"/><path d="M8.5 3.8c0 1.1.9 1.3.9 2.4M12 3.8c0 1.1.9 1.3.9 2.4"/>',
+  Restaurantes:
+    '<path d="M7 3.5v17M4.8 3.5v4.8a2.2 2.2 0 0 0 4.4 0V3.5"/><path d="M17.5 20.5v-17c-2 1.4-3.2 3.9-3.2 7v3.2h3.2"/>',
+};
+const icono = (categoria: string): string | undefined => ICONOS[categoria];
+const inicial = (texto: string): string => texto.trim().charAt(0).toUpperCase();
+
+const ROTULO =
+  `Una escena de Presu en el iPhone. Llega un aviso de ${llega.banco}: una compra de ${cop(llega.monto)} ` +
+  `en ${llega.comercio.toLowerCase()} con la ${llega.cuenta}. El marcador de Presu subraya el monto y el ` +
+  `comercio, y el aviso se vuelve un movimiento de hoy, ya en la categoría ${llega.categoria}. ` +
+  `El total del mes pasa a ${cop(totalDespues)}. No tuviste que escribir nada.`;
+
+const filaEstilo = (f: Fila) => `--c:${f.color}`;
+---
+
+<div class="momento" data-momento="entra-solo" data-demo role="img" aria-label={ROTULO}>
+  <div class="telefono" aria-hidden="true">
+    <div class="pantalla">
+      <div class="lienzo">
+        <div class="barra-de-estado">
+          <span class="hora">9:41</span>
+          <span class="isla"></span>
+          <span class="estado-iconos">
+            <svg viewBox="0 0 18 12" class="senal"
+              ><rect x="0" y="8" width="3" height="4" rx="1"></rect><rect x="5" y="5.5" width="3" height="6.5" rx="1"
+              ></rect><rect x="10" y="3" width="3" height="9" rx="1"></rect><rect x="15" y="0" width="3" height="12" rx="1"
+              ></rect></svg
+            >
+            <svg viewBox="0 0 27 12" class="bateria"
+              ><rect x="0.5" y="0.5" width="22" height="11" rx="3.2" fill="none" stroke="currentColor" opacity="0.45"
+              ></rect><rect x="2" y="2" width="17" height="8" rx="2"></rect><rect x="24" y="4" width="2" height="4" rx="1"
+                opacity="0.45"></rect></svg
+            >
+          </span>
+        </div>
+
+        <div class="app">
+          <p class="mes">{nombreDelMes}</p>
+          <p class="rotulo">Este mes llevas</p>
+          <div class="total">
+            <span class="marca total__marca"></span>
+            <span class="total__ventana">
+              <span class="total__antes">{cop(totalAntes)}</span>
+              <span class="total__despues">{cop(totalDespues)}</span>
+            </span>
+          </div>
+
+          <div class="dia">
+            <span>Hoy</span>
+            <span class="dia__fecha">{fechaCorta}</span>
+          </div>
+
+          <div class="lista">
+            <div class="fila fila--nueva" style={filaEstilo(llega)}>
+              <span class="baldosa">
+                <span class="baldosa__inicial">{inicial(llega.comercio)}</span>
+                <span class="baldosa__color">
+                  {
+                    icono(llega.categoria) ? (
+                      <svg viewBox="0 0 24 24" set:html={icono(llega.categoria)} />
+                    ) : (
+                      inicial(llega.categoria)
+                    )
+                  }
+                </span>
+              </span>
+              <span class="fila__texto">
+                <span class="fila__comercio">{llega.comercio}</span>
+                <span class="fila__sub"
+                  >{llega.cuenta}<span class="fila__cat"> · {llega.categoria}</span></span
+                >
+              </span>
+              <span class="fila__monto">
+                <span class="marca fila__marca"></span>
+                <span class="fila__cifra">{cop(llega.monto)}</span>
+              </span>
+            </div>
+
+            <div class="resto">
+              {
+                momentos.hoyAntes.map((f) => (
+                  <div class="fila" style={filaEstilo(f)}>
+                    <span class="baldosa">
+                      <span class="baldosa__color">
+                        {icono(f.categoria) ? <svg viewBox="0 0 24 24" set:html={icono(f.categoria)} /> : inicial(f.categoria)}
+                      </span>
+                    </span>
+                    <span class="fila__texto">
+                      <span class="fila__comercio">{f.comercio}</span>
+                      <span class="fila__sub"><span class="fila__cat">{f.categoria}</span></span>
+                    </span>
+                    <span class="fila__monto">
+                      <span class="fila__cifra">{cop(f.monto)}</span>
+                    </span>
+                  </div>
+                ))
+              }
+              <div class="dia dia--ayer"><span>Ayer</span></div>
+              {
+                momentos.ayer.map((f) => (
+                  <div class="fila" style={filaEstilo(f)}>
+                    <span class="baldosa">
+                      <span class="baldosa__color">
+                        {icono(f.categoria) ? <svg viewBox="0 0 24 24" set:html={icono(f.categoria)} /> : inicial(f.categoria)}
+                      </span>
+                    </span>
+                    <span class="fila__texto">
+                      <span class="fila__comercio">{f.comercio}</span>
+                      <span class="fila__sub"><span class="fila__cat">{f.categoria}</span></span>
+                    </span>
+                    <span class="fila__monto">
+                      <span class="fila__cifra">{cop(f.monto)}</span>
+                    </span>
+                  </div>
+                ))
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="aviso">
+          <span class="aviso__banco">
+            <svg viewBox="0 0 24 24"><path d="M2.5 18.5 9 8.5l4 6 2.6-3.6 5.9 7.6z"></path></svg>
+          </span>
+          <span class="aviso__cuerpo">
+            <span class="aviso__cabeza">
+              <span class="aviso__nombre">{llega.banco}</span>
+              <span class="aviso__cuando">ahora</span>
+            </span>
+            <span class="aviso__texto">
+              <span class="aviso__resto">Compraste </span><span class="marcado"
+                ><span class="marca aviso__marca-monto"></span><span class="marcado__texto">{cop(llega.monto)}</span></span
+              ><span class="aviso__resto"> en </span><span class="marcado"
+                ><span class="marca aviso__marca-comercio"></span><span class="marcado__texto"
+                  >{llega.comercio.toUpperCase()}</span
+                ></span
+              ><span class="aviso__resto"> con tu {llega.cuenta}.</span>
+            </span>
+          </span>
+        </div>
+
+        <span class="velo"></span>
+        <span class="inicio-barra"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Corre solo con movimiento permitido y mientras se ve. Sin este script (o con «reducir
+  // movimiento») queda el cuadro final, quieto.
+  const reducir = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const piezas = Array.from(document.querySelectorAll<HTMLElement>('[data-momento]'));
+
+  function preparar(): void {
+    for (const el of piezas) {
+      if (reducir.matches || !('IntersectionObserver' in window)) {
+        el.classList.remove('animada', 'corre');
+        continue;
+      }
+      el.classList.add('animada');
+    }
+  }
+
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver(
+      (entradas) => {
+        for (const e of entradas) e.target.classList.toggle('corre', e.isIntersecting);
+      },
+      { threshold: 0.35 },
+    );
+    for (const el of piezas) io.observe(el);
+  }
+  preparar();
+  reducir.addEventListener('change', preparar);
+</script>
+
+<style>
+  .momento {
+    --ciclo: 10s;
+    --fila: 6.6em;
+    --ink: var(--text-primary);
+    --muted: var(--text-secondary);
+    --marcador: var(--presu-emerald);
+    display: flex;
+    justify-content: center;
+    width: 100%;
+  }
+
+  /* ───────── El aparato ───────── */
+  .telefono {
+    position: relative;
+    width: min(100%, 360px);
+    aspect-ratio: 9 / 19.3;
+    padding: 11px;
+    border-radius: 56px;
+    background: linear-gradient(160deg, #2b2b31 0%, #0b0b0d 38%, #050506 70%, #1c1c21 100%);
+    box-shadow:
+      inset 0 0 0 1.5px rgba(255, 255, 255, 0.09),
+      inset 0 0 0 5px #050506,
+      0 50px 90px -30px rgba(0, 0, 0, 0.75),
+      0 0 0 1px rgba(255, 255, 255, 0.04),
+      0 30px 120px -40px rgba(52, 211, 153, 0.22);
+  }
+  .pantalla {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    border-radius: 45px;
+    background:
+      radial-gradient(120% 55% at 50% -8%, rgba(52, 211, 153, 0.13), transparent 60%),
+      #08080a;
+    container-type: size;
+  }
+  /* 1em = 1/32 del ancho de la pantalla: todo el dibujo escala junto, sin JavaScript. */
+  .lienzo {
+    position: absolute;
+    inset: 0;
+    font-size: 10px;
+    font-size: 3.125cqi;
+    font-family: var(--font-body);
+    color: var(--ink);
+  }
+
+  .barra-de-estado {
+    position: absolute;
+    top: 1.55em;
+    left: 0;
+    right: 0;
+    height: 2.8em;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2.6em 0 3.3em;
+  }
+  .hora {
+    font-weight: var(--weight-semibold);
+    font-size: 1.5em;
+    letter-spacing: -0.01em;
+  }
+  .isla {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: 9.8em;
+    height: 2.9em;
+    transform: translateX(-50%);
+    border-radius: 2em;
+    background: #000;
+  }
+  .estado-iconos {
+    display: flex;
+    gap: 0.6em;
+    align-items: center;
+  }
+  .estado-iconos svg {
+    fill: currentColor;
+    height: 1.15em;
+    width: auto;
+  }
+
+  /* ───────── La pantalla de la app ───────── */
+  .app {
+    position: absolute;
+    inset: 6.4em 0 0;
+    padding: 0 2.2em;
+  }
+  .mes {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 1.05em;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .rotulo {
+    margin: 1.2em 0 0.3em;
+    font-size: 1.4em;
+    color: var(--muted);
+  }
+  .total {
+    position: relative;
+    display: inline-block;
+    isolation: isolate;
+    font-family: var(--font-display);
+    font-weight: var(--weight-bold);
+    font-size: 3.9em;
+    letter-spacing: -0.035em;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.12;
+  }
+  .total__ventana {
+    position: relative;
+    z-index: 1;
+    display: block;
+    overflow: hidden;
+  }
+  .total__despues {
+    display: block;
+  }
+  .total__antes {
+    position: absolute;
+    inset: 0;
+    transform: translateY(-110%);
+  }
+
+  /* El marcador: una pastilla que se dibuja de izquierda a derecha detrás de la parte baja del texto. */
+  .marca {
+    position: absolute;
+    border-radius: 999px;
+    background: var(--marcador);
+    transform-origin: left center;
+  }
+  .total__marca {
+    z-index: 0;
+    left: -0.04em;
+    right: -0.06em;
+    bottom: -0.02em;
+    height: 0.17em;
+    transform: rotate(-1.2deg);
+  }
+
+  .dia {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin: 3.4em 0 0.6em;
+    padding-bottom: 0.7em;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    font-family: var(--font-mono);
+    font-size: 1.05em;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .dia__fecha {
+    letter-spacing: 0.04em;
+    text-transform: none;
+    color: var(--text-tertiary);
+  }
+  .dia--ayer {
+    margin: 1.6em 0 0.6em;
+  }
+
+  .lista {
+    position: relative;
+  }
+  .fila {
+    display: flex;
+    align-items: center;
+    gap: 1.3em;
+    height: var(--fila);
+  }
+  .baldosa {
+    position: relative;
+    flex: none;
+    width: 4.2em;
+    height: 4.2em;
+    border-radius: 1.3em;
+    background: rgba(255, 255, 255, 0.07);
+    overflow: hidden;
+  }
+  .baldosa__color,
+  .baldosa__inicial {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    font-weight: var(--weight-semibold);
+    font-size: 1.5em;
+  }
+  .baldosa__color {
+    background: color-mix(in srgb, var(--c) 17%, transparent);
+    color: color-mix(in srgb, var(--c) 72%, white);
+  }
+  .baldosa__color svg {
+    width: 1.55em;
+    height: 1.55em;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .baldosa__inicial {
+    color: var(--ink);
+    opacity: 0;
+  }
+  .fila__texto {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25em;
+  }
+  .fila__comercio {
+    font-size: 1.45em;
+    font-weight: var(--weight-medium);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .fila__sub {
+    font-size: 1.15em;
+    color: var(--text-tertiary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .fila__cat {
+    display: inline-block;
+    white-space: pre;
+    color: color-mix(in srgb, var(--c) 55%, white);
+  }
+  .fila__monto {
+    position: relative;
+    isolation: isolate;
+    flex: none;
+    font-family: var(--font-mono);
+    font-size: 1.38em;
+    font-variant-numeric: tabular-nums;
+  }
+  .fila__cifra {
+    position: relative;
+    z-index: 1;
+  }
+  .fila__marca {
+    z-index: 0;
+    left: -0.15em;
+    right: -0.15em;
+    bottom: -0.2em;
+    height: 0.36em;
+    opacity: 0;
+  }
+
+  /* ───────── El aviso del banco ───────── */
+  .aviso {
+    position: absolute;
+    top: 5.4em;
+    left: 1.1em;
+    right: 1.1em;
+    display: flex;
+    gap: 1.2em;
+    align-items: flex-start;
+    padding: 1.35em 1.5em 1.5em 1.35em;
+    border-radius: 2.5em;
+    background: rgba(38, 38, 44, 0.82);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    box-shadow: 0 1.8em 4em -1em rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    transform-origin: 50% 0;
+    opacity: 0;
+    transform: translateY(15.5em) scale(0.9);
+  }
+  .aviso__banco {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 3.9em;
+    height: 3.9em;
+    border-radius: 1em;
+    background: linear-gradient(150deg, #5a5fd0, var(--presu-indigo));
+  }
+  .aviso__banco svg {
+    width: 2.3em;
+    height: 2.3em;
+    fill: #f4f4f3;
+  }
+  .aviso__cuerpo {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45em;
+  }
+  .aviso__cabeza {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .aviso__nombre {
+    font-weight: var(--weight-semibold);
+    font-size: 1.38em;
+  }
+  .aviso__cuando {
+    font-size: 1.15em;
+    color: var(--muted);
+  }
+  .aviso__texto {
+    font-family: var(--font-mono);
+    font-size: 1.18em;
+    line-height: 1.6;
+    color: var(--muted);
+  }
+  .marcado {
+    position: relative;
+    isolation: isolate;
+    white-space: nowrap;
+  }
+  .marcado__texto {
+    position: relative;
+    z-index: 1;
+    color: var(--ink);
+    font-weight: var(--weight-medium);
+  }
+  .marcado .marca {
+    z-index: 0;
+    left: -0.12em;
+    right: -0.12em;
+    bottom: -0.12em;
+    height: 0.42em;
+  }
+
+  /* El final de la pantalla se funde, y la barra de inicio del iPhone. */
+  .velo {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 17em;
+    background: linear-gradient(to bottom, transparent, #08080a 78%);
+    pointer-events: none;
+  }
+  .inicio-barra {
+    position: absolute;
+    left: 50%;
+    bottom: 0.9em;
+    width: 12.5em;
+    height: 0.5em;
+    border-radius: 1em;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.55);
+  }
+
+  /* ───────── La escena, en el tiempo ─────────
+     Solo con `.animada` (la pone el script si hay movimiento). Cada pieza comparte el mismo
+     ciclo; en pausa queda en el primer cuadro hasta que la pieza entra a la vista (`.corre`). */
+  .momento.animada .app {
+    animation: es-app var(--ciclo) linear infinite both;
+  }
+  .momento.animada .aviso {
+    animation: es-aviso var(--ciclo) linear infinite both;
+  }
+  .momento.animada .aviso__marca-monto {
+    animation: es-marca-monto var(--ciclo) linear infinite both;
+  }
+  .momento.animada .aviso__marca-comercio {
+    animation: es-marca-comercio var(--ciclo) linear infinite both;
+  }
+  .momento.animada .aviso__resto {
+    animation: es-se-apaga var(--ciclo) linear infinite both;
+  }
+  .momento.animada .aviso__cabeza,
+  .momento.animada .aviso__banco {
+    animation: es-se-apaga-poco var(--ciclo) linear infinite both;
+  }
+  .momento.animada .resto {
+    animation: es-baja var(--ciclo) linear infinite both;
+  }
+  .momento.animada .fila--nueva {
+    animation: es-entra var(--ciclo) linear infinite both;
+  }
+  .momento.animada .fila--nueva .baldosa__inicial {
+    animation: es-inicial var(--ciclo) linear infinite both;
+  }
+  .momento.animada .fila--nueva .baldosa__color {
+    animation: es-categoria-baldosa var(--ciclo) linear infinite both;
+  }
+  .momento.animada .fila--nueva .fila__cat {
+    animation: es-categoria-texto var(--ciclo) linear infinite both;
+  }
+  .momento.animada .fila__marca {
+    animation: es-marca-fila var(--ciclo) linear infinite both;
+  }
+  .momento.animada .total__antes {
+    animation: es-total-antes var(--ciclo) linear infinite both;
+  }
+  .momento.animada .total__despues {
+    animation: es-total-despues var(--ciclo) linear infinite both;
+  }
+  .momento.animada .total__marca {
+    animation: es-marca-total var(--ciclo) linear infinite both;
+  }
+  .momento.animada * {
+    animation-play-state: paused;
+  }
+  .momento.animada.corre * {
+    animation-play-state: running;
+  }
+
+  /* 0–0,4 s quieto · 0,4 s llega el aviso · 1,2 s marca el monto · 1,65 s marca el comercio ·
+     2,2 s el resto se apaga · 2,9 s el aviso baja y se vuelve fila · 3,8 s se pinta su categoría ·
+     4,4 s el total rueda · 8,8 s se funde y vuelve a empezar. */
+  @keyframes es-app {
+    0%,
+    5% {
+      opacity: 1;
+      animation-timing-function: ease-out;
+    }
+    10%,
+    30% {
+      opacity: 0.22;
+      animation-timing-function: ease-in-out;
+    }
+    36%,
+    88% {
+      opacity: 1;
+      animation-timing-function: ease-in;
+    }
+    92% {
+      opacity: 0;
+      animation-timing-function: ease-out;
+    }
+    97%,
+    100% {
+      opacity: 1;
+    }
+  }
+  @keyframes es-aviso {
+    0%,
+    4% {
+      opacity: 0;
+      transform: translateY(-120%) scale(0.97);
+      animation-timing-function: cubic-bezier(0.2, 0.85, 0.25, 1);
+    }
+    9.5%,
+    29% {
+      opacity: 1;
+      transform: none;
+      animation-timing-function: cubic-bezier(0.55, 0, 0.3, 1);
+    }
+    35%,
+    100% {
+      opacity: 0;
+      transform: translateY(15.5em) scale(0.9);
+    }
+  }
+  @keyframes es-marca-monto {
+    0%,
+    12% {
+      transform: scaleX(0);
+      animation-timing-function: cubic-bezier(0.3, 0.7, 0.2, 1);
+    }
+    16%,
+    100% {
+      transform: scaleX(1);
+    }
+  }
+  @keyframes es-marca-comercio {
+    0%,
+    16.5% {
+      transform: scaleX(0);
+      animation-timing-function: cubic-bezier(0.3, 0.7, 0.2, 1);
+    }
+    21%,
+    100% {
+      transform: scaleX(1);
+    }
+  }
+  @keyframes es-se-apaga {
+    0%,
+    22% {
+      opacity: 1;
+      animation-timing-function: ease-in-out;
+    }
+    27%,
+    100% {
+      opacity: 0.16;
+    }
+  }
+  @keyframes es-se-apaga-poco {
+    0%,
+    22% {
+      opacity: 1;
+      animation-timing-function: ease-in-out;
+    }
+    27%,
+    100% {
+      opacity: 0.4;
+    }
+  }
+  @keyframes es-baja {
+    0%,
+    30.5% {
+      transform: translateY(calc(-1 * var(--fila)));
+      animation-timing-function: cubic-bezier(0.5, 0, 0.2, 1);
+    }
+    37%,
+    100% {
+      transform: none;
+    }
+  }
+  @keyframes es-entra {
+    0%,
+    32% {
+      opacity: 0;
+      transform: translateY(-1em) scale(0.97);
+      animation-timing-function: cubic-bezier(0.2, 0.85, 0.25, 1);
+    }
+    38%,
+    100% {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes es-inicial {
+    0%,
+    38% {
+      opacity: 1;
+      animation-timing-function: ease-in;
+    }
+    41%,
+    100% {
+      opacity: 0;
+    }
+  }
+  @keyframes es-categoria-baldosa {
+    0%,
+    38% {
+      opacity: 0;
+      transform: scale(0.55);
+      animation-timing-function: cubic-bezier(0.3, 1.5, 0.5, 1);
+    }
+    42.5%,
+    100% {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes es-categoria-texto {
+    0%,
+    39% {
+      opacity: 0;
+      transform: translateX(-0.5em);
+      animation-timing-function: ease-out;
+    }
+    43%,
+    100% {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes es-marca-fila {
+    0%,
+    35.5% {
+      opacity: 1;
+      transform: scaleX(0);
+      animation-timing-function: cubic-bezier(0.3, 0.7, 0.2, 1);
+    }
+    39.5%,
+    60% {
+      opacity: 1;
+      transform: scaleX(1);
+      animation-timing-function: ease-in-out;
+    }
+    66%,
+    100% {
+      opacity: 0;
+      transform: scaleX(1);
+    }
+  }
+  @keyframes es-total-antes {
+    0%,
+    44% {
+      transform: none;
+      animation-timing-function: cubic-bezier(0.6, 0, 0.2, 1);
+    }
+    50%,
+    100% {
+      transform: translateY(-110%);
+    }
+  }
+  @keyframes es-total-despues {
+    0%,
+    44% {
+      transform: translateY(110%);
+      animation-timing-function: cubic-bezier(0.6, 0, 0.2, 1);
+    }
+    50%,
+    100% {
+      transform: none;
+    }
+  }
+  @keyframes es-marca-total {
+    0%,
+    42% {
+      transform: rotate(-1.2deg) scaleX(1);
+      animation-timing-function: ease-in;
+    }
+    44.5%,
+    49% {
+      transform: rotate(-1.2deg) scaleX(0);
+      animation-timing-function: cubic-bezier(0.3, 0.7, 0.2, 1);
+    }
+    55%,
+    100% {
+      transform: rotate(-1.2deg) scaleX(1);
+    }
+  }
+
+  /* Con «reducir movimiento», el cuadro final quieto, aunque el script se haya adelantado. */
+  @media (prefers-reduced-motion: reduce) {
+    .momento *,
+    .momento.animada * {
+      animation: none !important;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .telefono {
+      width: min(84vw, 318px);
+      padding: 10px;
+      border-radius: 50px;
+    }
+    .pantalla {
+      border-radius: 40px;
+    }
+  }
+</style>

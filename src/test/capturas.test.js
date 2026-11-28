@@ -24,6 +24,7 @@ const RAIZ = process.cwd();
 const RUTA = join(RAIZ, 'dist', 'index.html');
 const CARPETA = join(RAIZ, 'public', 'capturas');
 const CIFRAS = join(RAIZ, 'src', 'data', 'cifras-de-la-demo.json');
+const MOMENTOS = join(RAIZ, 'src', 'data', 'momentos.json');
 const TOPE_DE_PESO = 400 * 1024;
 
 /** Un panel dibujado en código con cifras de la demo se marca con `data-demo`. */
@@ -69,8 +70,14 @@ function capturasDe(doc) {
 }
 
 /** «$1.234.567» y «$1,23M» / «$662K» de cada cifra de la demo, como los escribe la web. */
-function montosPermitidos(cifras) {
+function montosPermitidos(cifras, momentos) {
   const numeros = [cifras.ingresos, cifras.gastos, cifras.balance];
+  // Los momentos animados (`src/data/momentos.json`, de la MISMA base): cada movimiento, y el
+  // total del mes antes de que entre el que llega.
+  if (momentos) {
+    for (const m of [momentos.llega, ...momentos.hoyAntes, ...momentos.ayer]) numeros.push(m.monto);
+    numeros.push(cifras.gastos - momentos.llega.monto);
+  }
   for (const t of cifras.topes) numeros.push(t.gastado, t.tope, Math.abs(t.tope - t.gastado));
   const sumaTopes = cifras.topes.reduce((s, t) => s + t.tope, 0);
   const sumaGastado = cifras.topes.reduce((s, t) => s + t.gastado, 0);
@@ -131,7 +138,8 @@ describe('capturas reales de la app en la portada', () => {
     const cifras = JSON.parse(readFileSync(CIFRAS, 'utf8'));
     expect(cifras.mes).toMatch(/^\d{4}-(0[1-9]|1[0-2])$/);
     expect(Array.isArray(cifras.topes) && cifras.topes.length > 0).toBe(true);
-    const permitidos = montosPermitidos(cifras);
+    const momentos = existsSync(MOMENTOS) ? JSON.parse(readFileSync(MOMENTOS, 'utf8')) : null;
+    const permitidos = montosPermitidos(cifras, momentos);
 
     const doc = cargar();
     const paneles = buscar(doc, esPanel);

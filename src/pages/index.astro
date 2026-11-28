@@ -20,6 +20,7 @@ import Base from '../layouts/Base.astro';
 import Section from '../components/ui/Section.astro';
 import FaqItem from '../components/ui/FaqItem.astro';
 import Captura from '../components/ui/Captura.astro';
+import MomentoEntraSolo from '../components/momentos/MomentoEntraSolo.astro';
 import homeJsonLd from '../data/home-jsonld.json';
 import afirmaciones from '../data/afirmaciones.json';
 
@@ -56,15 +57,16 @@ const dolores = [
   },
 ];
 
-// 3 · Tres verbos como prueba, cada uno con su pantallazo del Mac y del iPhone.
+// 3 · Tres verbos como prueba. El primero es un momento animado en un iPhone hecho en código
+// (`MomentoEntraSolo`); los otros dos, su pantallazo del Mac y del iPhone.
 const verbos = [
   {
     n: '1',
     titulo: 'Entra solo',
     afirma: ['entra-correo', 'entra-sms', 'entra-extracto'],
-    // No hay pantallazo del correo: van los movimientos que entraron y lo que queda por revisar.
-    mac: { src: '/capturas/escritorio-movimientos.webp', alt: 'Movimientos de Presu en el Mac, con su comercio, su categoría y su monto' },
-    iphone: { src: '/capturas/celular-revisar.webp', alt: 'Por revisar de Presu en el iPhone, con un movimiento para confirmar' },
+    // En vez de dos pantallazos, un momento animado: llega un aviso del banco y se vuelve un
+    // movimiento ya con su categoría (`MomentoEntraSolo`).
+    momento: 'entra-solo',
   },
   {
     n: '2',
@@ -209,12 +211,16 @@ const jsonLd = {
             </ul>
           </div>
           <div class="verbo__media">
-            <div class="verbo__par">
-              <Captura src={v.mac.src} alt={v.mac.alt} aparato="mac" ancho={720} />
-              <div class="verbo__iphone">
-                <Captura src={v.iphone.src} alt={v.iphone.alt} aparato="iphone" ancho={230} />
+            {v.momento === 'entra-solo' ? (
+              <MomentoEntraSolo />
+            ) : v.mac && v.iphone ? (
+              <div class="verbo__par">
+                <Captura src={v.mac.src} alt={v.mac.alt} aparato="mac" ancho={720} />
+                <div class="verbo__iphone">
+                  <Captura src={v.iphone.src} alt={v.iphone.alt} aparato="iphone" ancho={230} />
+                </div>
               </div>
-            </div>
+            ) : null}
           </div>
         </article>
       ))}

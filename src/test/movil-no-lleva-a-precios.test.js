@@ -13,10 +13,16 @@
  * demás páginas enlazadas —la portada entre ellas— cumplen la regla completa: sin planes y
  * sin hablar de pagos, precios, tarifas, pioneros ni suscripciones (`PLATA`).
  *
+ * La única excepción a «ninguna cifra en pesos» son los paneles de la demo (`data-demo`), como en
+ * `portada-vende-sin-precios.test.js`: el momento animado de la portada muestra movimientos y el
+ * total del mes de la base de demostración, no precios. Las palabras de plata (`PLATA`, «plan»)
+ * se buscan en TODO el texto, también dentro de esos paneles.
+ *
  * Se revisa el HTML CONSTRUIDO. Corre `npm run build` antes.
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { parse, serialize } from 'parse5';
 import { describe, expect, it } from 'vitest';
 
 const DIST = join(process.cwd(), 'dist');
@@ -39,6 +45,18 @@ function textoVisible(html) {
     .replace(/<!--[\s\S]*?-->/g, ' ')
     .replace(/<[^>]+>/g, ' ')
     .replace(/\s+/g, ' ');
+}
+
+/** El HTML sin los paneles de la demo (`data-demo`): sus cifras salen de la base de demostración. */
+function sinPanelesDeLaDemo(html) {
+  const doc = parse(html);
+  const podar = (n) => {
+    if (n.childNodes) n.childNodes = n.childNodes.filter((h) => !h.attrs?.some((a) => a.name === 'data-demo'));
+    for (const h of n.childNodes ?? []) podar(h);
+    if (n.content) podar(n.content);
+  };
+  podar(doc);
+  return serialize(doc);
 }
 
 /** Enlaces internos de navegación: fuera recursos (íconos, manifiestos) y otros dominios. */
@@ -83,7 +101,8 @@ describe('/movil y /soporte no llevan a precios ni planes (CA15)', () => {
         expect(existsSync(archivo), `${destino} no existe en dist/`).toBe(true);
         const html = readFileSync(archivo, 'utf8');
         const texto = textoVisible(html);
-        expect(texto.match(PRECIO)?.[0] ?? null, `cifra de precio en ${destino}`).toBeNull();
+        const sinDemo = textoVisible(sinPanelesDeLaDemo(html));
+        expect(sinDemo.match(PRECIO)?.[0] ?? null, `cifra de precio en ${destino}`).toBeNull();
         expect(html, `${destino} enlaza a la sección de precios`).not.toMatch(/#planes/);
         if (LEGALES.has(destino.slice(1))) return;
         expect(texto, `${destino} nombra el plan de pago`).not.toMatch(/Presu\s+Pro\b/i);
