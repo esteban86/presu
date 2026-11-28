@@ -70,13 +70,15 @@ const ROTULO =
   `comercio, y el aviso se vuelve un movimiento de hoy, ya en la categoría ${llega.categoria}. ` +
   `El total del mes pasa a ${cop(totalDespues)}. No tuviste que escribir nada.`;
 
+// En la fila va la cuenta corta, como en la app: «Ahorros», o el nombre de la tarjeta.
+const cuentaCorta = llega.tipoDeCuenta === 'bank_account' ? llega.cuenta.split(' ')[0] : llega.cuenta;
 const conQue =
   llega.tipoDeCuenta === 'credit_card' ? ` con tu ${llega.cuenta}.` : ' desde tu cuenta de ahorros.';
 const filaEstilo = (f: Fila) => `--c:${f.color}`;
 ---
 
 <div class="momento" data-momento="entra-solo" data-demo role="img" aria-label={ROTULO}>
-  <Telefono>
+  <Telefono inclinacion="izquierda">
         <div class="app">
           <p class="mes">{nombreDelMes}</p>
           <p class="rotulo">Este mes llevas</p>
@@ -110,7 +112,7 @@ const filaEstilo = (f: Fila) => `--c:${f.color}`;
               <span class="fila__texto">
                 <span class="fila__comercio">{llega.comercio}</span>
                 <span class="fila__sub"
-                  >{llega.cuenta}<span class="fila__cat"> · {llega.categoria}</span></span
+                  >{cuentaCorta}<span class="fila__cat"> · {llega.categoria}</span></span
                 >
               </span>
               <span class="fila__monto">

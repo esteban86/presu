@@ -65,7 +65,7 @@ describe('momento «Entra solo»', () => {
     expect(rotulo).toMatch(/categoría/);
     expect(rotulo).not.toMatch(/\bSMS\b/i);
     expect(buscar(pieza, (n) => n.nodeName === 'img' || n.nodeName === 'picture')).toEqual([]);
-    const [aparato] = buscar(pieza, (n) => clases(n).includes('telefono'));
+    const [aparato] = buscar(pieza, (n) => clases(n).includes('iphone'));
     expect(aparato, 'falta el iPhone').toBeDefined();
     expect(atributo(aparato, 'aria-hidden')).toBe('true');
   });

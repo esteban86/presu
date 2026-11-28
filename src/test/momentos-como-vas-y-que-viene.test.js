@@ -57,8 +57,8 @@ function verbos(doc) {
 const contiene = (padre, hijo) => buscar(padre, (n) => n === hijo).length === 1;
 
 describe.each([
-  ['como-vas', 1, 'ventana', 'MomentoComoVas.astro'],
-  ['que-viene', 2, 'telefono', 'MomentoQueViene.astro'],
+  ['como-vas', 1, 'mac', 'MomentoComoVas.astro'],
+  ['que-viene', 2, 'iphone', 'MomentoQueViene.astro'],
 ])('momento %s', (id, indice, aparato, archivo) => {
   it('está en su verbo de «Cómo funciona», sin capturas', () => {
     const { doc, pieza } = cargar();
@@ -141,7 +141,7 @@ describe('«Lo que viene»', () => {
   it('va en un iPhone, cada pago con su fecha, su monto y «Se repite cada mes»', () => {
     const { pieza } = cargar();
     const p = pieza('que-viene');
-    expect(buscar(p, (n) => clases(n).includes('ventana'))).toEqual([]);
+    expect(buscar(p, (n) => clases(n).includes('mac'))).toEqual([]);
     const filas = buscar(p, (n) => clases(n).includes('pago'));
     expect(filas.length).toBe(momentos.loQueViene.length);
     filas.forEach((f, i) => {

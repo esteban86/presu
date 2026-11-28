@@ -1,0 +1,239 @@
+---
+// Portatil.astro — un MacBook Pro (14 pulgadas, de frente) hecho en CSS, sin imágenes descargadas.
+//
+// La tapa de aluminio con su canto, el bisel negro delgado con el notch, la pantalla (recorta lo de
+// adentro, con su capa de vidrio), la bisagra y la base vista de frente: una placa delgada que se
+// angosta hacia abajo, con el corte para abrir la tapa. Debajo, la sombra en el piso.
+//
+// Lo de adentro llega por el `slot`, como en `Telefono.astro`:
+// - un momento dibujado en código: dentro de `.lienzo`, 1em = 1/64 del ancho de la pantalla. La
+//   pantalla tiene proporción fija (3024 × 1964), así que lo de adentro escala sin reacomodarse;
+// - o una captura real: un `<img>` como único hijo llena la pantalla exacta (`object-fit: cover`,
+//   arriba). Con una captura, `barraDeMenu={false}`.
+//
+// `inclinacion`: entra girado y se endereza al entrar a la vista, como el iPhone.
+// Para un lector de pantalla no existe (`aria-hidden`): el rótulo lo pone quien lo usa.
+export interface Props {
+  /** Ancho máximo de todo el aparato (con la base), en px. */
+  ancho?: number;
+  inclinacion?: 'none' | 'izquierda' | 'derecha';
+  barraDeMenu?: boolean;
+}
+const { ancho = 780, inclinacion = 'none', barraDeMenu = true } = Astro.props;
+---
+
+<div
+  class:list={['mac', inclinacion !== 'none' && `mac--${inclinacion}`]}
+  style={`--ancho:${ancho}px`}
+  aria-hidden="true"
+>
+  <div class="mac__cuerpo">
+    <div class="tapa">
+      <div class="pantalla">
+        <div class="lienzo">
+          {
+            barraDeMenu && (
+              <div class="menu">
+                <span class="menu__app">Presu</span>
+                <span class="menu__derecha">
+                  <span class="menu__bateria" />
+                  <span>9:41</span>
+                </span>
+              </div>
+            )
+          }
+          <slot />
+        </div>
+        <span class="notch"></span>
+        <span class="vidrio"></span>
+      </div>
+    </div>
+    <div class="bisagra"></div>
+    <div class="base"><span class="base__corte"></span></div>
+  </div>
+  <span class="piso"></span>
+</div>
+
+<style>
+  /* Medidas en % del ancho del aparato (cqi). La tapa ocupa el 88 % del ancho; la base, todo. */
+  .mac {
+    position: relative;
+    width: min(100%, var(--ancho));
+    container-type: inline-size;
+    perspective: 2400px;
+  }
+  .mac__cuerpo {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transform-origin: 50% 100%;
+    transition: transform 1.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .tapa {
+    position: relative;
+    width: 88cqi;
+    padding: 1.75cqi 1.75cqi 2.6cqi;
+    border-radius: 2.6cqi 2.6cqi 0.9cqi 0.9cqi;
+    background: #050506;
+    /* El canto de aluminio: un filo claro alrededor del bisel negro. */
+    box-shadow:
+      0 0 0 0.26cqi #8d8f94,
+      0 0 0 0.36cqi #4a4c51,
+      0 1.6cqi 4cqi -1cqi rgba(0, 0, 0, 0.6),
+      0 6cqi 10cqi -4cqi rgba(0, 0, 0, 0.55);
+  }
+  .tapa::before {
+    /* Un brillo apenas en el filo de arriba. */
+    content: '';
+    position: absolute;
+    inset: -0.32cqi -0.32cqi auto;
+    height: 0.32cqi;
+    border-radius: 2.6cqi 2.6cqi 0 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55) 30%, rgba(255, 255, 255, 0.55) 70%, transparent);
+  }
+  .pantalla {
+    position: relative;
+    aspect-ratio: 3024 / 1964;
+    overflow: hidden;
+    border-radius: 1cqi 1cqi 0.3cqi 0.3cqi;
+    background: #0b0b0e;
+    container-type: inline-size;
+    isolation: isolate;
+  }
+  .lienzo {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    font-size: 10px;
+    font-size: calc(100cqi / 64);
+    font-family: var(--font-body);
+    color: var(--text-primary);
+  }
+  .lienzo > :global(img) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top;
+  }
+  /* La barra de menú de macOS: el notch cae en su centro. */
+  .menu {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 1.55em;
+    padding: 0 1.2em;
+    background: rgba(20, 20, 24, 0.92);
+    font-size: 1em;
+  }
+  .menu__app {
+    font-weight: var(--weight-bold);
+    font-size: 0.82em;
+  }
+  .menu__derecha {
+    display: flex;
+    align-items: center;
+    gap: 0.8em;
+    font-size: 0.78em;
+    color: var(--text-secondary);
+  }
+  .menu__bateria {
+    width: 1.8em;
+    height: 0.85em;
+    border-radius: 0.25em;
+    border: 0.1em solid rgba(244, 244, 243, 0.6);
+    background: linear-gradient(90deg, rgba(244, 244, 243, 0.8) 70%, transparent 0) content-box;
+    padding: 0.1em;
+  }
+  .notch {
+    position: absolute;
+    z-index: 6;
+    left: 50%;
+    top: 0;
+    width: 11.2%;
+    height: 2.55%;
+    transform: translateX(-50%);
+    border-radius: 0 0 0.9cqi 0.9cqi;
+    background: #050506;
+  }
+  .vidrio {
+    position: absolute;
+    z-index: 7;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    box-shadow:
+      inset 0 0 0 1px rgba(0, 0, 0, 0.6),
+      inset 0 0 1.6cqi rgba(0, 0, 0, 0.35);
+    background: linear-gradient(
+      125deg,
+      rgba(255, 255, 255, 0.06) 0%,
+      rgba(255, 255, 255, 0.02) 26%,
+      rgba(255, 255, 255, 0) 40%
+    );
+  }
+  .bisagra {
+    position: relative;
+    z-index: -1;
+    width: 80cqi;
+    height: 0.75cqi;
+    margin-top: -0.1cqi;
+    border-radius: 0 0 0.6cqi 0.6cqi;
+    background: linear-gradient(180deg, #1b1c1f, #3b3d42 70%, #26272b);
+  }
+  /* La base de frente: el filo claro arriba y la placa que se angosta hacia abajo. */
+  .base {
+    position: relative;
+    width: 100cqi;
+    height: 2.3cqi;
+    border-radius: 0.3cqi 0.3cqi 50% 50% / 0.3cqi 0.3cqi 100% 100%;
+    background:
+      linear-gradient(180deg, #f2f3f5 0%, #c9cbd0 14%, #a3a5aa 48%, #77797e 85%, #5d5f63 100%);
+    box-shadow:
+      inset 0 0.12cqi 0 rgba(255, 255, 255, 0.8),
+      0 1cqi 2cqi -0.6cqi rgba(0, 0, 0, 0.6);
+  }
+  .base__corte {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: 15%;
+    height: 48%;
+    transform: translateX(-50%);
+    border-radius: 0 0 1.4cqi 1.4cqi;
+    background: linear-gradient(180deg, #7e8085, #a6a8ad);
+    box-shadow: inset 0 0.25cqi 0.35cqi rgba(0, 0, 0, 0.35);
+  }
+  .piso {
+    position: absolute;
+    left: -2%;
+    right: -2%;
+    bottom: -2.6cqi;
+    height: 5cqi;
+    z-index: -2;
+    background: radial-gradient(closest-side, rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.25) 60%, transparent);
+    transition: opacity 1.4s ease;
+  }
+
+  :global([data-momento].animada:not(.corre)) .mac--derecha .mac__cuerpo {
+    transform: rotateY(-14deg) rotateX(6deg);
+  }
+  :global([data-momento].animada:not(.corre)) .mac--izquierda .mac__cuerpo {
+    transform: rotateY(14deg) rotateX(6deg);
+  }
+  :global([data-momento].animada:not(.corre)) .mac--izquierda .piso,
+  :global([data-momento].animada:not(.corre)) .mac--derecha .piso {
+    opacity: 0.4;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .mac__cuerpo,
+    .piso {
+      transform: none !important;
+      transition: none;
+    }
+  }
+</style>

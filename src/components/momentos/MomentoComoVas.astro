@@ -1,6 +1,6 @@
 ---
 // MomentoComoVas.astro — el momento «Te dice cómo vas» de la portada (#39): el Inicio del escritorio
-// en una ventana de Mac hecha en CSS, con una sola escena que se repite cada 10 s:
+// en un MacBook Pro hecho en CSS (`Portatil.astro`), con una sola escena que se repite cada 10 s:
 //   1. aparece el veredicto del mes, con las palabras del escritorio (`buildVerdict`), y el marcador
 //      de Presu subraya la cifra de lo que te queda;
 //   2. las donas de tus topes se llenan hasta su porcentaje, con la muesca de dónde irías hoy;
@@ -14,6 +14,7 @@
 // Accesibilidad y movimiento: como los otros momentos (ver `correr-a-la-vista.ts`). Un solo
 // `role="img"`; sin JavaScript o con «reducir movimiento», el cuadro final quieto; solo se animan
 // `opacity`, `transform` y el recorte (`clip-path`, `mask`) de piezas de tamaño fijo: no corre nada.
+import Portatil from './Portatil.astro';
 import momentos from '../../data/momentos.json';
 import cifras from '../../data/cifras-de-la-demo.json';
 import { formatCOPCompact } from '../../lib/format.js';
@@ -63,12 +64,8 @@ const estiloDona = (i: number) => `--adelanto:${-(N - 1 - i) * 0.12}s`;
 ---
 
 <div class="momento" data-momento="como-vas" data-demo role="img" aria-label={ROTULO}>
-  <div class="ventana" aria-hidden="true">
-    <div class="barra">
-      <span class="luz luz--roja"></span><span class="luz luz--ambar"></span><span class="luz luz--verde"></span>
-      <span class="barra__titulo">Presu</span>
-    </div>
-    <div class="lienzo">
+  <Portatil inclinacion="derecha" ancho={780}>
+    <div class="escritorio">
       <aside class="lado">
         <span class="marca-presu">presu</span>
         <span class="lado__item lado__item--activo">Inicio</span>
@@ -99,6 +96,7 @@ const estiloDona = (i: number) => `--adelanto:${-(N - 1 - i) * 0.12}s`;
           </p>
         </div>
 
+        <div class="fila-de-tarjetas">
         <div class="tarjeta">
           <div class="tarjeta__cabeza">
             <span class="tarjeta__titulo">Presupuestos del mes</span>
@@ -174,9 +172,10 @@ const estiloDona = (i: number) => `--adelanto:${-(N - 1 - i) * 0.12}s`;
             </span>
           </div>
         </div>
+        </div>
       </div>
     </div>
-  </div>
+  </Portatil>
 </div>
 
 <script>
@@ -197,66 +196,18 @@ const estiloDona = (i: number) => `--adelanto:${-(N - 1 - i) * 0.12}s`;
     width: 100%;
   }
 
-  /* ───────── La ventana ───────── */
-  .ventana {
-    width: 100%;
-    max-width: 760px;
-    border-radius: 14px;
-    overflow: hidden;
-    background: #0b0b0e;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow:
-      0 50px 100px -40px rgba(0, 0, 0, 0.8),
-      0 30px 120px -50px rgba(52, 211, 153, 0.2);
-    container-type: inline-size;
-  }
-  .barra {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    height: 34px;
-    padding: 0 13px;
-    background: #17171b;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  }
-  .luz {
-    width: 11px;
-    height: 11px;
-    border-radius: 50%;
-  }
-  .luz--roja {
-    background: #ff5f57;
-  }
-  .luz--ambar {
-    background: #febc2e;
-  }
-  .luz--verde {
-    background: #28c840;
-  }
-  .barra__titulo {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    font-family: var(--font-body);
-    font-size: 12px;
-    color: var(--text-tertiary);
-  }
-
-  /* 1em = 1/72 del ancho de la ventana: todo escala junto. En una ventana angosta, más grande y sin la barra lateral. */
-  .lienzo {
+  /* ───────── Dentro de la pantalla del MacBook (1em = 1/64 de su ancho) ───────── */
+  .escritorio {
+    flex: 1;
+    min-height: 0;
     display: grid;
-    grid-template-columns: 14em 1fr;
-    font-size: 10px;
-    font-size: calc(100cqi / 72);
-    font-family: var(--font-body);
-    color: var(--text-primary);
+    grid-template-columns: 10.5em 1fr;
   }
   .lado {
     display: flex;
     flex-direction: column;
-    gap: 0.5em;
-    padding: 2.2em 1.4em;
+    gap: 0.25em;
+    padding: 1.6em 1em;
     background: #0e0e12;
     border-right: 1px solid rgba(255, 255, 255, 0.05);
   }
@@ -264,10 +215,10 @@ const estiloDona = (i: number) => `--adelanto:${-(N - 1 - i) * 0.12}s`;
     position: relative;
     isolation: isolate;
     align-self: flex-start;
-    margin: 0 0 1.6em 0.6em;
+    margin: 0 0 1em 0.5em;
     font-family: var(--font-display);
     font-weight: var(--weight-bold);
-    font-size: 2.2em;
+    font-size: 1.7em;
     letter-spacing: -0.04em;
   }
   .marca-presu::after {
@@ -283,9 +234,9 @@ const estiloDona = (i: number) => `--adelanto:${-(N - 1 - i) * 0.12}s`;
     z-index: -1;
   }
   .lado__item {
-    padding: 0.75em 0.9em;
-    border-radius: 0.8em;
-    font-size: 1.3em;
+    padding: 0.6em 0.8em;
+    border-radius: 0.7em;
+    font-size: 0.95em;
     color: var(--text-secondary);
   }
   .lado__item--activo {
@@ -294,21 +245,30 @@ const estiloDona = (i: number) => `--adelanto:${-(N - 1 - i) * 0.12}s`;
   }
   .app {
     min-width: 0;
-    padding: 2.4em 2.8em 2.8em;
+    min-height: 0;
+    padding: 1.5em 2em 1.6em;
     display: flex;
     flex-direction: column;
-    gap: 1.6em;
+    gap: 1.1em;
   }
   .titulo {
     margin: 0;
     font-family: var(--font-display);
     font-weight: var(--weight-bold);
-    font-size: 2.3em;
+    font-size: 1.7em;
+    line-height: 1.1;
+  }
+  .fila-de-tarjetas {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: 1fr 1.15fr;
+    gap: 1.1em;
   }
 
   .veredicto {
-    padding: 1.8em 2.2em;
-    border-radius: 2.2em;
+    padding: 1.2em 1.6em 1.3em;
+    border-radius: 1.6em;
     border: 1px solid rgba(255, 255, 255, 0.08);
     background: linear-gradient(100deg, rgba(52, 211, 153, 0.14), rgba(255, 255, 255, 0.03) 45%);
   }
@@ -316,9 +276,9 @@ const estiloDona = (i: number) => `--adelanto:${-(N - 1 - i) * 0.12}s`;
     display: flex;
     align-items: center;
     gap: 0.7em;
-    margin: 0 0 0.8em;
+    margin: 0 0 0.6em;
     font-family: var(--font-mono);
-    font-size: 1.1em;
+    font-size: 0.8em;
     letter-spacing: 0.16em;
     color: var(--presu-emerald);
   }
@@ -332,7 +292,7 @@ const estiloDona = (i: number) => `--adelanto:${-(N - 1 - i) * 0.12}s`;
     margin: 0;
     font-family: var(--font-display);
     font-weight: var(--weight-semibold);
-    font-size: 2.15em;
+    font-size: 1.55em;
     line-height: 1.3;
     letter-spacing: -0.015em;
   }
@@ -362,8 +322,11 @@ const estiloDona = (i: number) => `--adelanto:${-(N - 1 - i) * 0.12}s`;
   }
 
   .tarjeta {
-    padding: 1.7em 2em 1.8em;
-    border-radius: 1.8em;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    padding: 1.2em 1.3em;
+    border-radius: 1.4em;
     border: 1px solid rgba(255, 255, 255, 0.07);
     background: rgba(255, 255, 255, 0.02);
   }
@@ -371,16 +334,17 @@ const estiloDona = (i: number) => `--adelanto:${-(N - 1 - i) * 0.12}s`;
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    gap: 1em;
-    margin-bottom: 1.4em;
+    gap: 0.6em;
+    margin-bottom: 1em;
   }
   .tarjeta__titulo {
     font-weight: var(--weight-semibold);
-    font-size: 1.45em;
+    font-size: 1.05em;
+    white-space: nowrap;
   }
   .tarjeta__total {
     font-family: var(--font-mono);
-    font-size: 1.15em;
+    font-size: 0.78em;
     color: var(--text-secondary);
     white-space: nowrap;
   }
@@ -391,8 +355,8 @@ const estiloDona = (i: number) => `--adelanto:${-(N - 1 - i) * 0.12}s`;
 
   .donas {
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 1em;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.9em 0.6em;
   }
   .dona {
     position: relative;
@@ -404,8 +368,8 @@ const estiloDona = (i: number) => `--adelanto:${-(N - 1 - i) * 0.12}s`;
   }
   .dona__aro {
     position: relative;
-    width: 7.4em;
-    height: 7.4em;
+    width: 4.9em;
+    height: 4.9em;
   }
   .dona__arcos {
     position: absolute;
@@ -443,11 +407,11 @@ const estiloDona = (i: number) => `--adelanto:${-(N - 1 - i) * 0.12}s`;
     place-items: center;
     font-family: var(--font-display);
     font-weight: var(--weight-semibold);
-    font-size: 1.3em;
+    font-size: 0.95em;
   }
   .dona__nombre {
-    margin-top: 0.5em;
-    font-size: 1.15em;
+    margin-top: 0.35em;
+    font-size: 0.82em;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -455,19 +419,20 @@ const estiloDona = (i: number) => `--adelanto:${-(N - 1 - i) * 0.12}s`;
   }
   .dona__queda {
     font-family: var(--font-mono);
-    font-size: 1em;
+    font-size: 0.72em;
     color: var(--text-tertiary);
   }
   .leyenda-donas,
   .leyenda {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.6em 1.6em;
-    font-size: 1.1em;
+    gap: 0.4em 1.1em;
+    font-size: 0.75em;
     color: var(--text-secondary);
   }
   .leyenda-donas {
-    margin-top: 1.4em;
+    margin-top: auto;
+    padding-top: 0.8em;
   }
   .leyenda span,
   .leyenda-donas span {
@@ -503,14 +468,15 @@ const estiloDona = (i: number) => `--adelanto:${-(N - 1 - i) * 0.12}s`;
 
   .grafica {
     position: relative;
-    height: 15em;
-    margin-top: 0.4em;
+    flex: 1;
+    min-height: 0;
+    margin-top: 0.6em;
   }
   .grafica__svg {
     position: absolute;
-    inset: 0 0 2em 0;
+    inset: 0 0 1.4em 0;
     width: 100%;
-    height: calc(100% - 2em);
+    height: calc(100% - 1.4em);
     overflow: visible;
   }
   .grafica__svg path,
@@ -544,19 +510,19 @@ const estiloDona = (i: number) => `--adelanto:${-(N - 1 - i) * 0.12}s`;
     right: 0;
     transform: translateY(-130%);
     font-family: var(--font-mono);
-    font-size: 1.05em;
+    font-size: 0.75em;
     color: var(--color-negative);
     opacity: 0.85;
   }
   .grafica__plano {
     position: absolute;
-    inset: 0 0 2em 0;
+    inset: 0 0 1.4em 0;
   }
   .grafica__hoy {
     position: absolute;
-    width: 1.1em;
-    height: 1.1em;
-    margin: -0.55em 0 0 -0.55em;
+    width: 0.8em;
+    height: 0.8em;
+    margin: -0.4em 0 0 -0.4em;
     border-radius: 50%;
     background: var(--presu-emerald);
     box-shadow: 0 0 0 0.35em rgba(52, 211, 153, 0.25);
@@ -569,39 +535,15 @@ const estiloDona = (i: number) => `--adelanto:${-(N - 1 - i) * 0.12}s`;
     height: 1.4em;
     display: flex;
     justify-content: space-between;
+    align-items: flex-end;
     font-family: var(--font-mono);
-    font-size: 1em;
+    font-size: 0.72em;
     color: var(--text-tertiary);
   }
   .grafica__eje-hoy {
     position: absolute;
     transform: translateX(-50%);
     color: var(--text-secondary);
-  }
-
-  /* ───────── Ventana angosta (el celular) ───────── */
-  @container (max-width: 520px) {
-    .lienzo {
-      grid-template-columns: 1fr;
-      font-size: calc(100cqi / 40);
-    }
-    .lado {
-      display: none;
-    }
-    .app {
-      padding: 1.8em 1.8em 2em;
-    }
-    .donas {
-      grid-template-columns: repeat(3, 1fr);
-      row-gap: 1.6em;
-    }
-    .tarjeta__cabeza {
-      flex-direction: column;
-      gap: 0.5em;
-    }
-    .veredicto__frase {
-      font-size: 1.95em;
-    }
   }
 
   /* ───────── La escena, en el tiempo ───────── */

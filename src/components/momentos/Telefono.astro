@@ -1,61 +1,133 @@
 ---
-// Telefono.astro — el iPhone de los momentos de la portada, hecho en CSS (sin imágenes).
+// Telefono.astro — un iPhone (estilo 16 Pro) hecho en CSS, sin imágenes descargadas.
 //
-// Dibuja el marco, la pantalla, la barra de estado y la barra de inicio; lo de adentro llega por el
-// `slot`. Dentro de `.lienzo`, 1em = 1/32 del ancho de la pantalla: todo el dibujo escala junto, sin
-// JavaScript. Para un lector de pantalla no existe (`aria-hidden`): el rótulo lo pone el momento.
+// Capas, de afuera hacia adentro: el canto de titanio (gradiente metálico, con sus cortes de
+// antena y los botones laterales), el bisel negro delgado, la pantalla (con su radio de esquina,
+// que recorta lo de adentro), y encima de la pantalla una capa de vidrio: una sombra interior en el
+// borde del bisel y un brillo diagonal muy suave. Debajo, la sombra de contacto con el «piso».
+//
+// Lo de adentro llega por el `slot`:
+// - un momento dibujado en código: dentro de `.lienzo`, 1em = 1/32 del ancho de la pantalla, así
+//   que todo escala junto con el aparato (sin JavaScript);
+// - o una captura real: un `<img>` como único hijo llena la pantalla exacta (`object-fit: cover`,
+//   arriba). Con una captura, `barraDeEstado={false}`: la captura ya trae la suya.
+//
+// `inclinacion`: el aparato entra girado unos grados y se endereza cuando su momento entra a la
+// vista (`.corre`, de `correr-a-la-vista.ts`). Sin JavaScript o con «reducir movimiento», derecho.
+// Solo `transform` y `opacity`: no corre nada de la página.
+//
+// Para un lector de pantalla no existe (`aria-hidden`): el rótulo lo pone quien lo usa.
+export interface Props {
+  /** Ancho máximo, en px. En pantallas angostas se achica (84vw). */
+  ancho?: number;
+  inclinacion?: 'none' | 'izquierda' | 'derecha';
+  barraDeEstado?: boolean;
+}
+const { ancho = 340, inclinacion = 'none', barraDeEstado = true } = Astro.props;
 ---
 
-<div class="telefono" aria-hidden="true">
-  <div class="pantalla">
-    <div class="lienzo">
-      <div class="barra-de-estado">
-        <span class="hora">9:41</span>
+<div
+  class:list={['iphone', inclinacion !== 'none' && `iphone--${inclinacion}`]}
+  style={`--ancho:${ancho}px`}
+  aria-hidden="true"
+>
+  <div class="cuerpo">
+    <span class="boton boton--accion"></span>
+    <span class="boton boton--subir"></span>
+    <span class="boton boton--bajar"></span>
+    <span class="boton boton--lateral"></span>
+    <span class="boton boton--camara"></span>
+    <span class="antena antena--1"></span>
+    <span class="antena antena--2"></span>
+    <span class="antena antena--3"></span>
+    <span class="antena antena--4"></span>
+    <div class="bisel">
+      <div class="pantalla">
+        <div class="lienzo">
+          {
+            barraDeEstado && (
+              <div class="barra-de-estado">
+                <span class="hora">9:41</span>
+                <span class="estado-iconos">
+                  <svg viewBox="0 0 18 12">
+                    <rect x="0" y="8" width="3" height="4" rx="1" />
+                    <rect x="5" y="5.5" width="3" height="6.5" rx="1" />
+                    <rect x="10" y="3" width="3" height="9" rx="1" />
+                    <rect x="15" y="0" width="3" height="12" rx="1" />
+                  </svg>
+                  <svg viewBox="0 0 27 12">
+                    <rect x="0.5" y="0.5" width="22" height="11" rx="3.2" fill="none" stroke="currentColor" opacity="0.45" />
+                    <rect x="2" y="2" width="17" height="8" rx="2" />
+                    <rect x="24" y="4" width="2" height="4" rx="1" opacity="0.45" />
+                  </svg>
+                </span>
+              </div>
+            )
+          }
+          <slot />
+          <span class="inicio-barra"></span>
+        </div>
         <span class="isla"></span>
-        <span class="estado-iconos">
-          <svg viewBox="0 0 18 12"
-            ><rect x="0" y="8" width="3" height="4" rx="1"></rect><rect x="5" y="5.5" width="3" height="6.5" rx="1"
-            ></rect><rect x="10" y="3" width="3" height="9" rx="1"></rect><rect x="15" y="0" width="3" height="12" rx="1"
-            ></rect></svg
-          >
-          <svg viewBox="0 0 27 12"
-            ><rect x="0.5" y="0.5" width="22" height="11" rx="3.2" fill="none" stroke="currentColor" opacity="0.45"
-            ></rect><rect x="2" y="2" width="17" height="8" rx="2"></rect><rect x="24" y="4" width="2" height="4" rx="1"
-              opacity="0.45"></rect></svg
-          >
-        </span>
+        <span class="vidrio"></span>
       </div>
-      <slot />
-      <span class="inicio-barra"></span>
     </div>
   </div>
+  <span class="piso"></span>
 </div>
 
 <style>
-  .telefono {
+  /* Medidas en % del ancho del aparato (cqi): el canto, el bisel y las esquinas escalan juntos. */
+  .iphone {
     position: relative;
-    width: min(100%, 360px);
-    aspect-ratio: 9 / 19.3;
-    padding: 11px;
-    border-radius: 56px;
-    background: linear-gradient(160deg, #2b2b31 0%, #0b0b0d 38%, #050506 70%, #1c1c21 100%);
-    box-shadow:
-      inset 0 0 0 1.5px rgba(255, 255, 255, 0.09),
-      inset 0 0 0 5px #050506,
-      0 50px 90px -30px rgba(0, 0, 0, 0.75),
-      0 0 0 1px rgba(255, 255, 255, 0.04),
-      0 30px 120px -40px rgba(52, 211, 153, 0.22);
+    width: min(100%, var(--ancho));
+    container-type: inline-size;
+    perspective: 1800px;
   }
-  .pantalla {
+  .cuerpo {
     position: relative;
-    width: 100%;
-    height: 100%;
+    aspect-ratio: 71.5 / 149.6;
+    border-radius: 15.6cqi;
+    /* Titanio natural: brillo en los cantos verticales, más oscuro hacia el centro del borde. */
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0) 9%, rgba(0, 0, 0, 0) 91%, rgba(0, 0, 0, 0.3)),
+      linear-gradient(
+        90deg,
+        #5d5c59 0%,
+        #c4c1ba 1.4%,
+        #8f8c86 2.6%,
+        #a9a6a0 50%,
+        #8f8c86 97.4%,
+        #c4c1ba 98.6%,
+        #5d5c59 100%
+      );
+    box-shadow:
+      inset 0 0 0 0.25cqi rgba(255, 255, 255, 0.28),
+      inset 0 0 0 0.55cqi rgba(0, 0, 0, 0.35),
+      0 0.6cqi 1.2cqi rgba(0, 0, 0, 0.35),
+      0 6cqi 14cqi -3cqi rgba(0, 0, 0, 0.55),
+      0 22cqi 34cqi -14cqi rgba(0, 0, 0, 0.7);
+    transform-origin: 50% 55%;
+    transition: transform 1.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  /* El bisel negro, apenas adentro del canto. */
+  .bisel {
+    position: absolute;
+    inset: 1.25cqi;
+    border-radius: 14.4cqi;
+    background: #030304;
+    box-shadow: 0 0 0 0.15cqi rgba(0, 0, 0, 0.9);
+  }
+  /* La pantalla: 402 × 874 puntos, con su radio de esquina; recorta lo de adentro. */
+  .pantalla {
+    position: absolute;
+    inset: 1.85cqi;
     overflow: hidden;
-    border-radius: 45px;
+    border-radius: 12.6cqi;
     background:
       radial-gradient(120% 55% at 50% -8%, rgba(52, 211, 153, 0.13), transparent 60%),
       #08080a;
     container-type: size;
+    isolation: isolate;
   }
   .lienzo {
     position: absolute;
@@ -65,31 +137,30 @@
     font-family: var(--font-body);
     color: var(--text-primary);
   }
+  /* Una captura real como único hijo: llena la pantalla exacta. */
+  .lienzo > :global(img) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top;
+  }
   .barra-de-estado {
     position: absolute;
-    top: 1.55em;
+    top: 1.75em;
     left: 0;
     right: 0;
     height: 2.8em;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 2.6em 0 3.3em;
+    padding: 0 2.7em 0 3.4em;
   }
   .hora {
     font-weight: var(--weight-semibold);
     font-size: 1.5em;
     letter-spacing: -0.01em;
-  }
-  .isla {
-    position: absolute;
-    left: 50%;
-    top: 0;
-    width: 9.8em;
-    height: 2.9em;
-    transform: translateX(-50%);
-    border-radius: 2em;
-    background: #000;
   }
   .estado-iconos {
     display: flex;
@@ -105,21 +176,147 @@
     position: absolute;
     z-index: 5;
     left: 50%;
-    bottom: 0.9em;
+    bottom: 0.8em;
     width: 12.5em;
-    height: 0.5em;
+    height: 0.48em;
     border-radius: 1em;
     transform: translateX(-50%);
-    background: rgba(255, 255, 255, 0.55);
+    background: rgba(255, 255, 255, 0.6);
   }
+  /* La Dynamic Island, con un reflejo mínimo de su lente. */
+  .isla {
+    position: absolute;
+    z-index: 6;
+    left: 50%;
+    top: 2.6cqi;
+    width: 30.5cqi;
+    height: 8.9cqi;
+    transform: translateX(-50%);
+    border-radius: 6cqi;
+    background: radial-gradient(circle at 78% 50%, #1a1d2b 0 1.6cqi, #050507 1.9cqi 100%);
+  }
+  /* El vidrio: sombra interior en el borde del bisel y un brillo diagonal muy suave. */
+  .vidrio {
+    position: absolute;
+    z-index: 7;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    box-shadow:
+      inset 0 0 0 0.3cqi rgba(0, 0, 0, 0.55),
+      inset 0 0 2.4cqi rgba(0, 0, 0, 0.5);
+    background: linear-gradient(
+      118deg,
+      rgba(255, 255, 255, 0.075) 0%,
+      rgba(255, 255, 255, 0.03) 24%,
+      rgba(255, 255, 255, 0) 38%,
+      rgba(255, 255, 255, 0) 72%,
+      rgba(255, 255, 255, 0.025) 100%
+    );
+  }
+
+  /* Los botones: el de acción y el volumen a la izquierda; el lateral y Control de la cámara a la derecha. */
+  .boton {
+    position: absolute;
+    width: 1.05cqi;
+    border-radius: 0.6cqi;
+    background: linear-gradient(90deg, #6c6a66, #c8c5be 45%, #85837e);
+    box-shadow: 0 0.2cqi 0.4cqi rgba(0, 0, 0, 0.35);
+  }
+  .boton--accion,
+  .boton--subir,
+  .boton--bajar {
+    left: -0.8cqi;
+  }
+  .boton--lateral,
+  .boton--camara {
+    right: -0.8cqi;
+  }
+  .boton--accion {
+    top: 17.5%;
+    height: 5.4%;
+  }
+  .boton--subir {
+    top: 25.5%;
+    height: 9%;
+  }
+  .boton--bajar {
+    top: 36.5%;
+    height: 9%;
+  }
+  .boton--lateral {
+    top: 29%;
+    height: 14%;
+  }
+  .boton--camara {
+    top: 57%;
+    height: 7.5%;
+    background: linear-gradient(90deg, #4b4a47, #8d8a84 50%, #5c5b57);
+  }
+  /* Los cortes de antena del canto. */
+  .antena {
+    position: absolute;
+    background: rgba(40, 40, 40, 0.55);
+  }
+  .antena--1,
+  .antena--2 {
+    top: 9%;
+    width: 1.25cqi;
+    height: 0.7cqi;
+  }
+  .antena--1 {
+    left: 0;
+  }
+  .antena--2 {
+    right: 0;
+  }
+  .antena--3,
+  .antena--4 {
+    bottom: 0;
+    width: 0.7cqi;
+    height: 1.25cqi;
+  }
+  .antena--3 {
+    left: 22%;
+  }
+  .antena--4 {
+    right: 22%;
+  }
+
+  /* La sombra de contacto: un óvalo difuso bajo el aparato (un gradiente, sin filtros). */
+  .piso {
+    position: absolute;
+    left: 8%;
+    right: 8%;
+    bottom: -4.5cqi;
+    height: 9cqi;
+    background: radial-gradient(closest-side, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.25) 55%, transparent);
+    z-index: -1;
+    transition: opacity 1.4s ease;
+  }
+
+  /* Entra girado y se endereza al entrar a la vista. Solo con la animación preparada (`.animada`). */
+  :global([data-momento].animada:not(.corre)) .iphone--izquierda .cuerpo {
+    transform: rotateY(18deg) rotateX(4deg) rotateZ(-1.5deg);
+  }
+  :global([data-momento].animada:not(.corre)) .iphone--derecha .cuerpo {
+    transform: rotateY(-18deg) rotateX(4deg) rotateZ(1.5deg);
+  }
+  :global([data-momento].animada:not(.corre)) .iphone--izquierda .piso,
+  :global([data-momento].animada:not(.corre)) .iphone--derecha .piso {
+    opacity: 0.4;
+  }
+
   @media (max-width: 640px) {
-    .telefono {
-      width: min(84vw, 318px);
-      padding: 10px;
-      border-radius: 50px;
+    .iphone {
+      width: min(84vw, var(--ancho));
     }
-    .pantalla {
-      border-radius: 40px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .cuerpo,
+    .piso {
+      transform: none !important;
+      transition: none;
     }
   }
 </style>
